@@ -1,98 +1,160 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router'
+import { useEffect } from 'react'
+import { StyleSheet, View } from 'react-native'
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from 'react-native-reanimated'
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { AdamSymbol, AdamWordmark } from '@/components/brand/adam-mark'
+import { color, motion, space, type } from '@/theme/tokens'
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+/**
+ * Splash do ADAM.
+ *
+ * Reproduz a sequencia observada no prototipo do Figma: o simbolo nasce,
+ * o wordmark entra em seguida, os textos de apoio aparecem e a barra de
+ * progresso corre ate o fim, quando a tela cede para o login.
+ *
+ * Todas as animacoes usam apenas `opacity` e `transform`, que rodam na
+ * thread de UI sem passar pela ponte JS.
+ */
+
+const SYMBOL_SIZE = 56
+const WORDMARK_SIZE = 40
+const PROGRESS_WIDTH = 120
+const PROGRESS_HEIGHT = 3
+
+// A barra corre por toda a sequencia; a saida espera ela terminar.
+const PROGRESS_DURATION = 1800
+const EXIT_DELAY = PROGRESS_DURATION + motion.medium
+
+const enter = { duration: motion.medium, easing: Easing.out(Easing.cubic) }
+
+export default function Splash() {
+  const symbol = useSharedValue(0)
+  const wordmark = useSharedValue(0)
+  const tagline = useSharedValue(0)
+  const progress = useSharedValue(0)
+
+  useEffect(() => {
+    symbol.value = withDelay(motion.instant, withTiming(1, enter))
+    wordmark.value = withDelay(motion.slow, withTiming(1, enter))
+    tagline.value = withDelay(motion.slow + motion.medium, withTiming(1, enter))
+    progress.value = withTiming(1, {
+      duration: PROGRESS_DURATION,
+      easing: Easing.inOut(Easing.quad),
+    })
+
+    const id = setTimeout(() => router.replace('/login'), EXIT_DELAY)
+    return () => clearTimeout(id)
+  }, [symbol, wordmark, tagline, progress])
+
+  const symbolStyle = useAnimatedStyle(() => ({
+    opacity: symbol.value,
+    transform: [{ scale: 0.82 + symbol.value * 0.18 }],
+  }))
+
+  const wordmarkStyle = useAnimatedStyle(() => ({
+    opacity: wordmark.value,
+    // Entra deslizando a partir do simbolo, como no prototipo.
+    transform: [{ translateX: (1 - wordmark.value) * -16 }],
+  }))
+
+  const taglineStyle = useAnimatedStyle(() => ({
+    opacity: tagline.value,
+    transform: [{ translateY: (1 - tagline.value) * 8 }],
+  }))
+
+  // translateX em vez de largura: largura reflowaria a cada quadro.
+  const progressStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: -PROGRESS_WIDTH * (1 - progress.value) }],
+  }))
+
+  const footerStyle = useAnimatedStyle(() => ({ opacity: tagline.value }))
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.screen}>
+      <View style={styles.glow} />
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <View style={styles.center}>
+        <View style={styles.markRow}>
+          <Animated.View style={symbolStyle}>
+            <AdamSymbol size={SYMBOL_SIZE} />
+          </Animated.View>
+          <Animated.View style={wordmarkStyle}>
+            <AdamWordmark fontSize={WORDMARK_SIZE} />
+          </Animated.View>
+        </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+        <Animated.Text style={[styles.tagline, taglineStyle]}>
+          Painel da coordenação
+        </Animated.Text>
+      </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+      <View style={styles.progressTrack}>
+        <Animated.View style={[styles.progressFill, progressStyle]} />
+      </View>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
-  );
+      <Animated.Text style={[styles.footer, footerStyle]}>
+        ONG de utilidade pública
+      </Animated.Text>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
+    backgroundColor: color.bg,
+    alignItems: 'center',
     justifyContent: 'center',
+  },
+  glow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    experimental_backgroundImage: `radial-gradient(50% 35% at 50% 45%, ${color.primaryDk} 0%, ${color.bg} 100%)`,
+  },
+  center: {
+    alignItems: 'center',
+    gap: space.base,
+  },
+  markRow: {
     flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    gap: space.md,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  tagline: {
+    ...type.body,
+    fontFamily: 'Inter_400Regular',
+    color: color.muted,
   },
-  title: {
-    textAlign: 'center',
+  progressTrack: {
+    position: 'absolute',
+    bottom: 144,
+    width: PROGRESS_WIDTH,
+    height: PROGRESS_HEIGHT,
+    borderRadius: PROGRESS_HEIGHT,
+    borderCurve: 'continuous',
+    backgroundColor: color.border,
+    overflow: 'hidden',
   },
-  code: {
-    textTransform: 'uppercase',
+  progressFill: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: color.primary,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  footer: {
+    position: 'absolute',
+    bottom: space.xxl,
+    ...type.caption,
+    fontFamily: 'Inter_400Regular',
+    color: color.faint,
   },
-});
+})
