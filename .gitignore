@@ -44,3 +44,6 @@ example
 
 # variaveis de ambiente locais
 .env
+
+# saida do expo export
+/dist

@@ -1,42 +1,39 @@
-import { Text, View } from 'react-native'
+import { Image } from 'expo-image'
+import { Text } from 'react-native'
 
-import { color, type } from '@/theme/tokens'
+import { color } from '@/theme/tokens'
 
 /**
- * PENDENTE: o simbolo da marca ainda nao veio do Figma.
+ * Simbolo da marca, direto do kit oficial (Marca > Institucional >
+ * PNG fundo transparente > "simbolo regular roxo").
  *
- * O desenho abaixo NAO e o simbolo do ADAM — e um marcador visivel de
- * propositao, para nao passar por fiel. Para fechar:
- *   1. No Figma, selecione o no `Marca_Simbolo` de qualquer tela
- *   2. Painel direito > Exportar > SVG > Exportar
- *   3. Me mande o arquivo (ou salve em assets/marca-simbolo.svg)
+ * A arte e monocromatica em #9E05D1, praticamente o token `primary`
+ * (#9E05D2) — a diferenca de um bit por canal nao e perceptivel.
  *
- * Ai eu troco por `react-native-svg`, ja instalado, preservando a
- * geometria exata do no.
+ * Cuidado ao trocar de arquivo: no kit, "simbolo tridimencional roxo-43"
+ * esta nomeado como roxo mas a arte e preta, e sumiria no fundo escuro.
  */
+
+const SYMBOL = require('../../../assets/brand/adam-symbol.png')
+
+/** Proporcao original do asset: 625x625. */
 export function AdamSymbol({ size }: { size: number }) {
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: 6,
-        borderCurve: 'continuous',
-        borderWidth: 2,
-        borderColor: color.primary,
-        borderStyle: 'dashed',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-      <Text style={{ color: color.primary, fontSize: size * 0.4 }}>?</Text>
-    </View>
+    <Image
+      source={SYMBOL}
+      style={{ width: size, height: size }}
+      contentFit="contain"
+      // Marca e decorativa: o nome do app ja vem no wordmark ao lado.
+      accessible={false}
+    />
   )
 }
 
 /**
- * O wordmark do Figma e um lettering desenhado (cada letra e um vetor),
- * nao texto tipografado. Ate os vetores chegarem, renderizamos em Inter
- * Bold com espacamento aberto, que e a aproximacao mais proxima.
+ * PENDENTE: o wordmark do Figma e lettering vetorial desenhado, e o kit
+ * so o traz fundido ao simbolo (em "marca regular"), sem versao isolada
+ * e sem versao branca. Ate ela chegar, Inter Bold com espacamento aberto
+ * e a aproximacao mais proxima.
  */
 export function AdamWordmark({ fontSize }: { fontSize: number }) {
   return (
@@ -51,5 +48,3 @@ export function AdamWordmark({ fontSize }: { fontSize: number }) {
     </Text>
   )
 }
-
-export const brandType = type
