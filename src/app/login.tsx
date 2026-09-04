@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { router } from 'expo-router'
+import { useCallback, useState } from 'react'
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -9,12 +11,52 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { AdamSymbol, AdamWordmark } from '@/components/brand/adam-mark'
+import { supabase, supabaseConfigurado } from '@/lib/supabase'
 import { color, onDark, radius, space, target, type } from '@/theme/tokens'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
+  const [entrando, setEntrando] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
+
+  const podeEntrar = email.trim().length > 0 && senha.length > 0 && !entrando
+
+  const entrar = useCallback(async () => {
+    setErro(null)
+
+    if (!supabaseConfigurado) {
+      setErro(
+        'Supabase ainda nao configurado. Preencha EXPO_PUBLIC_SUPABASE_URL e ' +
+          'EXPO_PUBLIC_SUPABASE_ANON_KEY no arquivo .env e reinicie o servidor.',
+      )
+      return
+    }
+
+    setEntrando(true)
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: senha,
+      })
+      if (error) {
+        // A mensagem do Supabase vem em ingles e vaza detalhe de
+        // implementacao; traduzimos os casos que a coordenacao vai ver.
+        setErro(
+          error.message.toLowerCase().includes('invalid login')
+            ? 'E-mail ou senha incorretos.'
+            : 'Nao foi possivel entrar. Verifique sua conexao e tente de novo.',
+        )
+        return
+      }
+      router.replace('/home')
+    } catch {
+      setErro('Nao foi possivel entrar. Verifique sua conexao e tente de novo.')
+    } finally {
+      setEntrando(false)
+    }
+  }, [email, senha])
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -39,6 +81,7 @@ export default function Login() {
             autoComplete="email"
             keyboardType="email-address"
             inputMode="email"
+            returnKeyType="next"
           />
         </View>
 
@@ -53,6 +96,8 @@ export default function Login() {
               autoComplete="current-password"
               placeholder="••••••••••"
               placeholderTextColor={color.faint}
+              returnKeyType="go"
+              onSubmitEditing={entrar}
             />
             <Pressable
               onPress={() => setMostrarSenha((v) => !v)}
@@ -66,10 +111,23 @@ export default function Login() {
         </View>
 
         <Pressable
-          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-          accessibilityRole="button">
-          <Text style={styles.buttonLabel}>Entrar</Text>
+          onPress={entrar}
+          disabled={!podeEntrar}
+          style={({ pressed }) => [
+            styles.button,
+            pressed && styles.buttonPressed,
+            !podeEntrar && styles.buttonDisabled,
+          ]}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !podeEntrar, busy: entrando }}>
+          {entrando ? (
+            <ActivityIndicator color={color.text} />
+          ) : (
+            <Text style={styles.buttonLabel}>Entrar</Text>
+          )}
         </Pressable>
+
+        {erro !== null ? <Text style={styles.erro}>{erro}</Text> : null}
 
         <Pressable hitSlop={space.sm} accessibilityRole="button">
           <Text style={styles.link}>Esqueci minha senha</Text>
@@ -142,6 +200,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonPressed: { opacity: 0.85 },
+  buttonDisabled: { opacity: 0.4 },
+  erro: {
+    ...type.small,
+    fontFamily: 'Inter_400Regular',
+    color: color.danger,
+    textAlign: 'center',
+  },
   buttonLabel: {
     ...type.body,
     fontFamily: 'Inter_600SemiBold',
