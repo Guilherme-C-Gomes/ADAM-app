@@ -1,12 +1,16 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Card } from '@/components/ui'
+import { SkeletonCard } from '@/components/ui/skeleton'
+import { useCarregamento } from '@/hooks/use-carregamento'
 import { LIMITE_BAIXA_FREQUENCIA, participantes } from '@/data/mock'
-import { color, onDark, radius, space, target, type } from '@/theme/tokens'
+import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
 export default function PerfilParticipante() {
+  const carregando = useCarregamento(450)
   const { id } = useLocalSearchParams<{ id: string }>()
   const p = participantes.find((x) => x.id === id)
 
@@ -57,6 +61,15 @@ export default function PerfilParticipante() {
           </Text>
         </View>
 
+        {carregando ? (
+          <>
+            <SkeletonCard altura={208} />
+            <SkeletonCard altura={200} />
+            <SkeletonCard altura={100} />
+          </>
+        ) : (
+          <>
+        <Animated.View entering={FadeInDown.duration(motion.medium)}>
         <Card>
           <View style={st.linhaTopo}>
             <Text style={st.cardTitulo}>Frequência</Text>
@@ -93,7 +106,9 @@ export default function PerfilParticipante() {
               : 'Dentro do esperado para o período'}
           </Text>
         </Card>
+        </Animated.View>
 
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(60)}>
         <Card style={st.cardLista}>
           <View style={st.linhaTopo}>
             <Text style={st.cardTitulo}>Cadastro</Text>
@@ -120,11 +135,16 @@ export default function PerfilParticipante() {
             </View>
           ))}
         </Card>
+        </Animated.View>
 
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
         <Card>
           <Text style={st.cardTitulo}>Observações da equipe</Text>
           <Text style={st.legenda}>{p.observacao}</Text>
         </Card>
+        </Animated.View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   )

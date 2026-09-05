@@ -1,16 +1,20 @@
 import { useMemo, useState } from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Barra, Card, Chip, Hero, Overline } from '@/components/ui'
+import { SkeletonCard } from '@/components/ui/skeleton'
+import { useCarregamento } from '@/hooks/use-carregamento'
 import { participantes, resumo, type Unidade } from '@/data/mock'
-import { color, onDark, radius, space, type } from '@/theme/tokens'
+import { color, motion, onDark, radius, space, type } from '@/theme/tokens'
 
 type FiltroUnidade = 'Todos' | Unidade
 const FILTROS: FiltroUnidade[] = ['Todos', 'Atibaia', 'Caiana']
 
 export default function Home() {
   const [unidade, setUnidade] = useState<FiltroUnidade>('Todos')
+  const carregando = useCarregamento()
 
   const ativos = useMemo(
     () => (unidade === 'Todos' ? resumo.ativos : resumo.porUnidade[unidade]),
@@ -45,6 +49,19 @@ export default function Home() {
 
         <Overline>Resumo do período</Overline>
 
+        {carregando ? (
+          <>
+            <SkeletonCard altura={140} />
+            <SkeletonCard altura={148} />
+            <SkeletonCard altura={80} />
+            <View style={st.carregando}>
+              <ActivityIndicator size="small" color={color.primaryLt} />
+              <Text style={st.carregandoRotulo}>Atualizando dados da coordenação</Text>
+            </View>
+          </>
+        ) : (
+          <>
+        <Animated.View entering={FadeInDown.duration(motion.medium)}>
         <Card>
           <Text style={st.cardTitulo}>Participantes ativos</Text>
           <View style={st.valorLinha}>
@@ -63,7 +80,9 @@ export default function Home() {
             </Text>
           ) : null}
         </Card>
+        </Animated.View>
 
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(60)}>
         <Card>
           <Text style={st.cardTitulo}>Presença desta semana</Text>
           <View style={st.valorLinha}>
@@ -80,7 +99,9 @@ export default function Home() {
           <Text style={st.legenda}>Meta de {resumo.metaPresenca}% para o mês</Text>
           <Text style={st.legenda}>{resumo.proximoEncontro}</Text>
         </Card>
+        </Animated.View>
 
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
         <Card style={st.cardAlerta}>
           <View style={st.acento} />
           <Text style={st.cardTitulo}>{emQueda} em queda de frequência</Text>
@@ -88,6 +109,9 @@ export default function Home() {
             Abaixo de 60% de presença — vale contato da equipe
           </Text>
         </Card>
+        </Animated.View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   )
@@ -114,6 +138,18 @@ const st = StyleSheet.create({
     backgroundColor: color.surface2,
   },
   seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.text },
+  carregando: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.sm,
+    paddingTop: space.sm,
+  },
+  carregandoRotulo: {
+    ...type.small,
+    fontFamily: 'Inter_400Regular',
+    color: color.muted,
+  },
   cardAlerta: { paddingLeft: space.lg, overflow: 'hidden' },
   acento: {
     position: 'absolute',

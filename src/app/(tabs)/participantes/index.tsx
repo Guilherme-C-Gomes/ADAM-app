@@ -5,6 +5,8 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Chip, Hero } from '@/components/ui'
+import { SkeletonLinha } from '@/components/ui/skeleton'
+import { useCarregamento } from '@/hooks/use-carregamento'
 import {
   LIMITE_BAIXA_FREQUENCIA,
   participantes,
@@ -52,6 +54,7 @@ const ItemParticipante = memo(function ItemParticipante({
 })
 
 export default function Participantes() {
+  const carregando = useCarregamento()
   const [filtro, setFiltro] = useState<Filtro>('Todos')
   const [busca, setBusca] = useState('')
 
@@ -105,6 +108,15 @@ export default function Participantes() {
         </View>
       </View>
 
+      {carregando ? (
+        <View style={st.lista}>
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <View key={i} style={i > 0 && st.separador}>
+              <SkeletonLinha />
+            </View>
+          ))}
+        </View>
+      ) : (
       <FlashList
         data={lista}
         renderItem={renderItem}
@@ -114,6 +126,7 @@ export default function Participantes() {
         ListEmptyComponent={Vazio}
         showsVerticalScrollIndicator={false}
       />
+      )}
     </SafeAreaView>
   )
 }

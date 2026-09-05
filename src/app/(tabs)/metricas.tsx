@@ -1,9 +1,12 @@
 import { router } from 'expo-router'
 import { useMemo, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Barra, Card, Chip, Hero, Overline } from '@/components/ui'
+import { SkeletonCard } from '@/components/ui/skeleton'
+import { useCarregamento } from '@/hooks/use-carregamento'
 import {
   LIMITE_BAIXA_FREQUENCIA,
   mediaMensal,
@@ -11,13 +14,14 @@ import {
   presencaPorDia,
   resumo,
 } from '@/data/mock'
-import { color, onDark, radius, space, type } from '@/theme/tokens'
+import { color, motion, onDark, radius, space, type } from '@/theme/tokens'
 
 const PERIODOS = ['Mês', 'Trimestre', 'Ano'] as const
 const ALTURA_GRAFICO = 96
 
 export default function Metricas() {
   const [periodo, setPeriodo] = useState<(typeof PERIODOS)[number]>('Trimestre')
+  const carregando = useCarregamento()
 
   const media = Math.round(
     mediaMensal.reduce((acc, m) => acc + m.valor, 0) / mediaMensal.length,
@@ -47,6 +51,15 @@ export default function Metricas() {
           ))}
         </View>
 
+        {carregando ? (
+          <>
+            <SkeletonCard altura={256} />
+            <SkeletonCard altura={104} />
+            <SkeletonCard altura={104} />
+          </>
+        ) : (
+          <>
+        <Animated.View entering={FadeInDown.duration(motion.medium)}>
         <Card>
           <Text style={st.cardTitulo}>Presença média</Text>
           <View style={st.valorLinha}>
@@ -81,7 +94,9 @@ export default function Metricas() {
             ))}
           </View>
         </Card>
+        </Animated.View>
 
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(60)}>
         <Card>
           <Text style={st.cardTitulo}>Presença por dia de encontro</Text>
           {presencaPorDia.map((d) => (
@@ -94,7 +109,9 @@ export default function Metricas() {
             </View>
           ))}
         </Card>
+        </Animated.View>
 
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
         <Overline>Atenção</Overline>
 
         <Card>
@@ -118,6 +135,9 @@ export default function Metricas() {
             </Pressable>
           ))}
         </Card>
+        </Animated.View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   )

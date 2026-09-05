@@ -1,16 +1,20 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Card, Chip, Hero, Overline } from '@/components/ui'
+import { SkeletonCard } from '@/components/ui/skeleton'
+import { useCarregamento } from '@/hooks/use-carregamento'
 import { ajustes } from '@/data/mock'
-import { color, onDark, radius, space, target, type } from '@/theme/tokens'
+import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
 const RITMOS = ['A cada hora', 'Diário', 'Manual'] as const
 
 export default function Ajustes() {
   const [ritmo, setRitmo] = useState<(typeof RITMOS)[number]>('A cada hora')
+  const carregando = useCarregamento()
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
@@ -21,6 +25,15 @@ export default function Ajustes() {
         showsVerticalScrollIndicator={false}>
         <Overline>Fonte de dados</Overline>
 
+        {carregando ? (
+          <>
+            <SkeletonCard altura={152} />
+            <SkeletonCard altura={104} />
+            <SkeletonCard altura={220} />
+          </>
+        ) : (
+          <>
+        <Animated.View entering={FadeInDown.duration(motion.medium)}>
         <Card>
           <View style={st.linhaTopo}>
             <Text style={st.cardTitulo}>Formulário de presença</Text>
@@ -38,7 +51,9 @@ export default function Ajustes() {
             <Text style={st.botaoRotulo}>Sincronizar agora</Text>
           </Pressable>
         </Card>
+        </Animated.View>
 
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(60)}>
         <Card>
           <Text style={st.cardTitulo}>Ritmo de sincronização</Text>
           <View style={st.filtros}>
@@ -47,7 +62,9 @@ export default function Ajustes() {
             ))}
           </View>
         </Card>
+        </Animated.View>
 
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
         <Overline>Acesso e dados</Overline>
 
         <Card style={st.cardLista}>
@@ -67,6 +84,9 @@ export default function Ajustes() {
           accessibilityRole="button">
           <Text style={st.botaoSairRotulo}>Sair da conta</Text>
         </Pressable>
+        </Animated.View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   )
