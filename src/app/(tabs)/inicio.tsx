@@ -1,5 +1,13 @@
+import { router } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -102,13 +110,27 @@ export default function Home() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
-        <Card style={st.cardAlerta}>
-          <View style={st.acento} />
-          <Text style={st.cardTitulo}>{emQueda} em queda de frequência</Text>
-          <Text style={st.legenda}>
-            Abaixo de 60% de presença — vale contato da equipe
-          </Text>
-        </Card>
+        <Pressable
+          onPress={() =>
+            router.push({
+              pathname: '/participantes/index',
+              params: { filtro: 'baixa' },
+            })
+          }
+          style={({ pressed }) => pressed && st.pressed}
+          accessibilityRole="button"
+          accessibilityLabel={`${emQueda} participantes em queda de frequência, ver lista`}>
+          <Card style={st.cardAlerta}>
+            <View style={st.acento} />
+            <View style={st.alertaTexto}>
+              <Text style={st.cardTitulo}>{emQueda} em queda de frequência</Text>
+              <Text style={st.legenda}>
+                Abaixo de 60% de presença — vale contato da equipe
+              </Text>
+            </View>
+            <Text style={st.chevron}>›</Text>
+          </Card>
+        </Pressable>
         </Animated.View>
           </>
         )}
@@ -150,7 +172,16 @@ const st = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     color: color.muted,
   },
-  cardAlerta: { paddingLeft: space.lg, overflow: 'hidden' },
+  cardAlerta: {
+    paddingLeft: space.lg,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+  },
+  alertaTexto: { flex: 1, gap: space.xs },
+  chevron: { ...type.body, color: color.faint },
+  pressed: { opacity: 0.7 },
   acento: {
     position: 'absolute',
     left: 0,

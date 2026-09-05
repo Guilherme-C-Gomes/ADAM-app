@@ -1,6 +1,6 @@
 import { FlashList } from '@shopify/flash-list'
-import { router } from 'expo-router'
-import { memo, useCallback, useMemo, useState } from 'react'
+import { router, useLocalSearchParams } from 'expo-router'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -56,7 +56,20 @@ const ItemParticipante = memo(function ItemParticipante({
 
 export default function Participantes() {
   const carregando = useCarregamento()
-  const [filtro, setFiltro] = useState<Filtro>('Todos')
+  const { filtro: filtroParam } = useLocalSearchParams<{ filtro?: string }>()
+  const [filtro, setFiltro] = useState<Filtro>(
+    filtroParam === 'baixa' ? 'Baixa freq.' : 'Todos',
+  )
+
+  /**
+   * A Home entra aqui pedindo a lista de quem esta em queda. O efeito
+   * reage ao parametro em vez de so ler o valor inicial, senao voltar a
+   * aba com um pedido novo nao trocaria o filtro — a tela ja esta
+   * montada.
+   */
+  useEffect(() => {
+    if (filtroParam === 'baixa') setFiltro('Baixa freq.')
+  }, [filtroParam])
   const [busca, setBusca] = useState('')
 
   const lista = useMemo(() => {
