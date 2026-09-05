@@ -1,10 +1,11 @@
 import { router } from 'expo-router'
-import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useCallback, useState } from 'react'
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Card, Chip, Hero, Overline } from '@/components/ui'
+import { ErroSincronizacao } from '@/components/ui/estados'
 import { SkeletonCard } from '@/components/ui/skeleton'
 import { useCarregamento } from '@/hooks/use-carregamento'
 import { ajustes } from '@/data/mock'
@@ -15,6 +16,20 @@ const RITMOS = ['A cada hora', 'Diário', 'Manual'] as const
 export default function Ajustes() {
   const [ritmo, setRitmo] = useState<(typeof RITMOS)[number]>('A cada hora')
   const carregando = useCarregamento()
+  const [sincronizando, setSincronizando] = useState(false)
+  const [falhou, setFalhou] = useState(false)
+
+  /**
+   * No prototipo a sincronizacao alterna entre sucesso e falha a cada
+   * toque, para que o estado de erro da tela 09 seja alcancavel na
+   * demonstracao sem precisar derrubar a rede.
+   */
+  const sincronizar = useCallback(async () => {
+    setSincronizando(true)
+    await new Promise((r) => setTimeout(r, motion.slow * 2))
+    setSincronizando(false)
+    setFalhou((antes) => !antes)
+  }, [])
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
@@ -37,21 +52,47 @@ export default function Ajustes() {
         <Card>
           <View style={st.linhaTopo}>
             <Text style={st.cardTitulo}>Formulário de presença</Text>
-            <View style={st.status}>
-              <Text style={st.statusRotulo}>Conectado</Text>
+            <View style={[st.status, falhou && st.statusFalha]}>
+              <Text style={[st.statusRotulo, falhou && st.statusRotuloFalha]}>
+                {falhou ? 'Sem conexão' : 'Conectado'}
+              </Text>
             </View>
           </View>
           <Text style={st.nome}>{ajustes.fonte}</Text>
           <Text style={st.legenda}>{ajustes.fonteMeta}</Text>
-          <Text style={st.legenda}>{ajustes.ultimaSync}</Text>
+          <Text style={st.legenda}>
+            {falhou ? 'Última tentativa falhou' : ajustes.ultimaSync}
+          </Text>
 
           <Pressable
-            style={({ pressed }) => [st.botao, pressed && st.pressed]}
-            accessibilityRole="button">
-            <Text style={st.botaoRotulo}>Sincronizar agora</Text>
+            onPress={sincronizar}
+            disabled={sincronizando}
+            style={({ pressed }) => [
+              st.botao,
+              pressed && st.pressed,
+              sincronizando && st.pressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityState={{ busy: sincronizando }}>
+            {sincronizando ? (
+              <ActivityIndicator size="small" color={color.text} />
+            ) : (
+              <Text style={st.botaoRotulo}>Sincronizar agora</Text>
+            )}
           </Pressable>
         </Card>
         </Animated.View>
+
+        {falhou ? (
+          <ErroSincronizacao
+            detalhe="A fonte não respondeu. Os números abaixo são da última sincronização bem-sucedida."
+            valorAntigo="74"
+            unidadeAntiga="participantes ativos"
+            idadeDoDado="Registrado há 3 horas"
+            onTentar={sincronizar}
+            onReconectar={sincronizar}
+          />
+        ) : null}
 
         <Animated.View entering={FadeInDown.duration(motion.medium).delay(60)}>
         <Card>
@@ -115,6 +156,8 @@ const st = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     color: color.success,
   },
+  statusFalha: { backgroundColor: 'rgba(255, 122, 181, 0.14)' },
+  statusRotuloFalha: { color: color.danger },
   filtros: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
 
   botao: {

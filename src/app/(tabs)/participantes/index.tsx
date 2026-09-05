@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Chip, Hero } from '@/components/ui'
+import { EstadoVazio } from '@/components/ui/estados'
 import { SkeletonLinha } from '@/components/ui/skeleton'
 import { useCarregamento } from '@/hooks/use-carregamento'
 import {
@@ -137,10 +138,14 @@ function Separador() {
 
 function Vazio() {
   return (
-    <View style={st.vazio}>
-      <Text style={st.vazioTitulo}>Nenhum participante</Text>
-      <Text style={st.vazioTexto}>Ajuste a busca ou troque o filtro.</Text>
-    </View>
+    <EstadoVazio
+      titulo="Nenhum participante"
+      linhas={[
+        'Nada corresponde à busca e ao filtro atuais.',
+        'Limpe o campo ou volte para "Todos" para ver a lista completa.',
+      ]}
+      dica="A lista vem do formulário de presença sincronizado em Ajustes."
+    />
   )
 }
 
@@ -190,7 +195,4 @@ const st = StyleSheet.create({
   corOk: { color: color.success },
   corBaixa: { color: color.warn },
 
-  vazio: { alignItems: 'center', paddingTop: space.xxxl, gap: space.sm },
-  vazioTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
-  vazioTexto: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
 })
