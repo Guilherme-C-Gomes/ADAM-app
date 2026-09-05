@@ -1,6 +1,7 @@
 import { FlashList } from '@shopify/flash-list'
+import { router } from 'expo-router'
 import { memo, useCallback, useMemo, useState } from 'react'
-import { StyleSheet, Text, TextInput, View } from 'react-native'
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Chip, Hero } from '@/components/ui'
@@ -21,12 +22,18 @@ const FILTROS: Filtro[] = ['Todos', 'Atibaia', 'Caiana', 'Baixa freq.']
  */
 const ItemParticipante = memo(function ItemParticipante({
   item,
+  onPress,
 }: {
   item: Participante
+  onPress: (id: string) => void
 }) {
   const baixa = item.frequencia < LIMITE_BAIXA_FREQUENCIA
   return (
-    <View style={st.item}>
+    <Pressable
+      onPress={() => onPress(item.id)}
+      style={({ pressed }) => [st.item, pressed && st.itemPressed]}
+      accessibilityRole="button"
+      accessibilityLabel={`${item.nome}, ${item.frequencia}% de presença`}>
       <Avatar iniciais={item.iniciais} />
       <View style={st.itemTexto}>
         <Text style={st.itemNome}>{item.nome}</Text>
@@ -39,7 +46,8 @@ const ItemParticipante = memo(function ItemParticipante({
           {item.frequencia}%
         </Text>
       </View>
-    </View>
+      <Text style={st.chevron}>›</Text>
+    </Pressable>
   )
 })
 
@@ -61,9 +69,15 @@ export default function Participantes() {
 
   // Referencia estavel: uma funcao nova a cada render invalidaria a
   // memoizacao de todos os itens.
+  const abrirPerfil = useCallback((id: string) => {
+    router.push({ pathname: '/participantes/[id]', params: { id } })
+  }, [])
+
   const renderItem = useCallback(
-    ({ item }: { item: Participante }) => <ItemParticipante item={item} />,
-    [],
+    ({ item }: { item: Participante }) => (
+      <ItemParticipante item={item} onPress={abrirPerfil} />
+    ),
+    [abrirPerfil],
   )
   const keyExtractor = useCallback((item: Participante) => item.id, [])
 
@@ -146,6 +160,8 @@ const st = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.border,
   },
+  itemPressed: { opacity: 0.7 },
+  chevron: { ...type.body, color: color.faint, marginLeft: -space.xs },
   itemTexto: { flex: 1, gap: 2 },
   itemNome: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   itemMeta: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },

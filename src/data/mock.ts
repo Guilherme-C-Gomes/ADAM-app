@@ -14,21 +14,27 @@ export type Participante = {
   idade: number
   unidade: Unidade
   frequencia: number
+  /** Presenca das ultimas 8 semanas, da mais antiga para a mais recente. */
+  semanas: boolean[]
+  desde: string
+  responsavel: string
+  turma: string
+  observacao: string
 }
 
 export const participantes: Participante[] = [
-  { id: '1', nome: 'Ana Beatriz L.', iniciais: 'AB', idade: 12, unidade: 'Atibaia', frequencia: 92 },
-  { id: '2', nome: 'Bruno Carvalho', iniciais: 'BC', idade: 14, unidade: 'Caiana', frequencia: 47 },
-  { id: '3', nome: 'Carla Menezes', iniciais: 'CM', idade: 11, unidade: 'Atibaia', frequencia: 38 },
-  { id: '4', nome: 'Diego Fernandes', iniciais: 'DF', idade: 13, unidade: 'Caiana', frequencia: 52 },
-  { id: '5', nome: 'Eduarda Pires', iniciais: 'EP', idade: 15, unidade: 'Atibaia', frequencia: 88 },
-  { id: '6', nome: 'Felipe Ramos', iniciais: 'FR', idade: 12, unidade: 'Caiana', frequencia: 95 },
-  { id: '7', nome: 'Gabriela Souza', iniciais: 'GS', idade: 10, unidade: 'Atibaia', frequencia: 79 },
-  { id: '8', nome: 'Henrique Alves', iniciais: 'HA', idade: 16, unidade: 'Caiana', frequencia: 41 },
-  { id: '9', nome: 'Isabela Nunes', iniciais: 'IN', idade: 13, unidade: 'Atibaia', frequencia: 84 },
-  { id: '10', nome: 'João Pedro M.', iniciais: 'JP', idade: 11, unidade: 'Caiana', frequencia: 90 },
-  { id: '11', nome: 'Larissa Costa', iniciais: 'LC', idade: 14, unidade: 'Atibaia', frequencia: 67 },
-  { id: '12', nome: 'Matheus Rocha', iniciais: 'MR', idade: 12, unidade: 'Caiana', frequencia: 73 },
+  { id: '1', nome: 'Ana Beatriz L.', iniciais: 'AB', idade: 12, unidade: 'Atibaia', frequencia: 92, semanas: [true, true, true, true, true, true, false, true], desde: 'março de 2024', responsavel: 'Responsável cadastrado', turma: 'Turma A · terça', observacao: 'Participa bem das atividades em grupo.' },
+  { id: '2', nome: 'Bruno Carvalho', iniciais: 'BC', idade: 14, unidade: 'Caiana', frequencia: 47, semanas: [true, true, true, true, false, false, false, false], desde: 'agosto de 2023', responsavel: 'Responsável cadastrado', turma: 'Turma B · quinta', observacao: 'Faltou as últimas semanas sem aviso. Contato pendente.' },
+  { id: '3', nome: 'Carla Menezes', iniciais: 'CM', idade: 11, unidade: 'Atibaia', frequencia: 38, semanas: [true, true, true, false, false, false, false, false], desde: 'janeiro de 2025', responsavel: 'Cadastro pendente', turma: 'Turma A · terça', observacao: 'Mudou de endereço; transporte é o principal obstáculo.' },
+  { id: '4', nome: 'Diego Fernandes', iniciais: 'DF', idade: 13, unidade: 'Caiana', frequencia: 52, semanas: [true, true, true, true, false, false, false, false], desde: 'maio de 2024', responsavel: 'Responsável cadastrado', turma: 'Turma B · quinta', observacao: 'Retomou frequência após conversa com a equipe.' },
+  { id: '5', nome: 'Eduarda Pires', iniciais: 'EP', idade: 15, unidade: 'Atibaia', frequencia: 88, semanas: [true, true, true, true, true, true, false, true], desde: 'outubro de 2023', responsavel: 'Responsável cadastrado', turma: 'Turma A · terça', observacao: 'Ajuda na organização dos encontros.' },
+  { id: '6', nome: 'Felipe Ramos', iniciais: 'FR', idade: 12, unidade: 'Caiana', frequencia: 95, semanas: [true, true, true, true, true, true, true, true], desde: 'fevereiro de 2025', responsavel: 'Responsável cadastrado', turma: 'Turma B · quinta', observacao: 'Frequência estável desde o início.' },
+  { id: '7', nome: 'Gabriela Souza', iniciais: 'GS', idade: 10, unidade: 'Atibaia', frequencia: 79, semanas: [true, true, true, true, true, false, false, true], desde: 'julho de 2024', responsavel: 'Cadastro pendente', turma: 'Turma A · terça', observacao: 'Demonstra interesse nas oficinas de leitura.' },
+  { id: '8', nome: 'Henrique Alves', iniciais: 'HA', idade: 16, unidade: 'Caiana', frequencia: 41, semanas: [true, true, true, false, false, false, false, false], desde: 'abril de 2023', responsavel: 'Responsável cadastrado', turma: 'Turma B · quinta', observacao: 'Conflito de horário com atividade escolar.' },
+  { id: '9', nome: 'Isabela Nunes', iniciais: 'IN', idade: 13, unidade: 'Atibaia', frequencia: 84, semanas: [true, true, true, true, true, true, false, true], desde: 'setembro de 2024', responsavel: 'Responsável cadastrado', turma: 'Turma A · terça', observacao: 'Boa integração com o grupo novo.' },
+  { id: '10', nome: 'João Pedro M.', iniciais: 'JP', idade: 11, unidade: 'Caiana', frequencia: 90, semanas: [true, true, true, true, true, true, false, true], desde: 'novembro de 2023', responsavel: 'Responsável cadastrado', turma: 'Turma B · quinta', observacao: 'Frequência exemplar no trimestre.' },
+  { id: '11', nome: 'Larissa Costa', iniciais: 'LC', idade: 14, unidade: 'Atibaia', frequencia: 67, semanas: [true, true, true, true, false, false, false, true], desde: 'junho de 2024', responsavel: 'Responsável cadastrado', turma: 'Turma A · terça', observacao: 'Oscilou em agosto, recuperou em setembro.' },
+  { id: '12', nome: 'Matheus Rocha', iniciais: 'MR', idade: 12, unidade: 'Caiana', frequencia: 73, semanas: [true, true, true, true, true, false, false, true], desde: 'dezembro de 2024', responsavel: 'Cadastro pendente', turma: 'Turma B · quinta', observacao: 'Acompanhamento próximo recomendado.' },
 ]
 
 /** Abaixo disso, o participante entra na lista de atencao. */

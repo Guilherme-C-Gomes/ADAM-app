@@ -1,5 +1,6 @@
+import { router } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Barra, Card, Chip, Hero, Overline } from '@/components/ui'
@@ -99,7 +100,13 @@ export default function Metricas() {
         <Card>
           <Text style={st.cardTitulo}>Participantes em risco</Text>
           {emRisco.map((p) => (
-            <View key={p.id} style={st.riscoLinha}>
+            <Pressable
+              key={p.id}
+              onPress={() =>
+                router.push({ pathname: '/participantes/[id]', params: { id: p.id } })
+              }
+              style={({ pressed }) => [st.riscoLinha, pressed && st.pressed]}
+              accessibilityRole="button">
               <Avatar iniciais={p.iniciais} size={34} />
               <View style={st.riscoTexto}>
                 <Text style={st.riscoNome}>{p.nome}</Text>
@@ -107,7 +114,8 @@ export default function Metricas() {
                   {p.unidade} · {p.frequencia}% de presença
                 </Text>
               </View>
-            </View>
+              <Text style={st.chevron}>›</Text>
+            </Pressable>
           ))}
         </Card>
       </ScrollView>
@@ -166,5 +174,7 @@ const st = StyleSheet.create({
 
   riscoLinha: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   riscoTexto: { flex: 1, gap: 2 },
+  pressed: { opacity: 0.7 },
+  chevron: { ...type.body, color: color.faint },
   riscoNome: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
 })
