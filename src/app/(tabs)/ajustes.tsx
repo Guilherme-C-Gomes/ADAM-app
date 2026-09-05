@@ -1,5 +1,5 @@
 import { router } from 'expo-router'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -24,9 +24,18 @@ export default function Ajustes() {
    * toque, para que o estado de erro da tela 09 seja alcancavel na
    * demonstracao sem precisar derrubar a rede.
    */
+  const montado = useRef(true)
+  useEffect(() => {
+    montado.current = true
+    return () => {
+      montado.current = false
+    }
+  }, [])
+
   const sincronizar = useCallback(async () => {
     setSincronizando(true)
     await new Promise((r) => setTimeout(r, motion.slow * 2))
+    if (!montado.current) return
     setSincronizando(false)
     setFalhou((antes) => !antes)
   }, [])

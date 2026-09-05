@@ -32,15 +32,17 @@ export function Skeleton({
   const brilho = useSharedValue(0)
 
   useEffect(() => {
-    brilho.value = withRepeat(
-      withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.quad) }),
-      -1,
-      false,
+    brilho.set(
+      withRepeat(
+        withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.quad) }),
+        -1,
+        false,
+      ),
     )
   }, [brilho])
 
   const varreduraStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: `${-100 + brilho.value * 200}%` }],
+    transform: [{ translateX: `${-100 + brilho.get() * 200}%` }],
   }))
 
   return (

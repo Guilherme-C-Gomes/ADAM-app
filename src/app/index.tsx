@@ -41,40 +41,42 @@ export default function Splash() {
   const progress = useSharedValue(0)
 
   useEffect(() => {
-    symbol.value = withDelay(motion.instant, withTiming(1, enter))
-    wordmark.value = withDelay(motion.slow, withTiming(1, enter))
-    tagline.value = withDelay(motion.slow + motion.medium, withTiming(1, enter))
-    progress.value = withTiming(1, {
-      duration: PROGRESS_DURATION,
-      easing: Easing.inOut(Easing.quad),
-    })
+    symbol.set(withDelay(motion.instant, withTiming(1, enter)))
+    wordmark.set(withDelay(motion.slow, withTiming(1, enter)))
+    tagline.set(withDelay(motion.slow + motion.medium, withTiming(1, enter)))
+    progress.set(
+      withTiming(1, {
+        duration: PROGRESS_DURATION,
+        easing: Easing.inOut(Easing.quad),
+      }),
+    )
 
     const id = setTimeout(() => router.replace('/login'), EXIT_DELAY)
     return () => clearTimeout(id)
   }, [symbol, wordmark, tagline, progress])
 
   const symbolStyle = useAnimatedStyle(() => ({
-    opacity: symbol.value,
-    transform: [{ scale: 0.82 + symbol.value * 0.18 }],
+    opacity: symbol.get(),
+    transform: [{ scale: 0.82 + symbol.get() * 0.18 }],
   }))
 
   const wordmarkStyle = useAnimatedStyle(() => ({
-    opacity: wordmark.value,
+    opacity: wordmark.get(),
     // Entra deslizando a partir do simbolo, como no prototipo.
-    transform: [{ translateX: (1 - wordmark.value) * -16 }],
+    transform: [{ translateX: (1 - wordmark.get()) * -16 }],
   }))
 
   const taglineStyle = useAnimatedStyle(() => ({
-    opacity: tagline.value,
-    transform: [{ translateY: (1 - tagline.value) * 8 }],
+    opacity: tagline.get(),
+    transform: [{ translateY: (1 - tagline.get()) * 8 }],
   }))
 
   // translateX em vez de largura: largura reflowaria a cada quadro.
   const progressStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: -PROGRESS_WIDTH * (1 - progress.value) }],
+    transform: [{ translateX: -PROGRESS_WIDTH * (1 - progress.get()) }],
   }))
 
-  const footerStyle = useAnimatedStyle(() => ({ opacity: tagline.value }))
+  const footerStyle = useAnimatedStyle(() => ({ opacity: tagline.get() }))
 
   return (
     <View style={styles.screen}>

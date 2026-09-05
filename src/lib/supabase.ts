@@ -17,6 +17,23 @@ export const supabaseConfigurado =
   !supabaseUrl.includes('placeholder') &&
   supabaseAnonKey !== 'placeholder'
 
+/**
+ * ATENCAO ao religar a autenticacao.
+ *
+ * A sessao abaixo e gravada em AsyncStorage, que NAO e criptografado: o
+ * token fica legivel em texto puro no armazenamento do app. Para um
+ * painel que expoe nome, idade e frequencia de criancas e adolescentes,
+ * o token de sessao deve ir para `expo-secure-store`, que usa o Keychain
+ * no iOS e o Keystore no Android.
+ *
+ * Trocar o `storage` abaixo por um adaptador de SecureStore antes de
+ * colocar dados reais no app. Dois cuidados na troca: o SecureStore tem
+ * limite de 2KB por entrada, e a API e assincrona.
+ *
+ * Vale tambem ativar Row Level Security em toda tabela antes da primeira
+ * carga real — a chave anon abaixo vai embutida no app e e legivel por
+ * qualquer pessoa que o instale. Sem RLS, ela le o banco inteiro.
+ */
 export const supabase = createClient(
   supabaseUrl ?? 'https://placeholder.supabase.co',
   supabaseAnonKey ?? 'placeholder',

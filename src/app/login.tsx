@@ -1,5 +1,5 @@
 import { router } from 'expo-router'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Pressable,
@@ -30,10 +30,21 @@ export default function Login() {
    * O atraso curto preserva a sensacao de rede, entao o estado de
    * carregamento continua sendo exercitado durante as demos.
    */
+  // A espera abaixo termina depois que a tela pode ter saido; sem esta
+  // guarda, o replace dispararia uma navegacao fantasma.
+  const montado = useRef(true)
+  useEffect(() => {
+    montado.current = true
+    return () => {
+      montado.current = false
+    }
+  }, [])
+
   const entrar = useCallback(async () => {
     setErro(null)
     setEntrando(true)
     await new Promise((r) => setTimeout(r, motion.slow))
+    if (!montado.current) return
     setEntrando(false)
     router.replace('/inicio')
   }, [])

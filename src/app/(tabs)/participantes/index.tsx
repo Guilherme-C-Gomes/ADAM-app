@@ -1,6 +1,6 @@
 import { FlashList } from '@shopify/flash-list'
 import { router, useLocalSearchParams } from 'expo-router'
-import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -62,14 +62,19 @@ export default function Participantes() {
   )
 
   /**
-   * A Home entra aqui pedindo a lista de quem esta em queda. O efeito
-   * reage ao parametro em vez de so ler o valor inicial, senao voltar a
-   * aba com um pedido novo nao trocaria o filtro — a tela ja esta
-   * montada.
+   * A Home entra aqui pedindo a lista de quem esta em queda. A aba
+   * costuma ja estar montada, entao ler so o valor inicial ignoraria o
+   * pedido a partir da segunda vez.
+   *
+   * O ajuste acontece durante o render, comparando com o parametro
+   * anterior, e nao num efeito: setState dentro de efeito dispara um
+   * segundo render em cascata e o React desaconselha.
    */
-  useEffect(() => {
+  const [paramAnterior, setParamAnterior] = useState(filtroParam)
+  if (filtroParam !== paramAnterior) {
+    setParamAnterior(filtroParam)
     if (filtroParam === 'baixa') setFiltro('Baixa freq.')
-  }, [filtroParam])
+  }
   const [busca, setBusca] = useState('')
 
   const lista = useMemo(() => {
