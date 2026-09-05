@@ -11,8 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { AdamSymbol, AdamWordmark } from '@/components/brand/adam-mark'
-import { supabase, supabaseConfigurado } from '@/lib/supabase'
-import { color, onDark, radius, space, target, type } from '@/theme/tokens'
+import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -21,42 +20,23 @@ export default function Login() {
   const [entrando, setEntrando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
 
-  const podeEntrar = email.trim().length > 0 && senha.length > 0 && !entrando
+  const podeEntrar = !entrando
 
+  /**
+   * MODO PROTOTIPO: entra sem backend.
+   *
+   * A autenticacao real com Supabase ja esteve aqui e volta quando o
+   * projeto existir — basta trocar este corpo por signInWithPassword.
+   * O atraso curto preserva a sensacao de rede, entao o estado de
+   * carregamento continua sendo exercitado durante as demos.
+   */
   const entrar = useCallback(async () => {
     setErro(null)
-
-    if (!supabaseConfigurado) {
-      setErro(
-        'Supabase ainda nao configurado. Preencha EXPO_PUBLIC_SUPABASE_URL e ' +
-          'EXPO_PUBLIC_SUPABASE_ANON_KEY no arquivo .env e reinicie o servidor.',
-      )
-      return
-    }
-
     setEntrando(true)
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: senha,
-      })
-      if (error) {
-        // A mensagem do Supabase vem em ingles e vaza detalhe de
-        // implementacao; traduzimos os casos que a coordenacao vai ver.
-        setErro(
-          error.message.toLowerCase().includes('invalid login')
-            ? 'E-mail ou senha incorretos.'
-            : 'Nao foi possivel entrar. Verifique sua conexao e tente de novo.',
-        )
-        return
-      }
-      router.replace('/home')
-    } catch {
-      setErro('Nao foi possivel entrar. Verifique sua conexao e tente de novo.')
-    } finally {
-      setEntrando(false)
-    }
-  }, [email, senha])
+    await new Promise((r) => setTimeout(r, motion.slow))
+    setEntrando(false)
+    router.replace('/inicio')
+  }, [])
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -136,9 +116,9 @@ export default function Login() {
         <View style={styles.notice}>
           <Text style={styles.noticeIcon}>!</Text>
           <View style={styles.noticeText}>
-            <Text style={styles.noticeTitle}>Acesso restrito</Text>
+            <Text style={styles.noticeTitle}>Modo demonstração</Text>
             <Text style={styles.noticeBody}>
-              Somente coordenação autorizada
+              Entre com qualquer e-mail e senha para navegar
             </Text>
           </View>
         </View>
