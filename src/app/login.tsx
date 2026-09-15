@@ -120,7 +120,15 @@ export default function Login() {
 
         {erro !== null ? <Text style={styles.erro}>{erro}</Text> : null}
 
-        <Pressable hitSlop={space.sm} accessibilityRole="button">
+        {/*
+          A tela de recuperar senha ainda nao foi desenhada (secao 13 do
+          documento de estrutura). Ate ela existir, o link diz o que
+          fazer em vez de nao levar a lugar nenhum.
+        */}
+        <Pressable
+          onPress={() => setErro('Peça a redefinição para a coordenação: coordenacao@adam.org.br')}
+          hitSlop={space.sm}
+          accessibilityRole="button">
           <Text style={styles.link}>Esqueci minha senha</Text>
         </Pressable>
 

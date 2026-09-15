@@ -1,34 +1,28 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs'
+import { Tabs } from 'expo-router'
 
-import { color, onDark } from '@/theme/tokens'
+import { TabBar } from '@/components/ui/tab-bar'
+import { color } from '@/theme/tokens'
 
 /**
- * Tabs nativas: a barra e renderizada pelo UITabBar do iOS e pelo
- * componente equivalente do Android, entao ganhamos o blur, o haptic e
- * o comportamento de rolagem do sistema de graca.
+ * Os tres setores do app: Jogo, Secretaria e Estudo.
+ *
+ * A barra e desenhada por nos (`TabBar`), nao pelo sistema: o design
+ * pede uma pilula flutuante de raio 24 sobre o conteudo, e a UITabBar
+ * nativa nao faz isso. Ajustes fica fora da barra — chega pelo perfil
+ * no topo. `inicio` e rota daqui mas nao aparece na barra.
  */
 export default function TabsLayout() {
   return (
-    <NativeTabs
-      tintColor={onDark.text}
-      backgroundColor={color.surface}
-      iconColor={color.muted}>
-      <NativeTabs.Trigger name="inicio">
-        <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
-        <NativeTabs.Trigger.Label>Início</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="participantes">
-        <NativeTabs.Trigger.Icon sf="person.2.fill" md="group" />
-        <NativeTabs.Trigger.Label>Participantes</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="metricas">
-        <NativeTabs.Trigger.Icon sf="chart.bar.fill" md="bar_chart" />
-        <NativeTabs.Trigger.Label>Métricas</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="ajustes">
-        <NativeTabs.Trigger.Icon sf="gearshape.fill" md="settings" />
-        <NativeTabs.Trigger.Label>Ajustes</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <Tabs
+      tabBar={(props) => <TabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+        sceneStyle: { backgroundColor: color.bg },
+      }}>
+      <Tabs.Screen name="inicio" />
+      <Tabs.Screen name="jogo" />
+      <Tabs.Screen name="secretaria" />
+      <Tabs.Screen name="estudo" />
+    </Tabs>
   )
 }

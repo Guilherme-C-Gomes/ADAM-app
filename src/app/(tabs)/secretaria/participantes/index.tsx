@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Chip, Hero } from '@/components/ui'
 import { EstadoVazio } from '@/components/ui/estados'
-import { SkeletonLinha } from '@/components/ui/skeleton'
+import { Esqueleto, SkeletonLinha } from '@/components/ui/skeleton'
 import { useCarregamento } from '@/hooks/use-carregamento'
 import {
   LIMITE_BAIXA_FREQUENCIA,
@@ -18,6 +18,10 @@ import { color, radius, space, type } from '@/theme/tokens'
 
 type Filtro = 'Todos' | Unidade | 'Baixa freq.'
 const FILTROS: Filtro[] = ['Todos', 'Atibaia', 'Caiana', 'Baixa freq.']
+
+type Linha =
+  | { tipo: 'cabecalho'; rotulo: string }
+  | { tipo: 'item'; participante: Participante }
 
 /**
  * Item memoizado: sem isso, cada digito na busca re-renderiza a lista
@@ -46,7 +50,7 @@ const ItemParticipante = memo(function ItemParticipante({
       </View>
       <View style={[st.chipFreq, baixa ? st.chipFreqBaixa : st.chipFreqOk]}>
         <Text style={[st.chipFreqValor, baixa ? st.corBaixa : st.corOk]}>
-          {item.frequencia}%
+          {baixa ? '↓' : '↑'} {item.frequencia}%
         </Text>
       </View>
       <Text style={st.chevron}>›</Text>
@@ -76,8 +80,16 @@ export default function Participantes() {
     if (filtroParam === 'baixa') setFiltro('Baixa freq.')
   }
   const [busca, setBusca] = useState('')
+  // Sem toLocaleTimeString: depende de dados de localizacao que o
+  // Hermes do Expo Go nem sempre traz completos.
+  const horaAtual = useMemo(() => {
+    const agora = new Date()
+    const hh = String(agora.getHours()).padStart(2, '0')
+    const mm = String(agora.getMinutes()).padStart(2, '0')
+    return `${hh}:${mm}`
+  }, [])
 
-  const lista = useMemo(() => {
+  const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
     return participantes
       .filter((p) => {
@@ -89,25 +101,63 @@ export default function Participantes() {
       .sort((a, b) => a.frequencia - b.frequencia)
   }, [filtro, busca])
 
+  /**
+   * Fora do filtro "Baixa freq." (onde todo mundo ja esta em queda), a
+   * lista se agrupa como nas telas 05b/05c do Figma: quem precisa de
+   * atencao primeiro, depois quem esta com frequencia saudavel.
+   */
+  const lista = useMemo(() => {
+    if (filtro === 'Baixa freq.') {
+      return filtrados.map((p) => ({ tipo: 'item' as const, participante: p }))
+    }
+    const emQueda = filtrados.filter((p) => p.frequencia < LIMITE_BAIXA_FREQUENCIA)
+    const saudaveis = filtrados.filter((p) => p.frequencia >= LIMITE_BAIXA_FREQUENCIA)
+    const linhas: Linha[] = []
+    if (emQueda.length) {
+      linhas.push({ tipo: 'cabecalho', rotulo: `Precisam de atenção · ${emQueda.length}` })
+      linhas.push(...emQueda.map((p) => ({ tipo: 'item' as const, participante: p })))
+    }
+    if (saudaveis.length) {
+      linhas.push({ tipo: 'cabecalho', rotulo: 'Frequência saudável' })
+      linhas.push(...saudaveis.map((p) => ({ tipo: 'item' as const, participante: p })))
+    }
+    return linhas
+  }, [filtrados, filtro])
+
   // Referencia estavel: uma funcao nova a cada render invalidaria a
   // memoizacao de todos os itens.
   const abrirPerfil = useCallback((id: string) => {
-    router.push({ pathname: '/participantes/[id]', params: { id } })
+    router.push({ pathname: '/secretaria/participantes/[id]', params: { id } })
   }, [])
 
   const renderItem = useCallback(
-    ({ item }: { item: Participante }) => (
-      <ItemParticipante item={item} onPress={abrirPerfil} />
-    ),
+    ({ item }: { item: Linha }) =>
+      item.tipo === 'cabecalho' ? (
+        <Text style={st.cabecalhoGrupo}>{item.rotulo}</Text>
+      ) : (
+        <ItemParticipante item={item.participante} onPress={abrirPerfil} />
+      ),
     [abrirPerfil],
   )
-  const keyExtractor = useCallback((item: Participante) => item.id, [])
+  const keyExtractor = useCallback(
+    (item: Linha) => (item.tipo === 'cabecalho' ? item.rotulo : item.participante.id),
+    [],
+  )
+  const getItemType = useCallback((item: Linha) => item.tipo, [])
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
       <Hero
         titulo="Participantes"
-        subtitulo={`${lista.length} de ${participantes.length} no filtro atual`}
+        subtitulo={`${participantes.length} ativos · atualizado hoje, ${horaAtual}`}
+        acao={{
+          icone: '⟲',
+          rotulo: 'Limpar filtros',
+          onPress: () => {
+            setFiltro('Todos')
+            setBusca('')
+          },
+        }}
       />
 
       <View style={st.controles}>
@@ -129,17 +179,18 @@ export default function Participantes() {
 
       {carregando ? (
         <View style={st.lista}>
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <View key={i} style={i > 0 && st.separador}>
-              <SkeletonLinha />
-            </View>
-          ))}
+          <Esqueleto>
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <SkeletonLinha key={i} />
+            ))}
+          </Esqueleto>
         </View>
       ) : (
       <FlashList
         data={lista}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
+        getItemType={getItemType}
         contentContainerStyle={st.lista}
         ItemSeparatorComponent={Separador}
         ListEmptyComponent={Vazio}
@@ -162,7 +213,8 @@ function Vazio() {
         'Nada corresponde à busca e ao filtro atuais.',
         'Limpe o campo ou volte para "Todos" para ver a lista completa.',
       ]}
-      dica="A lista vem do formulário de presença sincronizado em Ajustes."
+      acao={{ rotulo: 'Cadastrar criança', onPress: () => router.push('/secretaria/participantes/cadastrar') }}
+      dica="A ficha leva 2 minutos"
     />
   )
 }
@@ -183,6 +235,13 @@ const st = StyleSheet.create({
   filtros: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
   lista: { padding: space.lg },
   separador: { height: space.md },
+  cabecalhoGrupo: {
+    ...type.caption,
+    fontFamily: 'Inter_600SemiBold',
+    color: color.faint,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
 
   item: {
     flexDirection: 'row',

@@ -1,7 +1,6 @@
 import { router } from 'expo-router'
 import { useMemo, useState } from 'react'
 import {
-  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,18 +10,72 @@ import {
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { Barra, Card, Chip, Hero, Overline } from '@/components/ui'
-import { SkeletonCard } from '@/components/ui/skeleton'
+import { Anel, Card, Chip, Contador, Overline } from '@/components/ui'
+import { BannerOffline } from '@/components/ui/estados'
+import { HeroSetor } from '@/components/ui/setor'
+import { Esqueleto, SkeletonCard, SkeletonChips, SkeletonFaixa } from '@/components/ui/skeleton'
 import { useCarregamento } from '@/hooks/use-carregamento'
-import { participantes, resumo, type Unidade } from '@/data/mock'
+import { useModoOffline } from '@/hooks/use-modo-offline'
+import {
+  contaAtual,
+  filaOffline,
+  participantes,
+  proximoTreino,
+  resumo,
+  ultimoTreino,
+  unidadesInfo,
+  type Unidade,
+} from '@/data/mock'
 import { color, motion, onDark, radius, space, type } from '@/theme/tokens'
 
 type FiltroUnidade = 'Todos' | Unidade
 const FILTROS: FiltroUnidade[] = ['Todos', 'Atibaia', 'Caiana']
 
+function saudacaoPorHorario() {
+  const hora = new Date().getHours()
+  if (hora < 12) return 'Bom dia'
+  if (hora < 18) return 'Boa tarde'
+  return 'Boa noite'
+}
+
+/**
+ * Formata a mao, sem Intl: o Hermes do Expo Go as vezes sobe sem os
+ * dados de localizacao completos e `Intl.DateTimeFormat('pt-BR', ...)`
+ * derruba o app com RangeError nesse caso.
+ */
+const DIAS_SEMANA = [
+  'Domingo',
+  'Segunda-feira',
+  'Terça-feira',
+  'Quarta-feira',
+  'Quinta-feira',
+  'Sexta-feira',
+  'Sábado',
+]
+const MESES = [
+  'janeiro',
+  'fevereiro',
+  'março',
+  'abril',
+  'maio',
+  'junho',
+  'julho',
+  'agosto',
+  'setembro',
+  'outubro',
+  'novembro',
+  'dezembro',
+]
+
+function dataDeHoje() {
+  const agora = new Date()
+  return `${DIAS_SEMANA[agora.getDay()]}, ${agora.getDate()} de ${MESES[agora.getMonth()]}`
+}
+
 export default function Home() {
   const [unidade, setUnidade] = useState<FiltroUnidade>('Todos')
   const carregando = useCarregamento()
+  const offline = useModoOffline()
 
   const ativos = useMemo(
     () => (unidade === 'Todos' ? resumo.ativos : resumo.porUnidade[unidade]),
@@ -34,86 +87,139 @@ export default function Home() {
     [],
   )
 
-  const pctVagas = Math.round((ativos / resumo.totalVagas) * 100)
-  const pctPresenca = Math.round((resumo.presencaSemana / resumo.presencaTotal) * 100)
+  const presentesUltimoTreino = Math.round(ativos * (ultimoTreino.pctPresenca / 100))
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
-      <Hero
-        titulo="Painel do mês"
-        subtitulo="Setembro · visão da coordenação"
-        perfil="Coordenação"
+      <HeroSetor
+        titulo={`${saudacaoPorHorario()}, ${contaAtual.primeiroNome}`}
+        subtitulo={dataDeHoje()}
       />
 
       <ScrollView
         contentContainerStyle={st.conteudo}
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}>
+        {carregando ? (
+          // Tela 03: o esqueleto repete a arvore da Home (chips, busca,
+          // tres cards) para a troca interpolar em vez de piscar.
+          <Esqueleto>
+            <SkeletonChips quantidade={3} />
+            <SkeletonFaixa />
+            <SkeletonCard altura={140} />
+            <SkeletonCard altura={148} />
+            <SkeletonCard altura={80} />
+          </Esqueleto>
+        ) : (
+          <>
         <View style={st.filtros}>
           {FILTROS.map((f) => (
             <Chip key={f} rotulo={f} ativo={unidade === f} onPress={() => setUnidade(f)} />
           ))}
         </View>
 
-        <Overline>Resumo do período</Overline>
+        <Pressable
+          onPress={() => router.push('/secretaria/participantes')}
+          accessibilityRole="button"
+          accessibilityLabel="Buscar participante">
+          <View style={st.busca}>
+            <Text style={st.buscaIcone}>⌕</Text>
+            <Text style={st.buscaPlaceholder}>Buscar participante</Text>
+          </View>
+        </Pressable>
 
-        {carregando ? (
-          <>
-            <SkeletonCard altura={140} />
-            <SkeletonCard altura={148} />
-            <SkeletonCard altura={80} />
-            <View style={st.carregando}>
-              <ActivityIndicator size="small" color={color.primaryLt} />
-              <Text style={st.carregandoRotulo}>Atualizando dados da coordenação</Text>
-            </View>
+        <Overline>Resumo de hoje</Overline>
           </>
+        )}
+
+        {carregando ? null : offline ? (
+          <BannerOffline
+            chamadas={filaOffline.chamadas}
+            registros={filaOffline.registros}
+            motivos={filaOffline.motivos}
+            onTentar={() => {}}
+          />
         ) : (
           <>
         <Animated.View entering={FadeInDown.duration(motion.medium)}>
         <Card>
           <Text style={st.cardTitulo}>Participantes ativos</Text>
           <View style={st.valorLinha}>
-            <Text style={st.valor}>{ativos}</Text>
-            <Text style={st.valorMeta}>de {resumo.totalVagas} vagas</Text>
+            <Contador valor={ativos} style={st.valor} />
+            <Text style={st.valorMeta}>crianças e adolescentes</Text>
           </View>
-          <Barra pct={pctVagas} />
-          <View style={st.legendaLinha}>
-            <View style={[st.ponto, { backgroundColor: onDark.fill }]} />
-            <Text style={st.legenda}>Ocupação</Text>
-            <Text style={st.legendaValor}>{pctVagas}%</Text>
-          </View>
+
           {unidade === 'Todos' ? (
-            <Text style={st.legenda}>
-              Atibaia {resumo.porUnidade.Atibaia} · Caiana {resumo.porUnidade.Caiana}
-            </Text>
-          ) : null}
+            <>
+              <View style={st.barraDupla}>
+                {unidadesInfo.map((u) => (
+                  <View
+                    key={u.nome}
+                    style={[
+                      st.barraSegmento,
+                      {
+                        flex: resumo.porUnidade[u.nome],
+                        backgroundColor: u.nome === 'Atibaia' ? color.primary : color.primaryLt,
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+              {unidadesInfo.map((u) => (
+                <View key={u.nome} style={st.legendaLinha}>
+                  <View
+                    style={[
+                      st.ponto,
+                      { backgroundColor: u.nome === 'Atibaia' ? color.primary : color.primaryLt },
+                    ]}
+                  />
+                  <Text style={st.legenda}>{u.nomeCompleto}</Text>
+                  <Text style={st.legendaValor}>
+                    {resumo.porUnidade[u.nome]}{' '}
+                    {Math.round((resumo.porUnidade[u.nome] / ativos) * 100)}%
+                  </Text>
+                </View>
+              ))}
+            </>
+          ) : (
+            <>
+              <View style={st.barraDupla}>
+                <View style={[st.barraSegmento, { flex: 1, backgroundColor: color.primary }]} />
+              </View>
+              <View style={st.legendaLinha}>
+                <View style={[st.ponto, { backgroundColor: color.primary }]} />
+                <Text style={st.legenda}>{unidade}</Text>
+                <Text style={st.legendaValor}>{ativos} 100%</Text>
+              </View>
+            </>
+          )}
         </Card>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(60)}>
-        <Card>
-          <Text style={st.cardTitulo}>Presença desta semana</Text>
-          <View style={st.valorLinha}>
-            <Text style={st.valor}>{resumo.presencaSemana}</Text>
-            <Text style={st.valorMeta}>de {resumo.presencaTotal} esperados</Text>
-            <View style={st.selo}>
-              <Text style={st.seloRotulo}>{pctPresenca}%</Text>
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+        <Card style={st.cardTreino}>
+          <View style={st.treinoTexto}>
+            <Text style={st.cardTitulo}>Presença no último treino</Text>
+            <View style={st.valorLinha}>
+              <Contador valor={presentesUltimoTreino} style={st.valor} />
+              <Text style={st.valorMeta}>de {ativos}</Text>
             </View>
+            <Text style={st.legenda}>
+              {ultimoTreino.data} · {ultimoTreino.local}
+            </Text>
+            <Text style={st.legenda}>
+              Próximo treino: {proximoTreino.data} · {proximoTreino.hora}
+            </Text>
           </View>
-          <Barra
-            pct={pctPresenca}
-            cor={pctPresenca >= resumo.metaPresenca ? color.success : color.warn}
-          />
-          <Text style={st.legenda}>Meta de {resumo.metaPresenca}% para o mês</Text>
-          <Text style={st.legenda}>{resumo.proximoEncontro}</Text>
+          <Anel pct={ultimoTreino.pctPresenca} />
         </Card>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
         <Pressable
           onPress={() =>
             router.push({
-              pathname: '/participantes/index',
+              pathname: '/secretaria/participantes',
               params: { filtro: 'baixa' },
             })
           }
@@ -132,6 +238,7 @@ export default function Home() {
           </Card>
         </Pressable>
         </Animated.View>
+
           </>
         )}
       </ScrollView>
@@ -142,7 +249,53 @@ export default function Home() {
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
   conteudo: { padding: space.lg, gap: space.base, paddingBottom: space.xxxl },
+
+  header: { gap: space.xs, paddingBottom: space.sm },
+  topoLinha: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: space.md,
+  },
+  marca: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingVertical: space.xs,
+    paddingHorizontal: space.md,
+    borderRadius: radius.chip,
+    borderCurve: 'continuous',
+    backgroundColor: color.surface2,
+  },
+  pillAvatar: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: onDark.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pillInicial: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.text },
+  pillRotulo: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
+  saudacao: { ...type.h1, fontFamily: 'Inter_600SemiBold', color: color.text },
+  data: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
+
   filtros: { flexDirection: 'row', gap: space.sm },
+
+  busca: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    height: 48,
+    paddingHorizontal: space.base,
+    borderRadius: radius.campo,
+    borderCurve: 'continuous',
+    backgroundColor: color.surface2,
+  },
+  buscaIcone: { ...type.body, color: color.faint },
+  buscaPlaceholder: { ...type.body, fontFamily: 'Inter_400Regular', color: color.faint },
+
   cardTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   valorLinha: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm },
   valor: { ...type.display, fontFamily: 'Inter_700Bold', color: color.text },
@@ -151,27 +304,33 @@ const st = StyleSheet.create({
   ponto: { width: 8, height: 8, borderRadius: 4 },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
   legendaValor: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
-  selo: {
-    marginLeft: 'auto',
-    paddingHorizontal: space.md,
-    paddingVertical: space.xs,
-    borderRadius: radius.chip,
-    borderCurve: 'continuous',
-    backgroundColor: color.surface2,
-  },
-  seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.text },
-  carregando: {
+  barraDupla: {
     flexDirection: 'row',
+    height: 8,
+    borderRadius: 4,
+    borderCurve: 'continuous',
+    overflow: 'hidden',
+    backgroundColor: color.surface2,
+    gap: 2,
+  },
+  barraSegmento: { height: '100%' },
+
+  cardTreino: { flexDirection: 'row', alignItems: 'center', gap: space.base },
+  treinoTexto: { flex: 1, gap: space.xs },
+
+  atalhos: { flexDirection: 'row', justifyContent: 'center', gap: space.base },
+  atalho: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: space.sm,
-    paddingTop: space.sm,
+    backgroundColor: color.surface2,
   },
-  carregandoRotulo: {
-    ...type.small,
-    fontFamily: 'Inter_400Regular',
-    color: color.muted,
-  },
+  atalhoAtivo: { backgroundColor: onDark.fill },
+  atalhoDesabilitado: { opacity: 0.4 },
+  atalhoIcone: { fontSize: 22 },
+
   cardAlerta: {
     paddingLeft: space.lg,
     overflow: 'hidden',

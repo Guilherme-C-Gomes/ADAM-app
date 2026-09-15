@@ -3,14 +3,14 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { Avatar, Card } from '@/components/ui'
-import { SkeletonCard } from '@/components/ui/skeleton'
+import { Avatar, Card, Contador } from '@/components/ui'
+import { Esqueleto, SkeletonCard } from '@/components/ui/skeleton'
 import { useCarregamento } from '@/hooks/use-carregamento'
 import { LIMITE_BAIXA_FREQUENCIA, participantes } from '@/data/mock'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
 export default function PerfilParticipante() {
-  const carregando = useCarregamento(450)
+  const carregando = useCarregamento(1000)
   const { id } = useLocalSearchParams<{ id: string }>()
   const p = participantes.find((x) => x.id === id)
 
@@ -57,16 +57,16 @@ export default function PerfilParticipante() {
           <Avatar iniciais={p.iniciais} size={68} />
           <Text style={st.nome}>{p.nome}</Text>
           <Text style={st.meta}>
-            {p.idade} anos · {p.unidade} · {p.turma}
+            {p.idade} anos · {p.unidade} · desde {p.desde}
           </Text>
         </View>
 
         {carregando ? (
-          <>
+          <Esqueleto>
             <SkeletonCard altura={208} />
             <SkeletonCard altura={200} />
             <SkeletonCard altura={100} />
-          </>
+          </Esqueleto>
         ) : (
           <>
         <Animated.View entering={FadeInDown.duration(motion.medium)}>
@@ -82,9 +82,9 @@ export default function PerfilParticipante() {
           <Text style={st.legenda}>Últimas 8 semanas</Text>
 
           <View style={st.valorLinha}>
-            <Text style={st.valor}>{p.frequencia}%</Text>
+            <Contador valor={p.frequencia} sufixo="%" style={st.valor} />
             <Text style={st.legenda}>
-              {presencas} de {p.semanas.length} encontros
+              {presencas} de {p.semanas.length} treinos
             </Text>
           </View>
 
@@ -108,7 +108,7 @@ export default function PerfilParticipante() {
         </Card>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(60)}>
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
         <Card style={st.cardLista}>
           <View style={st.linhaTopo}>
             <Text style={st.cardTitulo}>Cadastro</Text>
@@ -137,7 +137,7 @@ export default function PerfilParticipante() {
         </Card>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
         <Card>
           <Text style={st.cardTitulo}>Observações da equipe</Text>
           <Text style={st.legenda}>{p.observacao}</Text>

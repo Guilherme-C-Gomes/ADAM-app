@@ -1,37 +1,58 @@
-import { memo } from 'react'
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native'
+import { memo, useEffect, useState } from 'react'
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native'
+import Animated, {
+  Easing,
+  useAnimatedProps,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from 'react-native-reanimated'
+import Svg, { Circle } from 'react-native-svg'
 
-import { AdamSymbol, AdamWordmark } from '@/components/brand/adam-mark'
+import { useMovimentoReduzido } from '@/hooks/use-movimento-reduzido'
 import { color, onDark, radius, space, target, type } from '@/theme/tokens'
 
-/** Cabecalho das telas internas: marca, titulo e subtitulo sobre o brilho. */
+/** Curva de entrada do design system. */
+const SAIDA = Easing.bezier(0, 0, 0.2, 1)
+
+const CirculoAnimado = Animated.createAnimatedComponent(Circle)
+
+/** Cabecalho das telas internas: titulo, subtitulo e uma acao opcional. */
 export function Hero({
   titulo,
   subtitulo,
-  perfil,
+  acao,
 }: {
   titulo: string
   subtitulo: string
-  perfil?: string
+  acao?: { icone: string; rotulo: string; onPress: () => void }
 }) {
   return (
     <View style={s.hero}>
       <View style={s.heroTopo}>
-        <View style={s.markRow}>
-          <AdamSymbol size={22} />
-          <AdamWordmark fontSize={16} />
+        <View style={s.heroTextos}>
+          <Text style={s.heroTitulo}>{titulo}</Text>
+          <Text style={s.heroSubtitulo}>{subtitulo}</Text>
         </View>
-        {perfil ? (
-          <View style={s.perfil}>
-            <View style={s.perfilAvatar}>
-              <Text style={s.perfilInicial}>{perfil.charAt(0)}</Text>
-            </View>
-            <Text style={s.perfilRotulo}>{perfil}</Text>
-          </View>
+        {acao ? (
+          <Pressable
+            onPress={acao.onPress}
+            hitSlop={space.sm}
+            style={({ pressed }) => [s.heroAcao, pressed && s.pressedFraco]}
+            accessibilityRole="button"
+            accessibilityLabel={acao.rotulo}>
+            <Text style={s.heroAcaoIcone}>{acao.icone}</Text>
+          </Pressable>
         ) : null}
       </View>
-      <Text style={s.heroTitulo}>{titulo}</Text>
-      <Text style={s.heroSubtitulo}>{subtitulo}</Text>
     </View>
   )
 }
@@ -71,11 +92,133 @@ export function Overline({ children }: { children: string }) {
   return <Text style={s.overline}>{children}</Text>
 }
 
-/** Barra horizontal de proporcao. `pct` de 0 a 100. */
+/**
+ * Barra horizontal de proporcao. `pct` de 0 a 100.
+ *
+ * Cresce da esquerda quando o card entra (700ms, ease-out). Anima
+ * scaleX e nao width: width forca recalculo de layout a cada quadro.
+ */
 export function Barra({ pct, cor = onDark.fill }: { pct: number; cor?: string }) {
+  const alvo = Math.min(100, Math.max(0, pct))
+  const reduzido = useMovimentoReduzido()
+  const progresso = useSharedValue(reduzido ? 1 : 0)
+
+  useEffect(() => {
+    progresso.set(
+      reduzido ? 1 : withDelay(120, withTiming(1, { duration: 700, easing: SAIDA })),
+    )
+  }, [alvo, reduzido, progresso])
+
+  const animado = useAnimatedStyle(() => ({ transform: [{ scaleX: progresso.get() }] }))
+
   return (
     <View style={s.barraTrilho}>
-      <View style={[s.barraFill, { width: `${Math.min(100, Math.max(0, pct))}%`, backgroundColor: cor }]} />
+      <Animated.View
+        style={[
+          s.barraFill,
+          { width: `${alvo}%`, backgroundColor: cor },
+          animado,
+        ]}
+      />
+    </View>
+  )
+}
+
+/** Numero que sobe de 0 ate o valor quando entra na tela (600ms). */
+export function Contador({
+  valor,
+  sufixo = '',
+  style,
+}: {
+  valor: number
+  sufixo?: string
+  style?: TextStyle | TextStyle[]
+}) {
+  const reduzido = useMovimentoReduzido()
+  const [progresso, setProgresso] = useState(0)
+
+  useEffect(() => {
+    if (reduzido) return
+    const inicio = Date.now()
+    const id = setInterval(() => {
+      const t = Math.min(1, (Date.now() - inicio) / 600)
+      // mesma curva do ease-out usado nas barras
+      setProgresso(1 - Math.pow(1 - t, 3))
+      if (t >= 1) clearInterval(id)
+    }, 16)
+    return () => clearInterval(id)
+  }, [valor, reduzido])
+
+  const mostrado = reduzido ? valor : Math.round(valor * progresso)
+
+  return (
+    <Text style={style}>
+      {mostrado}
+      {sufixo}
+    </Text>
+  )
+}
+
+/** Anel de progresso (tela 04 do Figma: "Presença no último treino"). */
+export function Anel({
+  pct,
+  size = 56,
+  espessura = 6,
+  cor = color.success,
+}: {
+  pct: number
+  size?: number
+  espessura?: number
+  cor?: string
+}) {
+  const raio = (size - espessura) / 2
+  const circunferencia = 2 * Math.PI * raio
+  const preenchido = Math.min(100, Math.max(0, pct))
+  const offset = circunferencia * (1 - preenchido / 100)
+
+  const reduzido = useMovimentoReduzido()
+  const progresso = useSharedValue(reduzido ? 1 : 0)
+
+  useEffect(() => {
+    progresso.set(
+      reduzido ? 1 : withDelay(120, withTiming(1, { duration: 800, easing: SAIDA })),
+    )
+  }, [offset, reduzido, progresso])
+
+  // O traco corre do circulo inteiro vazio ate o valor.
+  const tracoAnimado = useAnimatedProps(() => ({
+    strokeDashoffset: circunferencia - (circunferencia - offset) * progresso.get(),
+  }))
+
+  return (
+    <View style={{ width: size, height: size }}>
+      <Svg width={size} height={size}>
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={raio}
+          stroke={color.surface2}
+          strokeWidth={espessura}
+          fill="none"
+        />
+        <CirculoAnimado
+          cx={size / 2}
+          cy={size / 2}
+          r={raio}
+          stroke={cor}
+          strokeWidth={espessura}
+          fill="none"
+          strokeDasharray={`${circunferencia} ${circunferencia}`}
+          animatedProps={tracoAnimado}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </Svg>
+      <View style={StyleSheet.absoluteFill}>
+        <View style={s.anelCentro}>
+          <Contador valor={preenchido} sufixo="%" style={s.anelValor} />
+        </View>
+      </View>
     </View>
   )
 }
@@ -93,7 +236,6 @@ const s = StyleSheet.create({
     paddingHorizontal: space.lg,
     paddingTop: space.sm,
     paddingBottom: space.lg,
-    gap: space.xs,
     borderBottomWidth: 1,
     borderBottomColor: color.divider,
     backgroundColor: color.surface,
@@ -102,31 +244,21 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: space.md,
+    gap: space.md,
   },
-  markRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  perfil: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    paddingVertical: space.xs,
-    paddingHorizontal: space.md,
-    borderRadius: radius.chip,
-    borderCurve: 'continuous',
-    backgroundColor: color.surface2,
-  },
-  perfilAvatar: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: onDark.fill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  perfilInicial: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.text },
-  perfilRotulo: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
+  heroTextos: { flex: 1, gap: space.xs },
   heroTitulo: { ...type.h1, fontFamily: 'Inter_600SemiBold', color: color.text },
   heroSubtitulo: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
+  heroAcao: {
+    width: target.minimo,
+    height: target.minimo,
+    borderRadius: target.minimo / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color.surface2,
+  },
+  heroAcaoIcone: { ...type.body, color: color.text },
+  pressedFraco: { opacity: 0.85 },
 
   chip: {
     minHeight: target.minimo,
@@ -139,7 +271,8 @@ const s = StyleSheet.create({
   chipAtivo: { backgroundColor: onDark.fill },
   chipRotulo: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
   chipRotuloAtivo: { fontFamily: 'Inter_600SemiBold', color: color.text },
-  pressed: { opacity: 0.85 },
+  // Feedback de toque do design: escala 0.97 junto da opacidade.
+  pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
 
   card: {
     padding: space.base,
@@ -158,6 +291,9 @@ const s = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
+  anelCentro: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  anelValor: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.text },
+
   barraTrilho: {
     height: 8,
     borderRadius: 4,
@@ -165,7 +301,8 @@ const s = StyleSheet.create({
     backgroundColor: color.surface2,
     overflow: 'hidden',
   },
-  barraFill: { height: '100%', borderRadius: 4 },
+  // A origem a esquerda e o que faz a barra crescer em vez de inflar.
+  barraFill: { height: '100%', borderRadius: 4, transformOrigin: 'left' },
 
   avatar: {
     backgroundColor: color.primaryDk,

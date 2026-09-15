@@ -59,39 +59,31 @@ export function EstadoVazio({
 }
 
 /**
- * Erro de sincronizacao (tela 09 do Figma).
+ * Sem conexão (tela 09 do Figma).
  *
- * Mostra o erro, mas mantem os dados antigos visiveis e marcados como
- * desatualizados: a coordenacao continua conseguindo trabalhar com o
- * ultimo numero conhecido enquanto a fonte nao volta.
+ * Home e chamada seguem "offline-first": o que a equipe registra fica
+ * na fila do aparelho e sobe sozinho quando a internet voltar. Nada
+ * trava a demonstração — dá pra continuar navegando.
  */
-export function ErroSincronizacao({
-  detalhe,
-  valorAntigo,
-  unidadeAntiga,
-  idadeDoDado,
+export function BannerOffline({
+  chamadas,
+  registros,
+  motivos,
   onTentar,
-  onReconectar,
 }: {
-  detalhe: string
-  valorAntigo: string
-  unidadeAntiga: string
-  idadeDoDado: string
+  chamadas: number
+  registros: number
+  motivos: string[]
   onTentar: () => void
-  onReconectar: () => void
 }) {
-  const verificar = [
-    'A conexão do aparelho com a internet',
-    'Se o formulário mudou de endereço',
-    'Se a conta ainda tem acesso à planilha',
-  ]
-
   return (
     <Animated.View entering={FadeInDown.duration(motion.medium)} style={s.grupo}>
       <Card style={s.cardErro}>
         <View style={s.acento} />
-        <Text style={s.erroTitulo}>Não foi possível sincronizar</Text>
-        <Text style={s.legenda}>{detalhe}</Text>
+        <Text style={s.erroTitulo}>Sem conexão</Text>
+        <Text style={s.legenda}>
+          O que você registrar fica salvo no aparelho e sobe quando a internet voltar.
+        </Text>
         <Pressable
           onPress={onTentar}
           style={({ pressed }) => [s.botao, pressed && s.pressed]}
@@ -102,18 +94,18 @@ export function ErroSincronizacao({
 
       <Card>
         <View style={s.selo}>
-          <Text style={s.seloRotulo}>Dados desatualizados</Text>
+          <Text style={s.seloRotulo}>{chamadas} chamadas na fila</Text>
         </View>
         <View style={s.valorLinha}>
-          <Text style={s.valor}>{valorAntigo}</Text>
-          <Text style={s.legenda}>{unidadeAntiga}</Text>
+          <Text style={s.valor}>{registros}</Text>
+          <Text style={s.legenda}>registros esperando</Text>
         </View>
-        <Text style={s.legenda}>{idadeDoDado}</Text>
+        <Text style={s.legenda}>Nada se perde: eles sobem sozinhos</Text>
       </Card>
 
       <Card>
-        <Text style={s.cardTitulo}>O que verificar</Text>
-        {verificar.map((item) => (
+        <Text style={s.cardTitulo}>O que costuma ser</Text>
+        {motivos.map((item) => (
           <View key={item} style={s.itemLinha}>
             <View style={s.ponto} />
             <Text style={s.legenda}>{item}</Text>
@@ -122,10 +114,10 @@ export function ErroSincronizacao({
       </Card>
 
       <Pressable
-        onPress={onReconectar}
+        onPress={onTentar}
         style={({ pressed }) => [s.botaoCheio, pressed && s.pressed]}
         accessibilityRole="button">
-        <Text style={s.botaoCheioRotulo}>Reconectar fonte de dados</Text>
+        <Text style={s.botaoCheioRotulo}>Tentar enviar agora</Text>
       </Pressable>
     </Animated.View>
   )
@@ -210,5 +202,6 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   botaoCheioRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
-  pressed: { opacity: 0.85 },
+  // Feedback de toque do design: escala 0.97 junto da opacidade.
+  pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
 })
