@@ -30,12 +30,15 @@ export default function RootLayout() {
 
   // Titulo da aba do navegador e do app instalado pela versao web. Vem
   // antes da espera da fonte: no build da web a fonte nunca carrega, e o
-  // titulo sairia vazio.
-  const titulo = (
-    <Head>
-      <title>ADAM</title>
-    </Head>
-  )
+  // titulo sairia vazio. So na web: no app instalado (TestFlight/App Store)
+  // o Head liga o Handoff do iOS, que exige um `origin` na config e, sem
+  // ele, mostrava um alerta "Expo Head" a cada tela.
+  const titulo =
+    Platform.OS === 'web' ? (
+      <Head>
+        <title>ADAM</title>
+      </Head>
+    ) : null
 
   // Segurar a splash nativa ate a fonte carregar evita o flash de
   // texto com a fonte do sistema antes da Inter entrar. No web nao ha
