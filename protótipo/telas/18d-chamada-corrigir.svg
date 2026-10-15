@@ -1,0 +1,215 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Chamada_Lista" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Chamada dos Maiores</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Encerrada às 10h05  ·  dá para corrigir até 23h59</text>
+  </g>
+  <g id="Campo_Busca">
+    <rect id="Campo_Busca_Fundo" x="20" y="168" width="350" height="48" rx="12" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <circle cx="43.5" cy="190.5" r="5.8" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M47.8 194.8 L52 199" fill="none" stroke="#8A8AA0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Campo_Busca_Placeholder" x="66" y="198" font-family="Inter" font-size="16" font-weight="400" fill="#8A8AA0">Buscar por nome</text>
+  </g>
+  <g id="Overline_Turma_Bloco">
+    <text id="Overline_Turma" x="20" y="244" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">MAIORES</text>
+    <text id="Overline_Turma_Contagem" x="370" y="244" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">4 de 6 presentes</text>
+  </g>
+  <g id="Card_Chamada_Turma">
+    <rect id="Card_Chamada_Turma_Fundo" x="20" y="256" width="350" height="304" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Presenca_M_1">
+    <rect id="Presenca_M_1_Alvo" x="24" y="276" width="342" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Presenca_M_1_Caixa" cx="52" cy="298" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>  <g id="Presenca_M_1_Marca">
+    <circle id="Presenca_M_1_Marca_Fundo" cx="52" cy="298" r="11" fill="#3DD68C"/>
+    <path d="M46 299 L50 303 L58 294.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      <g id="Presenca_M_1_Avatar">
+    <circle id="Presenca_M_1_Avatar_Fundo" cx="86" cy="298" r="14" fill="#2E5D4B"/>
+    <text id="Presenca_M_1_Avatar_Iniciais" x="86" y="301.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">EG</text>
+      <g id="Presenca_M_1_Avatar_Foto" opacity="0">
+    <circle id="Presenca_M_1_Avatar_Foto_Cabeca" cx="86" cy="295.48" r="4.2" fill="#FFFFFF"/>
+    <path id="Presenca_M_1_Avatar_Foto_Ombros" d="M77.0 308.7 C77.6 298.8 94.4 298.8 95.0 308.7 A14.0 14.0 0 0 1 77.0 308.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Presenca_M_1_Nome" x="110" y="303" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Enzo Gabriel R.</text>
+    <text id="Presenca_M_1_Idade" x="354" y="303" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">14 anos</text>
+      <g id="Presenca_M_1_Por">
+    <circle id="Presenca_M_1_Por_Fundo" cx="280.0" cy="298" r="9" fill="#0E3A5C" stroke="#15151F" stroke-width="2"/>
+    <text id="Presenca_M_1_Por_Iniciais" x="280.0" y="301.5" text-anchor="middle" font-family="Inter" font-size="12" font-weight="500" fill="#FFFFFF">RN</text>
+  </g>
+  </g>
+    <line id="Presenca_M_Divisoria_1" x1="110" y1="320" x2="354" y2="320" stroke="#23233A" stroke-width="1"/>
+      <g id="Presenca_M_2">
+    <rect id="Presenca_M_2_Alvo" x="24" y="320" width="342" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Presenca_M_2_Caixa" cx="52" cy="342" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="1"/>  <g id="Presenca_M_2_Marca" opacity="0">
+    <circle id="Presenca_M_2_Marca_Fundo" cx="52" cy="342" r="11" fill="#3DD68C"/>
+    <path d="M46 343 L50 347 L58 338.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      <g id="Presenca_M_2_Avatar">
+    <circle id="Presenca_M_2_Avatar_Fundo" cx="86" cy="342" r="14" fill="#2E4F5D"/>
+    <text id="Presenca_M_2_Avatar_Iniciais" x="86" y="345.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">MT</text>
+      <g id="Presenca_M_2_Avatar_Foto" opacity="0">
+    <circle id="Presenca_M_2_Avatar_Foto_Cabeca" cx="86" cy="339.48" r="4.2" fill="#FFFFFF"/>
+    <path id="Presenca_M_2_Avatar_Foto_Ombros" d="M77.0 352.7 C77.6 342.8 94.4 342.8 95.0 352.7 A14.0 14.0 0 0 1 77.0 352.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Presenca_M_2_Nome" x="110" y="347" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Miguel Tavares</text>
+    <text id="Presenca_M_2_Idade" x="354" y="347" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">15 anos</text>
+  </g>
+    <line id="Presenca_M_Divisoria_2" x1="110" y1="364" x2="354" y2="364" stroke="#23233A" stroke-width="1"/>
+      <g id="Presenca_M_3">
+    <rect id="Presenca_M_3_Alvo" x="24" y="364" width="342" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Presenca_M_3_Caixa" cx="52" cy="386" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>  <g id="Presenca_M_3_Marca">
+    <circle id="Presenca_M_3_Marca_Fundo" cx="52" cy="386" r="11" fill="#3DD68C"/>
+    <path d="M46 387 L50 391 L58 382.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      <g id="Presenca_M_3_Avatar">
+    <circle id="Presenca_M_3_Avatar_Fundo" cx="86" cy="386" r="14" fill="#3D2E5D"/>
+    <text id="Presenca_M_3_Avatar_Iniciais" x="86" y="389.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">LF</text>
+      <g id="Presenca_M_3_Avatar_Foto" opacity="0">
+    <circle id="Presenca_M_3_Avatar_Foto_Cabeca" cx="86" cy="383.48" r="4.2" fill="#FFFFFF"/>
+    <path id="Presenca_M_3_Avatar_Foto_Ombros" d="M77.0 396.7 C77.6 386.8 94.4 386.8 95.0 396.7 A14.0 14.0 0 0 1 77.0 396.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Presenca_M_3_Nome" x="110" y="391" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Lucas Ferreira</text>
+    <text id="Presenca_M_3_Idade" x="354" y="391" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">13 anos</text>
+      <g id="Presenca_M_3_Por">
+    <circle id="Presenca_M_3_Por_Fundo" cx="280.0" cy="386" r="9" fill="#3A0A52" stroke="#15151F" stroke-width="2"/>
+    <text id="Presenca_M_3_Por_Iniciais" x="280.0" y="389.5" text-anchor="middle" font-family="Inter" font-size="12" font-weight="500" fill="#FFFFFF">CB</text>
+  </g>
+  </g>
+    <line id="Presenca_M_Divisoria_3" x1="110" y1="408" x2="354" y2="408" stroke="#23233A" stroke-width="1"/>
+      <g id="Presenca_M_4">
+    <rect id="Presenca_M_4_Alvo" x="24" y="408" width="342" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Presenca_M_4_Caixa" cx="52" cy="430" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>  <g id="Presenca_M_4_Marca">
+    <circle id="Presenca_M_4_Marca_Fundo" cx="52" cy="430" r="11" fill="#3DD68C"/>
+    <path d="M46 431 L50 435 L58 426.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      <g id="Presenca_M_4_Avatar">
+    <circle id="Presenca_M_4_Avatar_Fundo" cx="86" cy="430" r="14" fill="#5D2E2E"/>
+    <text id="Presenca_M_4_Avatar_Iniciais" x="86" y="433.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">PH</text>
+      <g id="Presenca_M_4_Avatar_Foto" opacity="0">
+    <circle id="Presenca_M_4_Avatar_Foto_Cabeca" cx="86" cy="427.48" r="4.2" fill="#FFFFFF"/>
+    <path id="Presenca_M_4_Avatar_Foto_Ombros" d="M77.0 440.7 C77.6 430.8 94.4 430.8 95.0 440.7 A14.0 14.0 0 0 1 77.0 440.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Presenca_M_4_Nome" x="110" y="435" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Pedro Henrique S.</text>
+    <text id="Presenca_M_4_Idade" x="354" y="435" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">12 anos</text>
+      <g id="Presenca_M_4_Por">
+    <circle id="Presenca_M_4_Por_Fundo" cx="280.0" cy="430" r="9" fill="#0E3A5C" stroke="#15151F" stroke-width="2"/>
+    <text id="Presenca_M_4_Por_Iniciais" x="280.0" y="433.5" text-anchor="middle" font-family="Inter" font-size="12" font-weight="500" fill="#FFFFFF">RN</text>
+  </g>
+  </g>
+    <line id="Presenca_M_Divisoria_4" x1="110" y1="452" x2="354" y2="452" stroke="#23233A" stroke-width="1"/>
+      <g id="Presenca_M_5">
+    <rect id="Presenca_M_5_Alvo" x="24" y="452" width="342" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Presenca_M_5_Caixa" cx="52" cy="474" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>  <g id="Presenca_M_5_Marca">
+    <circle id="Presenca_M_5_Marca_Fundo" cx="52" cy="474" r="11" fill="#3DD68C"/>
+    <path d="M46 475 L50 479 L58 470.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      <g id="Presenca_M_5_Avatar">
+    <circle id="Presenca_M_5_Avatar_Fundo" cx="86" cy="474" r="14" fill="#2E3D5D"/>
+    <text id="Presenca_M_5_Avatar_Iniciais" x="86" y="477.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">GL</text>
+      <g id="Presenca_M_5_Avatar_Foto" opacity="0">
+    <circle id="Presenca_M_5_Avatar_Foto_Cabeca" cx="86" cy="471.48" r="4.2" fill="#FFFFFF"/>
+    <path id="Presenca_M_5_Avatar_Foto_Ombros" d="M77.0 484.7 C77.6 474.8 94.4 474.8 95.0 484.7 A14.0 14.0 0 0 1 77.0 484.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Presenca_M_5_Nome" x="110" y="479" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Gustavo Lima</text>
+    <text id="Presenca_M_5_Idade" x="354" y="479" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">16 anos</text>
+      <g id="Presenca_M_5_Por">
+    <circle id="Presenca_M_5_Por_Fundo" cx="280.0" cy="474" r="9" fill="#3A0A52" stroke="#15151F" stroke-width="2"/>
+    <text id="Presenca_M_5_Por_Iniciais" x="280.0" y="477.5" text-anchor="middle" font-family="Inter" font-size="12" font-weight="500" fill="#FFFFFF">CB</text>
+  </g>
+  </g>
+    <line id="Presenca_M_Divisoria_5" x1="110" y1="496" x2="354" y2="496" stroke="#23233A" stroke-width="1"/>
+      <g id="Presenca_M_6">
+    <rect id="Presenca_M_6_Alvo" x="24" y="496" width="342" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Presenca_M_6_Caixa" cx="52" cy="518" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="1"/>  <g id="Presenca_M_6_Marca" opacity="0">
+    <circle id="Presenca_M_6_Marca_Fundo" cx="52" cy="518" r="11" fill="#3DD68C"/>
+    <path d="M46 519 L50 523 L58 514.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      <g id="Presenca_M_6_Avatar">
+    <circle id="Presenca_M_6_Avatar_Fundo" cx="86" cy="518" r="14" fill="#4F5D2E"/>
+    <text id="Presenca_M_6_Avatar_Iniciais" x="86" y="521.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">RS</text>
+      <g id="Presenca_M_6_Avatar_Foto" opacity="0">
+    <circle id="Presenca_M_6_Avatar_Foto_Cabeca" cx="86" cy="515.48" r="4.2" fill="#FFFFFF"/>
+    <path id="Presenca_M_6_Avatar_Foto_Ombros" d="M77.0 528.7 C77.6 518.8 94.4 518.8 95.0 528.7 A14.0 14.0 0 0 1 77.0 528.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Presenca_M_6_Nome" x="110" y="523" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Rafael Souza</text>
+    <text id="Presenca_M_6_Idade" x="354" y="523" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">13 anos</text>
+  </g>
+  </g>
+  <g id="Card_Chamada_Avulsos">
+    <rect id="Card_Chamada_Avulsos_Fundo" x="20" y="572" width="350" height="88" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Porta_Avulsos">
+    <rect id="Porta_Avulsos_Alvo" x="24" y="592" width="342" height="40" fill="#15151F" opacity="0"/>
+      <g id="Porta_Avulsos_Selo">
+    <rect id="Porta_Avulsos_Selo_Fundo" x="255" y="609.6" width="71" height="24" rx="12" fill="#33240A"/>
+    <text id="Porta_Avulsos_Selo_Rotulo" x="267.0" y="625.9200000000001" font-family="Inter" font-size="12" font-weight="500" fill="#F5A524">1 nome</text>
+  </g>
+    <text id="Porta_Avulsos_Titulo" x="36" y="616" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Sem ficha ainda</text>
+    <text id="Porta_Avulsos_Meta" x="36" y="636" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">Nomes digitados hoje</text>
+    <path d="M344 612 L349 617.5 L344 623" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+  <g id="Botao_SalvarCorrecao">
+    <rect id="Botao_SalvarCorrecao_Fundo" x="20" y="724" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_SalvarCorrecao_Rotulo" x="195.0" y="755.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Salvar correção</text>
+  </g>
+</svg>

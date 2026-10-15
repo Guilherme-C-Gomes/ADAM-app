@@ -1,3 +1,4 @@
+import { Image } from 'expo-image'
 import { memo, useEffect, useState } from 'react'
 import {
   Pressable,
@@ -17,6 +18,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import Svg, { Circle } from 'react-native-svg'
 
+import { Icone, type NomeIcone } from '@/components/ui/icone'
 import { useMovimentoReduzido } from '@/hooks/use-movimento-reduzido'
 import { color, onDark, radius, space, target, type } from '@/theme/tokens'
 
@@ -33,7 +35,7 @@ export function Hero({
 }: {
   titulo: string
   subtitulo: string
-  acao?: { icone: string; rotulo: string; onPress: () => void }
+  acao?: { icone: NomeIcone; rotulo: string; onPress: () => void }
 }) {
   return (
     <View style={s.hero}>
@@ -49,7 +51,7 @@ export function Hero({
             style={({ pressed }) => [s.heroAcao, pressed && s.pressedFraco]}
             accessibilityRole="button"
             accessibilityLabel={acao.rotulo}>
-            <Text style={s.heroAcaoIcone}>{acao.icone}</Text>
+            <Icone nome={acao.icone} cor={color.text} />
           </Pressable>
         ) : null}
       </View>
@@ -223,10 +225,24 @@ export function Anel({
   )
 }
 
-export function Avatar({ iniciais, size = 42 }: { iniciais: string; size?: number }) {
+/** Iniciais no circulo; com foto, a foto cobre o circulo inteiro. */
+export function Avatar({
+  iniciais,
+  size = 42,
+  foto,
+}: {
+  iniciais: string
+  size?: number
+  foto?: string | null
+}) {
+  const forma = { width: size, height: size, borderRadius: size / 2 }
   return (
-    <View style={[s.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
-      <Text style={s.avatarIniciais}>{iniciais}</Text>
+    <View style={[s.avatar, forma]}>
+      {foto ? (
+        <Image source={{ uri: foto }} style={forma} contentFit="cover" transition={150} />
+      ) : (
+        <Text style={s.avatarIniciais}>{iniciais}</Text>
+      )}
     </View>
   )
 }
@@ -257,7 +273,6 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: color.surface2,
   },
-  heroAcaoIcone: { ...type.body, color: color.text },
   pressedFraco: { opacity: 0.85 },
 
   chip: {
@@ -305,6 +320,7 @@ const s = StyleSheet.create({
   barraFill: { height: '100%', borderRadius: 4, transformOrigin: 'left' },
 
   avatar: {
+    overflow: 'hidden',
     backgroundColor: color.primaryDk,
     alignItems: 'center',
     justifyContent: 'center',

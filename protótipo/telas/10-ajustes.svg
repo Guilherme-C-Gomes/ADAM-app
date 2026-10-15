@@ -1,0 +1,119 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Ajustes" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Hero_Titulo" x="20" y="96" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Ajustes</text>
+    <text id="Hero_Subtitulo" x="20" y="122" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Conta e configuração do app</text>
+  </g>
+  <g id="Card_Conta">
+    <rect id="Card_Conta_Fundo" x="20" y="172" width="350" height="96" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Conta_Avatar">
+    <circle id="Card_Conta_Avatar_Fundo" cx="66" cy="220" r="26" fill="#3A0A52"/>
+    <text id="Card_Conta_Avatar_Iniciais" x="66" y="225.9" text-anchor="middle" font-family="Inter" font-size="17" font-weight="500" fill="#FFFFFF">CA</text>
+  </g>
+    <text id="Card_Conta_Nome" x="104" y="213" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Coordenação ADAM</text>
+    <text id="Card_Conta_Email" x="104" y="235" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">coordenacao@adam.org.br</text>
+    <path d="M344 214 L349 219.5 L344 225" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+<text id="Overline_Config" x="20" y="300" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">CONFIGURAÇÃO DA ADAM</text>
+  <g id="Card_Config">
+    <rect id="Card_Config_Fundo" x="20" y="312" width="350" height="176" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Linha_Unidades">
+    <rect id="Linha_Unidades_Alvo" x="24" y="324" width="342" height="48" fill="#15151F" opacity="0"/>
+    <text id="Linha_Unidades_Rotulo" x="36" y="348" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Unidades e turmas</text>
+    <text id="Linha_Unidades_Valor" x="334" y="348" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">2 e 2</text>
+    <path d="M344 337 L349 342.5 L344 348" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <line id="Ajustes_Divisoria_1" x1="36" y1="368" x2="354" y2="368" stroke="#23233A" stroke-width="1"/>
+      <g id="Linha_Usuarios">
+    <rect id="Linha_Usuarios_Alvo" x="24" y="380" width="342" height="48" fill="#15151F" opacity="0"/>
+    <text id="Linha_Usuarios_Rotulo" x="36" y="404" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Usuários e permissões</text>
+    <text id="Linha_Usuarios_Valor" x="334" y="404" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#D06CF5">6 pessoas</text>
+    <path d="M344 393 L349 398.5 L344 404" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <line id="Ajustes_Divisoria_2" x1="36" y1="424" x2="354" y2="424" stroke="#23233A" stroke-width="1"/>
+      <g id="Linha_Registro">
+    <rect id="Linha_Registro_Alvo" x="24" y="436" width="342" height="48" fill="#15151F" opacity="0"/>
+    <text id="Linha_Registro_Rotulo" x="36" y="460" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Registro de acessos</text>
+    <text id="Linha_Registro_Valor" x="334" y="460" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">últimos 30 dias</text>
+    <path d="M344 449 L349 454.5 L344 460" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+  <g id="Scrim_Nav">
+    <rect id="Scrim_Fundo" x="0" y="712" width="390" height="132" fill="url(#grad_scrim)"/>
+    <rect id="Scrim_Brilho" x="-4" y="726" width="398" height="112" fill="url(#grad_brilho_nav)"/>
+  </g>
+  <g id="Nav_Bottom">
+    <rect id="Nav_Fundo" x="20" y="752" width="350" height="60" rx="24" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <rect id="Nav_Lente_Halo" x="21.8" y="746" width="84" height="72" fill="url(#grad_lente_halo)" opacity="0"/>
+    <rect id="Nav_Lente" x="35.8" y="762.0" width="56" height="40" rx="16" fill="#9E05D2" opacity="0"/>
+    <rect id="Nav_Lente_Brilho" x="35.8" y="762.0" width="56" height="40" rx="16" fill="url(#grad_lente)" stroke="url(#grad_borda_vidro)" stroke-width="1" opacity="0"/>
+      <g id="Nav_Chamada">
+    <rect id="Nav_Chamada_Alvo" x="20.0" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(63.8 782.0) scale(1.3) translate(-9 -9)"><path d="M5.5 2.5 h-3 a1.5 1.5 0 0 0 -1.5 1.5 v12 a1.5 1.5 0 0 0 1.5 1.5 h13 a1.5 1.5 0 0 0 1.5 -1.5 v-12 a1.5 1.5 0 0 0 -1.5 -1.5 h-3" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="5.5" y="0.8" width="7" height="3.6" rx="1.2" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M5 10.5 L8 13.5 L13.2 8" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Jogo">
+    <rect id="Nav_Jogo_Alvo" x="107.4" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(151.2 782.0) scale(1.3) translate(-9 -9)"><rect x="0.5" y="1.5" width="17" height="15" rx="2" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M9 1.5 L9 16.5" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="9" r="3.1" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M0.5 5.8 L3.8 5.8 L3.8 12.2 L0.5 12.2" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 5.8 L14.2 5.8 L14.2 12.2 L17.5 12.2" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Secretaria">
+    <rect id="Nav_Secretaria_Alvo" x="195.1" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(238.8 782.0) scale(1.3) translate(-9 -9)"><path d="M2 17 L2 10" fill="none" stroke="#9A9AAD" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 17 L8.5 2" fill="none" stroke="#9A9AAD" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 17 L15 7" fill="none" stroke="#9A9AAD" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Estudo">
+    <rect id="Nav_Estudo_Alvo" x="282.4" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(326.2 782.0) scale(1.3) translate(-9 -9)"><path d="M9 4 L9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4 C6.6 2.2 3.6 2 1.2 2.8 L1.2 14.2 C3.8 13.4 6.8 14.6 9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4 C11.4 2.2 14.4 2 16.8 2.8 L16.8 14.2 C14.2 13.4 11.2 14.6 9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+  </g>
+</svg>

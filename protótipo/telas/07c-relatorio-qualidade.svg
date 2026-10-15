@@ -1,0 +1,161 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Metricas_Qualidade" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Relatório</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Secretaria  ·  Atibaia e São José de Caiana</text>
+  </g>
+  <g id="Barra_Periodo">
+    <rect id="Barra_Periodo_Fundo" x="20" y="170" width="350" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <rect id="Barra_Periodo_Alvo" x="20" y="170" width="262" height="44" fill="#15151F" opacity="0"/>
+    <path d="M37 187.0 h16 v13 h-16 z" fill="none" stroke="#D06CF5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 191.0 h16" fill="none" stroke="#D06CF5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 184.5 v4 M49 184.5 v4" fill="none" stroke="#D06CF5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Barra_Periodo_Rotulo" x="64" y="197.0" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Setembro de 2026</text>
+    <rect id="Barra_Periodo_Anterior" x="282" y="170" width="44" height="44" fill="#15151F" opacity="0"/>
+    <path d="M306 186.5 L301 192.0 L306 197.5" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect id="Barra_Periodo_Proximo" x="326" y="170" width="44" height="44" fill="#15151F" opacity="0"/>
+    <path d="M346 186.5 L351 192.0 L346 197.5" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g id="Segmentado">
+    <rect id="Segmentado_Fundo" x="20" y="226" width="350" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <rect id="Seg_Lente" x="285.5" y="229" width="81.5" height="38" rx="13" fill="#9E05D2"/>
+    <rect id="Seg_Lente_Brilho" x="285.5" y="229" width="81.5" height="38" rx="13" fill="url(#grad_lente)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <rect id="Rel_Presenca_Alvo" x="20.0" y="226" width="87.5" height="44" fill="#0A0A12" opacity="0"/>
+    <text id="Rel_Presenca_Rotulo" x="63.8" y="252.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#9A9AAD">Presença</text>
+    <rect id="Rel_Jogos_Alvo" x="107.5" y="226" width="87.5" height="44" fill="#0A0A12" opacity="0"/>
+    <text id="Rel_Jogos_Rotulo" x="151.2" y="252.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#9A9AAD">Jogos</text>
+    <rect id="Rel_Pessoas_Alvo" x="195.0" y="226" width="87.5" height="44" fill="#0A0A12" opacity="0"/>
+    <text id="Rel_Pessoas_Rotulo" x="238.8" y="252.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#9A9AAD">Pessoas</text>
+    <rect id="Rel_Qualidade_Alvo" x="282.5" y="226" width="87.5" height="44" fill="#0A0A12" opacity="0"/>
+    <text id="Rel_Qualidade_Rotulo" x="326.2" y="252.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Qualidade</text>
+  </g>
+  <g id="Card_Notas">
+    <rect id="Card_Notas_Fundo" x="20" y="284" width="350" height="164" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Card_Notas_Titulo" x="36" y="314" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Avaliação dos treinos</text>
+    <text id="Card_Notas_Total" x="354" y="314" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">12 avaliados</text>
+      <g id="Card_Nota_1">
+    <text id="Card_Nota_1_Rotulo" x="36" y="350" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Como foi</text>
+      <g id="Card_Nota_1_Barra">
+    <rect id="Card_Nota_1_Barra_Trilho" x="146" y="342" width="166" height="10" rx="5.0" fill="#1E1E2B"/>
+    <rect id="Card_Nota_1_Barra_Preenchimento" x="146" y="342" width="139.44" height="10" rx="5.0" fill="#3DD68C"/>
+  </g>
+    <text id="Card_Nota_1_Valor" x="354" y="350" text-anchor="end" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">4,2</text>
+  </g>
+      <g id="Card_Nota_2">
+    <text id="Card_Nota_2_Rotulo" x="36" y="384" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Entenderam</text>
+      <g id="Card_Nota_2_Barra">
+    <rect id="Card_Nota_2_Barra_Trilho" x="146" y="376" width="166" height="10" rx="5.0" fill="#1E1E2B"/>
+    <rect id="Card_Nota_2_Barra_Preenchimento" x="146" y="376" width="126.16" height="10" rx="5.0" fill="#C24BEE"/>
+  </g>
+    <text id="Card_Nota_2_Valor" x="354" y="384" text-anchor="end" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">3,8</text>
+  </g>
+      <g id="Card_Nota_3">
+    <text id="Card_Nota_3_Rotulo" x="36" y="418" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Dificuldade</text>
+      <g id="Card_Nota_3_Barra">
+    <rect id="Card_Nota_3_Barra_Trilho" x="146" y="410" width="166" height="10" rx="5.0" fill="#1E1E2B"/>
+    <rect id="Card_Nota_3_Barra_Preenchimento" x="146" y="410" width="79.68" height="10" rx="5.0" fill="#F5A524"/>
+  </g>
+    <text id="Card_Nota_3_Valor" x="354" y="418" text-anchor="end" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">2,4</text>
+  </g>
+  </g>
+  <g id="Card_Escala_Rel">
+    <rect id="Card_Escala_Rel_Fundo" x="20" y="464" width="350" height="105" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Card_Escala_Titulo" x="36" y="494" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Escala cumprida</text>
+    <text id="Card_Escala_Valor" x="354" y="494" text-anchor="end" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">22 de 24</text>
+      <g id="Card_Escala_Barra">
+    <rect id="Card_Escala_Barra_Trilho" x="36" y="514" width="318" height="10" rx="5.0" fill="#1E1E2B"/>
+    <rect id="Card_Escala_Barra_Preenchimento" x="36" y="514" width="291.5" height="10" rx="5.0" fill="#C24BEE"/>
+  </g>
+    <text id="Card_Escala_Meta" x="36" y="546" font-family="Inter" font-size="12" font-weight="500" fill="#F5A524">2 treinos ficaram sem técnico definido</text>
+  </g>
+  <g id="Card_Conteudo_Rel">
+    <rect id="Card_Conteudo_Rel_Fundo" x="20" y="596" width="350" height="105" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Card_Conteudo_Titulo" x="36" y="626" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Conteúdo aplicado</text>
+    <text id="Card_Conteudo_Valor" x="354" y="626" text-anchor="end" font-family="Inter" font-size="16" font-weight="500" fill="#3DD68C">4 de 4</text>
+      <g id="Card_Conteudo_Barra">
+    <rect id="Card_Conteudo_Barra_Trilho" x="36" y="646" width="318" height="10" rx="5.0" fill="#1E1E2B"/>
+    <rect id="Card_Conteudo_Barra_Preenchimento" x="36" y="646" width="318.0" height="10" rx="5.0" fill="#3DD68C"/>
+  </g>
+    <text id="Card_Conteudo_Meta" x="36" y="678" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">As quatro semanas do mês tiveram devocional</text>
+  </g>
+  <g id="Scrim_Nav">
+    <rect id="Scrim_Fundo" x="0" y="712" width="390" height="132" fill="url(#grad_scrim)"/>
+    <rect id="Scrim_Brilho" x="-4" y="726" width="398" height="112" fill="url(#grad_brilho_nav)"/>
+  </g>
+  <g id="Nav_Bottom">
+    <rect id="Nav_Fundo" x="20" y="752" width="350" height="60" rx="24" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <rect id="Nav_Lente_Halo" x="196.8" y="746" width="84" height="72" fill="url(#grad_lente_halo)"/>
+    <rect id="Nav_Lente" x="210.8" y="762.0" width="56" height="40" rx="16" fill="#9E05D2"/>
+    <rect id="Nav_Lente_Brilho" x="210.8" y="762.0" width="56" height="40" rx="16" fill="url(#grad_lente)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+      <g id="Nav_Chamada">
+    <rect id="Nav_Chamada_Alvo" x="20.0" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(63.8 782.0) scale(1.3) translate(-9 -9)"><path d="M5.5 2.5 h-3 a1.5 1.5 0 0 0 -1.5 1.5 v12 a1.5 1.5 0 0 0 1.5 1.5 h13 a1.5 1.5 0 0 0 1.5 -1.5 v-12 a1.5 1.5 0 0 0 -1.5 -1.5 h-3" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="5.5" y="0.8" width="7" height="3.6" rx="1.2" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M5 10.5 L8 13.5 L13.2 8" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Jogo">
+    <rect id="Nav_Jogo_Alvo" x="107.4" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(151.2 782.0) scale(1.3) translate(-9 -9)"><rect x="0.5" y="1.5" width="17" height="15" rx="2" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M9 1.5 L9 16.5" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="9" r="3.1" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M0.5 5.8 L3.8 5.8 L3.8 12.2 L0.5 12.2" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 5.8 L14.2 5.8 L14.2 12.2 L17.5 12.2" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Secretaria">
+    <rect id="Nav_Secretaria_Alvo" x="195.1" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(238.8 782.0) scale(1.3) translate(-9 -9)"><path d="M2 17 L2 10" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 17 L8.5 2" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 17 L15 7" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Estudo">
+    <rect id="Nav_Estudo_Alvo" x="282.4" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(326.2 782.0) scale(1.3) translate(-9 -9)"><path d="M9 4 L9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4 C6.6 2.2 3.6 2 1.2 2.8 L1.2 14.2 C3.8 13.4 6.8 14.6 9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4 C11.4 2.2 14.4 2 16.8 2.8 L16.8 14.2 C14.2 13.4 11.2 14.6 9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+  </g>
+</svg>

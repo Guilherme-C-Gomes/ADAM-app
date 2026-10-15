@@ -1,0 +1,123 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Ajustes_NovoUsuario" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Novo usuário</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Ele recebe um convite e cria a própria senha</text>
+  </g>
+  <g id="Novo_Usuario_Nome">
+    <text id="Novo_Usuario_Nome_Etiqueta" x="20" y="216" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">NOME</text>
+    <rect id="Novo_Usuario_Nome_Fundo" x="20" y="224" width="350" height="52" rx="12" fill="#1E1E2B" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Novo_Usuario_Nome_Valor" x="36" y="255.0" font-family="Inter" font-size="16" font-weight="400" fill="#FFFFFF">Rafael Nunes</text>
+  </g>
+  <g id="Novo_Usuario_Email">
+    <text id="Novo_Usuario_Email_Etiqueta" x="20" y="310" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">E-MAIL</text>
+    <rect id="Novo_Usuario_Email_Fundo" x="20" y="318" width="350" height="52" rx="12" fill="#1E1E2B" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Novo_Usuario_Email_Valor" x="36" y="349.0" font-family="Inter" font-size="16" font-weight="400" fill="#FFFFFF">rafael@adam.org.br</text>
+  </g>
+<text id="Overline_Funcao" x="20" y="406" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">FUNÇÃO</text>
+  <g id="Filtros_Funcao">
+      <g id="Funcao_Treinador">
+    <rect id="Funcao_Treinador_Fundo" x="20" y="418" width="98" height="44" rx="16" fill="#9E05D2"/><rect id="Funcao_Treinador_Brilho" x="20" y="418" width="98" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Funcao_Treinador_Rotulo" x="69.0" y="444.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Treinador</text>
+  </g>
+      <g id="Funcao_Professor">
+    <rect id="Funcao_Professor_Fundo" x="126" y="418" width="94" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Funcao_Professor_Rotulo" x="173.0" y="444.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Professor</text>
+  </g>
+      <g id="Funcao_Secretaria">
+    <rect id="Funcao_Secretaria_Fundo" x="228" y="418" width="102" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Funcao_Secretaria_Rotulo" x="279.0" y="444.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Secretaria</text>
+  </g>
+  </g>
+<text id="Overline_Permissao" x="20" y="490" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">PERMISSÃO</text>
+  <g id="Card_Permissao">
+    <rect id="Card_Permissao_Fundo" x="20" y="502" width="350" height="200" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Perm_1">
+    <rect id="Perm_1_Alvo" x="24" y="518" width="342" height="52" fill="#15151F" opacity="0"/>
+      <g id="Perm_1_Radio">
+    <circle id="Perm_1_Radio_Anel" cx="54" cy="534" r="11" fill="none" stroke="#9E05D2" stroke-width="1.8"/>
+    <circle id="Perm_1_Radio_Ponto" cx="54" cy="534" r="5.5" fill="#9E05D2" opacity="1"/>
+  </g>
+    <text id="Perm_1_Titulo" x="78" y="538" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Ver e registrar</text>
+    <text id="Perm_1_Texto" x="78" y="556" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Chamada e setor. Da criança, só nome e idade</text>
+  </g>
+      <g id="Perm_2">
+    <rect id="Perm_2_Alvo" x="24" y="574" width="342" height="52" fill="#15151F" opacity="0"/>
+      <g id="Perm_2_Radio">
+    <circle id="Perm_2_Radio_Anel" cx="54" cy="590" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="Perm_2_Radio_Ponto" cx="54" cy="590" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+    <text id="Perm_2_Titulo" x="78" y="594" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Coordenar setor</text>
+    <text id="Perm_2_Texto" x="78" y="612" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Também monta a escala e a comissão</text>
+  </g>
+      <g id="Perm_3">
+    <rect id="Perm_3_Alvo" x="24" y="630" width="342" height="52" fill="#15151F" opacity="0"/>
+      <g id="Perm_3_Radio">
+    <circle id="Perm_3_Radio_Anel" cx="54" cy="646" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="Perm_3_Radio_Ponto" cx="54" cy="646" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+    <text id="Perm_3_Titulo" x="78" y="650" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Acesso total</text>
+    <text id="Perm_3_Texto" x="78" y="668" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Vê tudo, inclusive dados e fichas</text>
+  </g>
+  </g>
+  <g id="Botao_Convidar">
+    <rect id="Botao_Convidar_Fundo" x="20" y="718" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_Convidar_Rotulo" x="195.0" y="749.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Enviar convite</text>
+  </g>
+</svg>

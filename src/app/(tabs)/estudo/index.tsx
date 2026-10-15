@@ -1,111 +1,324 @@
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { Card, Chip, Overline } from '@/components/ui'
-import { HeroSetor } from '@/components/ui/setor'
-import { Esqueleto, SkeletonCard, SkeletonLista } from '@/components/ui/skeleton'
-import { useCarregamento } from '@/hooks/use-carregamento'
-import { SEMANAS, chamadaDeHoje, conteudoDaSemana, escalaEstudo } from '@/data/estudo'
+import { Card, Overline } from '@/components/ui'
+import { Aviso, Botao, Busca, Grupo, Linha, Marca, Selo } from '@/components/ui/form'
+import { Icone } from '@/components/ui/icone'
+import { mostrarRecado } from '@/components/ui/recado'
+import { HeroSetor, Segmentado } from '@/components/ui/setor'
+import { Esqueleto, SkeletonCard, SkeletonFaixa, SkeletonLista } from '@/components/ui/skeleton'
+import { rotuloCurto } from '@/data/calendario'
+import { NOME_TURMA, useUnidades } from '@/data/chamada'
+import {
+  ABAS_ESTUDO,
+  devolver,
+  diaMes,
+  horaCurta,
+  novoEmprestimo,
+  useAulas,
+  useBiblioteca,
+  type AbaEstudo,
+} from '@/data/estudo'
+import { deISO, hojeISO } from '@/data/metricas'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
 /**
- * Tela 13. Escala (quem da), conteudo (o que se ensina) e chamada (quem
- * veio) sao o mesmo dia de trabalho do professor, entao moram juntos.
+ * Tela 13. As duas frentes do Estudo em abas: Biblioteca (o livro que a
+ * crianca leva para casa) e Devocional (a aula). Tudo do banco
+ * (data/estudo.ts).
+ *
+ * A chamada saiu daqui: virou a primeira aba da barra, uma so para o app
+ * inteiro, e morar no Estudo dizia que ela era do professor.
  */
 export default function Estudo() {
-  const [semana, setSemana] = useState<(typeof SEMANAS)[number]>('Esta semana')
-  const [todaEscala, setTodaEscala] = useState(false)
-  const carregando = useCarregamento()
+  const { aba: abaInicial } = useLocalSearchParams<{ aba?: AbaEstudo }>()
+  // A Biblioteca abre o setor: e o trabalho de toda semana, com o livro na
+  // mao. O devocional e o planejamento da semana, e fica a um toque.
+  const [aba, setAba] = useState<AbaEstudo>(abaInicial ?? 'Biblioteca')
+  const biblioteca = useBiblioteca()
+  const devocional = useAulas()
+
+  const subtitulo =
+    aba === 'Biblioteca'
+      ? `Biblioteca · ${biblioteca.livros.length} ${biblioteca.livros.length === 1 ? 'título' : 'títulos'}`
+      : `Devocional · ${devocional.aulas.length} ${devocional.aulas.length === 1 ? 'aula marcada' : 'aulas marcadas'}`
+  const carregando = aba === 'Biblioteca' ? biblioteca.carregando : devocional.carregando
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
-      <HeroSetor titulo="Estudo" subtitulo="Semana de 1 a 7 de setembro" />
+      <HeroSetor titulo="Estudo" subtitulo={subtitulo} />
 
-      <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
-        <View style={st.filtros}>
-          {SEMANAS.map((s) => (
-            <Chip key={s} rotulo={s} ativo={semana === s} onPress={() => setSemana(s)} />
-          ))}
-        </View>
+      <ScrollView
+        contentContainerStyle={st.conteudo}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}>
+        <Segmentado opcoes={ABAS_ESTUDO} valor={aba} onChange={setAba} />
 
         {carregando ? (
           <Esqueleto>
-            <SkeletonCard altura={140} />
-            <SkeletonLista linhas={3} />
+            <SkeletonFaixa />
+            <SkeletonLista linhas={4} />
             <SkeletonCard altura={96} />
           </Esqueleto>
+        ) : aba === 'Biblioteca' ? (
+          <Biblioteca />
         ) : (
-          <>
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
-          <Card style={st.cardChamada}>
-            <View style={st.acentoAviso} />
-            <View style={st.linhaTopo}>
-              <Text style={st.cardTitulo}>Chamada de hoje</Text>
-              {chamadaDeHoje.aberta ? (
-                <View style={st.selo}>
-                  <Text style={st.seloRotulo}>aberta</Text>
-                </View>
-              ) : null}
-            </View>
-            <Text style={st.legenda}>
-              {chamadaDeHoje.hora} · {chamadaDeHoje.turma} ·{' '}
-              {chamadaDeHoje.marcadas ? `${chamadaDeHoje.marcadas} marcadas` : 'sem presença marcada'}
-            </Text>
-            <Pressable
-              onPress={() => router.push('/estudo/chamada')}
-              style={({ pressed }) => [st.botao, pressed && st.pressed]}
-              accessibilityRole="button">
-              <Text style={st.botaoRotulo}>Fazer chamada</Text>
-            </Pressable>
-          </Card>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)} style={st.secao}>
-          <Overline>Escala da semana</Overline>
-          <Card style={st.cardLista}>
-            {(todaEscala ? escalaEstudo : escalaEstudo.slice(0, 3)).map((l, i, arr) => (
-              <View key={l.id} style={[st.linha, i < arr.length - 1 && st.divisoria]}>
-                <Text style={st.dia}>{l.dia}</Text>
-                <Text style={st.hora}>{l.hora}</Text>
-                <Text style={[st.nome, !l.responsavel && st.aviso]}>
-                  {l.responsavel ?? 'a definir'}
-                </Text>
-                <Text style={st.legenda}>{l.turma}</Text>
-              </View>
-            ))}
-            <Pressable
-              onPress={() => setTodaEscala((v) => !v)}
-              style={st.linha}
-              hitSlop={space.sm}
-              accessibilityRole="button">
-              <Text style={st.link}>
-                {todaEscala
-                  ? 'Mostrar só os próximos'
-                  : `Ver escala completa · ${escalaEstudo.length}`}
-              </Text>
-            </Pressable>
-          </Card>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)} style={st.secao}>
-          <Overline>Conteúdo da semana</Overline>
-          <Card style={st.linhaNav}>
-            <View style={st.linhaTexto}>
-              <Text style={st.cardTitulo}>{conteudoDaSemana.tema}</Text>
-              <Text style={st.legenda}>{conteudoDaSemana.objetivo}</Text>
-              <View style={st.seloRoxo}>
-                <Text style={st.seloRoxoRotulo}>{conteudoDaSemana.materiais} materiais</Text>
-              </View>
-            </View>
-          </Card>
-        </Animated.View>
-          </>
+          <Devocional />
         )}
       </ScrollView>
     </SafeAreaView>
+  )
+}
+
+/** Aba 13f: o que esta fora da estante e a porta para o acervo. */
+function Biblioteca() {
+  const { livros, emprestimos, criancas, erro } = useBiblioteca()
+  const [busca, setBusca] = useState('')
+  const [devolvendo, setDevolvendo] = useState<string | null>(null)
+
+  const termo = busca.trim().toLowerCase()
+  const fora = emprestimos
+    .map((e) => ({
+      emprestimo: e,
+      livro: livros.find((l) => l.id === e.livroId),
+      crianca: criancas[e.criancaId],
+    }))
+    .filter((x) =>
+      termo
+        ? (x.livro?.titulo ?? '').toLowerCase().includes(termo) ||
+          (x.crianca?.nome ?? '').toLowerCase().includes(termo)
+        : true,
+    )
+  const atrasados = fora.filter((x) => x.emprestimo.atrasado).length
+
+  const marcarDevolvido = async (id: string, titulo: string) => {
+    setDevolvendo(id)
+    try {
+      await devolver(id)
+      mostrarRecado(`“${titulo}” voltou para a estante`)
+    } catch (e) {
+      mostrarRecado(e instanceof Error ? e.message : 'Não foi possível registrar a devolução.')
+    } finally {
+      setDevolvendo(null)
+    }
+  }
+
+  return (
+    <>
+      {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
+
+      <Busca valor={busca} onChange={setBusca} placeholder="Buscar livro ou quem levou" />
+
+      <Animated.View entering={FadeInDown.duration(motion.medium)} style={st.secao}>
+        <View style={st.linhaTopo}>
+          <Overline>{`Fora da estante · ${fora.length}`}</Overline>
+          {atrasados ? (
+            <Text style={st.legendaAviso}>
+              {atrasados} {atrasados === 1 ? 'atrasado' : 'atrasados'}
+            </Text>
+          ) : null}
+        </View>
+
+        {fora.length ? (
+          <Grupo>
+            {fora.map(({ emprestimo, livro, crianca }) => {
+              const titulo = livro?.titulo ?? 'Livro'
+              return (
+                <View key={emprestimo.id} style={st.linhaLivro}>
+                  <Pressable
+                    onPress={() => marcarDevolvido(emprestimo.id, titulo)}
+                    disabled={devolvendo === emprestimo.id}
+                    hitSlop={space.md}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: false, busy: devolvendo === emprestimo.id }}
+                    accessibilityLabel={`Marcar ${titulo} como devolvido`}>
+                    <Marca ativa={devolvendo === emprestimo.id} />
+                  </Pressable>
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: '/estudo/contato/[id]',
+                        params: { id: emprestimo.id },
+                      })
+                    }
+                    style={({ pressed }) => [st.linhaTexto, pressed && st.pressed]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${titulo}, falar com a família`}>
+                    <Text style={st.linhaNome} numberOfLines={1}>
+                      {titulo}
+                    </Text>
+                    <Text style={st.legenda} numberOfLines={1}>
+                      {crianca?.nome ?? 'criança sem ficha ativa'} · entrega{' '}
+                      {diaMes(emprestimo.entrega)}
+                    </Text>
+                  </Pressable>
+                  <Selo
+                    rotulo={emprestimo.atrasado ? 'atrasado' : 'em dia'}
+                    tom={emprestimo.atrasado ? 'vermelho' : 'verde'}
+                  />
+                  <Icone nome="seta" cor={color.faint} />
+                </View>
+              )
+            })}
+          </Grupo>
+        ) : (
+          <Card>
+            <Text style={st.legenda}>
+              {termo ? 'Nenhum empréstimo com esse nome.' : 'Todos os livros estão na estante.'}
+            </Text>
+          </Card>
+        )}
+        {fora.length ? (
+          <Text style={st.legendaFraca}>Marque o quadrado quando o livro voltar.</Text>
+        ) : null}
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+        <Grupo>
+          <Linha
+            titulo="Acervo"
+            legenda="Títulos, tipos e exemplares"
+            selo={{ rotulo: `${livros.length} ${livros.length === 1 ? 'título' : 'títulos'}` }}
+            onPress={() => router.push('/estudo/acervo')}
+          />
+        </Grupo>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+        <Botao
+          rotulo="Emprestar livro"
+          onPress={() => {
+            novoEmprestimo()
+            router.push('/estudo/emprestar')
+          }}
+        />
+      </Animated.View>
+    </>
+  )
+}
+
+/** Aba 13: a aula de hoje, a escala e o que falta definir. */
+function Devocional() {
+  const { aulas, professores, erro } = useAulas()
+  const unidades = useUnidades()
+  const hoje = hojeISO()
+  const deHoje = aulas.filter((a) => a.data === hoje)
+  const semProfessor = aulas.filter((a) => !a.professorId)
+
+  const nomeProfessor = (id: string | null) =>
+    id ? (professores.find((p) => p.id === id)?.nome ?? 'professor sem acesso') : null
+  const nomeUnidade = (id: string) => unidades.dados.find((u) => u.id === id)?.nome ?? ''
+  const variasUnidades = unidades.dados.length > 1
+
+  const abrir = (id: string, completa: boolean) =>
+    completa
+      ? router.push({ pathname: '/estudo/aula/[id]', params: { id } })
+      : router.push({ pathname: '/estudo/definir-aula', params: { id } })
+
+  return (
+    <>
+      {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
+
+      {deHoje.length ? (
+        <Animated.View entering={FadeInDown.duration(motion.medium)} style={st.secao}>
+          <Overline>Aula de hoje</Overline>
+          {deHoje.map((a) => (
+            <Pressable
+              key={a.id}
+              onPress={() => router.push({ pathname: '/estudo/aula/[id]', params: { id: a.id } })}
+              style={({ pressed }) => pressed && st.pressed}
+              accessibilityRole="button"
+              accessibilityLabel={`Aula dos ${NOME_TURMA[a.turma]}`}>
+              <Card style={st.cardAula}>
+                <View style={st.acento} />
+                <View style={st.linhaTexto}>
+                  <Text style={st.linhaNome}>
+                    {NOME_TURMA[a.turma]}
+                    {variasUnidades ? ` · ${nomeUnidade(a.unidadeId)}` : ''}
+                  </Text>
+                  <Text style={st.legenda}>
+                    {nomeProfessor(a.professorId) ?? 'professor a definir'}
+                    {a.historia ? ` — ${a.historia}` : ''}
+                  </Text>
+                </View>
+                <Selo rotulo={horaCurta(a.hora)} tom="roxo" />
+                <Icone nome="seta" cor={color.faint} />
+              </Card>
+            </Pressable>
+          ))}
+        </Animated.View>
+      ) : null}
+
+      <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)} style={st.secao}>
+        <View style={st.linhaTopo}>
+          <Overline>Escala das aulas</Overline>
+          <Text style={st.legenda}>
+            {aulas.length} {aulas.length === 1 ? 'aula' : 'aulas'}
+          </Text>
+        </View>
+        {aulas.length ? (
+          <Grupo>
+            {aulas.map((a) => {
+              const professor = nomeProfessor(a.professorId)
+              const completa = !!professor && !!a.historia
+              return (
+                <Linha
+                  key={a.id}
+                  titulo={`${rotuloCurto(deISO(a.data))} · ${horaCurta(a.hora)} · ${NOME_TURMA[a.turma]}${variasUnidades ? ` · ${nomeUnidade(a.unidadeId)}` : ''}`}
+                  legenda={`${professor ?? 'professor a definir'} — ${a.historia ?? 'história a definir'}`}
+                  legendaTom={completa ? undefined : 'ambar'}
+                  selo={a.historia ? undefined : { rotulo: 'sem conteúdo', tom: 'ambar' }}
+                  onPress={() => abrir(a.id, completa)}
+                />
+              )
+            })}
+          </Grupo>
+        ) : (
+          <Card>
+            <Text style={st.legenda}>
+              Nenhuma aula marcada daqui para frente. Marque a próxima no botão abaixo.
+            </Text>
+          </Card>
+        )}
+      </Animated.View>
+
+      {semProfessor.length ? (
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: '/estudo/definir-aula',
+                params: { id: semProfessor[0].id },
+              })
+            }
+            style={({ pressed }) => pressed && st.pressed}
+            accessibilityRole="button">
+            <Card style={st.cardAlerta}>
+              <View style={st.acentoAviso} />
+              <View style={st.linhaTexto}>
+                <Text style={st.linhaNome}>
+                  {semProfessor.length}{' '}
+                  {semProfessor.length === 1 ? 'aula sem professor' : 'aulas sem professor'}
+                </Text>
+                <Text style={st.legenda}>{semProfessor.map((a) => diaMes(a.data)).join(', ')}</Text>
+              </View>
+              <Icone nome="seta" cor={color.faint} />
+            </Card>
+          </Pressable>
+        </Animated.View>
+      ) : null}
+
+      <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
+        <Botao
+          variante="secundario"
+          rotulo="Marcar aula"
+          onPress={() => router.push('/estudo/definir-aula')}
+        />
+      </Animated.View>
+    </>
   )
 }
 
@@ -113,17 +326,45 @@ const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
   conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
   secao: { gap: space.md },
-  filtros: { flexDirection: 'row', gap: space.sm },
 
-  cardTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
-  legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
-  aviso: { color: color.warn },
   linhaTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  pressed: { opacity: 0.85 },
-  chevron: { ...type.body, color: color.faint },
-  link: { ...type.small, fontFamily: 'Inter_600SemiBold', color: onDark.text },
+  legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
+  legendaAviso: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.danger },
+  legendaFraca: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.faint },
+  linhaNome: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  linhaTexto: { flex: 1, gap: 2 },
+  pressed: { opacity: 0.7 },
 
-  cardChamada: { paddingLeft: space.lg, overflow: 'hidden' },
+  linhaLivro: {
+    minHeight: target.minimo + 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingVertical: space.md,
+  },
+
+  cardAula: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingLeft: space.lg,
+    overflow: 'hidden',
+  },
+  cardAlerta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingLeft: space.lg,
+    overflow: 'hidden',
+  },
+  acento: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    backgroundColor: onDark.fill,
+  },
   acentoAviso: {
     position: 'absolute',
     left: 0,
@@ -132,47 +373,5 @@ const st = StyleSheet.create({
     width: 3,
     backgroundColor: color.warn,
   },
-  selo: {
-    paddingHorizontal: space.md,
-    paddingVertical: space.xs,
-    borderRadius: radius.chip,
-    borderCurve: 'continuous',
-    backgroundColor: 'rgba(245, 165, 36, 0.14)',
-  },
-  seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.warn },
-  seloRoxo: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: space.md,
-    paddingVertical: space.xs,
-    borderRadius: radius.chip,
-    borderCurve: 'continuous',
-    backgroundColor: color.primaryDk,
-  },
-  seloRoxoRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.primaryCh },
-
-  cardLista: { paddingVertical: space.xs, gap: 0 },
-  linha: {
-    minHeight: target.minimo,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    paddingVertical: space.md,
-  },
-  divisoria: { borderBottomWidth: 1, borderBottomColor: color.divider },
-  dia: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.muted, width: 32 },
-  hora: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text, width: 36 },
-  nome: { ...type.small, fontFamily: 'Inter_400Regular', color: color.text, flex: 1 },
-
-  linhaNav: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  linhaTexto: { flex: 1, gap: space.xs },
-
-  botao: {
-    minHeight: target.minimo,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.botao,
-    borderCurve: 'continuous',
-    backgroundColor: onDark.fill,
-  },
-  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  radius: { borderRadius: radius.card },
 })

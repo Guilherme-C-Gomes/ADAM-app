@@ -1,0 +1,1184 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manual do ADAM Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0A0A12; --surface:#15151F; --surface2:#1E1E2B;
+  --border:#2E2E42; --divider:#23233A;
+  --text:#FFFFFF; --muted:#9A9AAD; --faint:#8A8AA0;
+  --primary:#9E05D2; --primaryLt:#C24BEE; --primaryCh:#D06CF5;
+  --primaryDk:#3A0A52;
+  --success:#3DD68C; --warn:#F5A524; --danger:#FF7A85;
+  --nav: 260px;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:24px; }
+body {
+  margin:0; background:#07070E; color:var(--text); color-scheme:dark;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+a { color:var(--primaryCh); }
+code {
+  font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:.85em; background:var(--surface2); border:1px solid var(--border);
+  border-radius:6px; padding:1px 6px; color:var(--primaryCh);
+}
+
+/* ---------- navegacao lateral ---------- */
+nav {
+  position:fixed; inset:0 auto 0 0; width:var(--nav); overflow-y:auto;
+  background:var(--surface); border-right:1px solid var(--border);
+  padding:28px 20px 40px;
+}
+nav .marca { display:flex; align-items:center; gap:9px; margin-bottom:26px; }
+nav .marca img.s { height:30px; }
+nav .marca img.w { height:19px; }
+nav b {
+  display:block; font-size:11px; letter-spacing:1.2px; text-transform:uppercase;
+  color:var(--faint); margin:22px 0 8px; font-weight:600;
+}
+nav a {
+  display:block; padding:5px 10px; margin:0 -10px; border-radius:8px;
+  color:var(--muted); text-decoration:none; font-size:14px;
+}
+nav a:hover { background:var(--surface2); color:var(--text); }
+
+main { margin-left:var(--nav); padding:56px 48px 120px; max-width:1040px; }
+section { margin-bottom:76px; scroll-margin-top:24px; }
+
+h1 { font-size:40px; line-height:1.12; font-weight:700; letter-spacing:-.6px;
+     margin:0 0 12px; }
+h2 { font-size:27px; font-weight:700; letter-spacing:-.3px; margin:0 0 6px;
+     padding-top:8px; }
+h2 .n { color:var(--primaryLt); font-variant-numeric:tabular-nums;
+        margin-right:12px; }
+h3 { font-size:18px; font-weight:600; margin:38px 0 12px;
+     display:flex; align-items:baseline; gap:12px; }
+h3 em { font-style:normal; font-size:12px; font-weight:500; color:var(--faint); }
+h4 { font-size:15px; font-weight:600; margin:26px 0 6px; color:var(--text); }
+p  { margin:0 0 14px; color:var(--muted); max-width:72ch; }
+p.lead { font-size:18px; color:var(--text); }
+ul { margin:0 0 16px; padding-left:20px; color:var(--muted); max-width:72ch; }
+li { margin-bottom:7px; }
+hr { border:0; border-top:1px solid var(--divider); margin:44px 0; }
+.sub { color:var(--faint); font-size:14px; margin-bottom:34px; }
+
+/* ---------- capa ---------- */
+.capa {
+  border:1px solid var(--border); border-radius:20px; padding:40px 36px;
+  background:linear-gradient(160deg,#101030,#0C0C1C 62%);
+  position:relative; overflow:hidden; margin-bottom:52px;
+}
+.capa::after {
+  content:""; position:absolute; right:-90px; top:-120px;
+  width:420px; height:420px; border-radius:50%;
+  background:radial-gradient(circle,#5B0E8655,transparent 68%);
+}
+.capa .lock { display:flex; align-items:center; gap:12px; margin-bottom:26px; }
+.capa .lock img.s { height:46px; }
+.capa .lock img.w { height:29px; }
+.capa p { color:#C9C9DA; max-width:62ch; }
+
+.numeros { display:flex; flex-wrap:wrap; gap:26px; margin-top:26px;
+           position:relative; z-index:1; }
+.numeros div b { display:block; font-size:28px; font-weight:700;
+                 font-variant-numeric:tabular-nums; }
+.numeros div span { font-size:12px; color:var(--faint); }
+
+/* ---------- blocos ---------- */
+.cartoes { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(248px,1fr));
+           margin-bottom:18px; }
+.cartao { background:var(--surface); border:1px solid var(--border);
+          border-radius:14px; padding:18px 20px; }
+.cartao h4 { margin:0 0 6px; }
+.cartao p { margin:0; font-size:14px; }
+
+.nota {
+  border-left:3px solid var(--primaryLt); background:var(--surface);
+  border-radius:0 12px 12px 0; padding:16px 20px; margin:22px 0;
+}
+.nota p:last-child { margin-bottom:0; }
+.nota.aviso { border-left-color:var(--warn); }
+.nota.perigo { border-left-color:var(--danger); }
+
+/* ---------- cores ---------- */
+.cores { display:grid; gap:12px;
+         grid-template-columns:repeat(auto-fill,minmax(236px,1fr)); }
+.sw { margin:0; background:var(--surface); border:1px solid var(--border);
+      border-radius:12px; overflow:hidden; }
+.sw-cor { height:66px; }
+.sw figcaption { padding:11px 13px 13px; font-size:13px; }
+.sw b { display:block; margin-bottom:3px; }
+.sw code { font-size:11.5px; }
+.sw em { display:block; font-style:normal; color:var(--faint); font-size:11.5px;
+         margin-top:6px; line-height:1.45; }
+.tag { display:inline-block; margin-left:6px; font-size:10.5px; padding:1px 7px;
+       border-radius:20px; font-weight:600; vertical-align:2px; }
+.tag.ok    { background:#0E2E22; color:var(--success); }
+.tag.meio  { background:#33240A;    color:var(--warn); }
+.tag.ruim  { background:#3A1418;  color:var(--danger); }
+.tag.neutro{ display:none; }
+
+/* ---------- tabelas ---------- */
+table { width:100%; border-collapse:collapse; margin:14px 0 22px; font-size:14px; }
+th { text-align:left; font-size:11px; letter-spacing:1.1px; text-transform:uppercase;
+     color:var(--faint); font-weight:600; padding:0 12px 9px 0;
+     border-bottom:1px solid var(--border); }
+td { padding:11px 12px 11px 0; border-bottom:1px solid var(--divider);
+     color:var(--muted); vertical-align:top; }
+td.num { font-variant-numeric:tabular-nums; white-space:nowrap; }
+td b { color:var(--text); font-weight:600; }
+
+/* ---------- marca ---------- */
+.marcas { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); }
+.mbox { border:1px solid var(--border); border-radius:14px; padding:28px;
+        display:flex; align-items:center; justify-content:center; min-height:128px; }
+.mbox.claro { background:#F4F2F7; }
+.mbox.escuro { background:#0A0A12; }
+.mbox.roxo { background:#3A0A52; }
+.mbox img { max-height:52px; max-width:80%; }
+.marcas > div { display:flex; flex-direction:column; gap:9px; }
+.mlegenda { font-size:12px; color:var(--faint); text-align:center; margin:0; }
+
+.proibido { display:grid; gap:12px;
+            grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); }
+.proibido div { background:var(--surface); border:1px solid var(--border);
+                border-left:3px solid var(--danger); border-radius:0 12px 12px 0;
+                padding:13px 16px; font-size:13.5px; color:var(--muted); }
+
+/* ---------- telas ---------- */
+.telas { display:grid; gap:14px;
+         grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); }
+.tela { text-decoration:none; color:var(--muted); }
+.tela img { width:100%; display:block; border:1px solid var(--border);
+            border-radius:12px; background:var(--bg); }
+.tela span { display:block; font-size:11.5px; margin-top:7px; line-height:1.35; }
+.tela:hover img { border-color:var(--primaryLt); }
+.tela:hover span { color:var(--text); }
+
+/* ---------- regras ---------- */
+.regra { display:grid; grid-template-columns:54px 1fr; gap:16px;
+         padding:15px 0; border-bottom:1px solid var(--divider); }
+.regra .id { font-weight:700; color:var(--primaryLt);
+             font-variant-numeric:tabular-nums; }
+.regra b { display:block; margin-bottom:3px; }
+.regra p { margin:0; font-size:14px; }
+
+@media (max-width:860px) {
+  nav { position:static; width:auto; height:auto; border-right:0;
+        border-bottom:1px solid var(--border); padding:20px 16px; }
+  nav b { margin-top:16px; }
+  main { margin-left:0; padding:32px 16px 80px; }
+  h1 { font-size:30px; }
+  h2 { font-size:23px; }
+  .capa { padding:26px 20px; }
+}
+@media print {
+  nav { display:none; } main { margin:0; max-width:none; }
+  body { background:#fff; color:#111; }
+}
+</style>
+</head><body>
+<nav>
+  <div class="marca">
+    <img class="s" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABtBAMAAACsKHnVAAAAGFBMVEX///////8AAAD///////////////////+tnBnwAAAACHRSTlOdTgD+BM4wboFNRSgAAAUkSURBVHjavVhdbxtFFD2+dlOK6qydvlSJ7YwnpkKFOi6pqJCAhKo88YJ4r5SfUP4JEup7/wCo5QUJqd9FAppQJ62okNrJdE2hLWp24zRtCfE1D+vdnV2vNzZSOk/r8T17Z+69c+bczUgMOUhAAcgWh7OuWo7j1FqvDuSGs68oyDvrx0udCRoKULHnlVOqa2QbQy2JiiuY9B4vZIbZNGUP+o/zQy2JKwYYI45RAef3yAO/xj18vjcehHh9eyC9Rx4ujApY/P+btvc807sAqJexr8Kp3BDmxvh3MECCtQKEjs3nUliONte/uBVHJLEGCdaQZaulgfmmBkTRR3We93uQrBXNW+fqXtyjDvb3A0gh93TLQn3A3voAle6VuXxK6HJBUMAaANGVuT6ndjEG6AXFW3QjLZPbIICkUEqediq91KSNfSBIVqq2dW1ZXhfeVGR827c+UrSl8qU6MGcDQKWZdDDD52yjXuRJFwD4JFx0rU8em7aPC0Amsz+Avszuc13/1w9VB2j/MZYCwAvKhH8e0wB4qple8f8YIRbxAxwUtW/dhOmBLwsAdCnKeuG7l1v5CmjGWMEJG4CumefmbGD98aw8aAvkeDFEbAvWYL7ad9LK1TunLkKCNXL2o4NhjOtNAHa89ji7ugqSUF4tla+E1XPdBYAjz+IICbDqvbRgZqoz6QDd8Q96maWlDtYAwHEcP1vZYvvBm2Eg7r3tAhNPXwKgUsPaGHPi28lISCsslaqrAOpMoHPPelf3FE9kZIuwfi4EP5//1QW61fd/rHbG2tXxNScugtyMhLx/KJyb1Rog9ngpRlRgDeQAXQvXRAU/KipurQDa+kznAGafrMrVO00NxK09b7JstXQBGQnQziEA5e/z4wMIVoE+sr5uAJjVOS9TtGpZUwF1RChTAbWj5yw0TKqcb3FCDElAgeQvW3UjJh7NXAtKxbRmhdrKE2umn8hYBqUS1o8CbT05XiolMp9KuB86sy1d0rtzay9h4ra4MQQZh0uj99aTScC8UCQUIMvFpvYKMCEp+dCD7OWntcqbALh6rbGrh961QxZrQHbdRA8+QNLRR36sbi/oiBqOAHztbd1uB7VfetwFMtM/He4D7Pxt+UrApIquEADzYrp0MOLLdQCwL6UCuLIQTt4kAKiJVA+0atxkGgDz1QT7UPPp+wYzrAsvJGkeuGqw8ikCoI+k6yU6Fc7e1wLgnYW49X6zLdt4diAEn3RdoL39Mp6H7a6hyMybog0AeOgVwbJIXFIkUy3/Cqa7LUfGqDJ4q3F/9q7gt36f7ow5MqD37nbXqFYSBiuvLKiADLQVxpvNijDvqmPa51MVVZ7meaDSZvijGFIamR4iaFMDXDbkyCChG8nUCTupiY2xhp01DwXr3aX0w/ihAEiKqYEANsXSTRsgKVmpPwckDoA1E1bPzuRGtaAcmvnwjYA/imNulPlsg76yvzYUaivr1o1IixndQ/RQ2J962i5NewsDQaKP1KddHfsmYBZgt08F4Kpw4x1KWYzW0iRTRVoPZOdHbZpSP6Wc7QdEGHAoD/TNiAA9NiKASylrOp/UKZqs3PcJIemDlMmA8fFKJ3jgmYFqPWcnNq88YBPy7juVxG9k7ecJgaKlMw/YdhIBmenD8Su63Ci6v7Wr425iJTAXokv57oy6CBKeDElsXndCXUq3vlzRpihN7natQGZuqpi2S/yoJlZEbyna65UH0kxvTJRe0FInz2uuLI6vubs24CA+zZeRJNWB/wAMptggvqlvlAAAAABJRU5ErkJggg==" alt="Símbolo ADAM">
+    <img class="w" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAAB6BAMAAAAIdAHTAAAAGFBMVEX///////8AAAD///////////////////+tnBnwAAAACHRSTlOfbgD9BTHQR1GdOREAAARmSURBVHja7Zpdb1s1GMf/x6eMCbVbklbdS8eRcTvERdOl63Y1IY0JIdAkhOAL9CP0Ar4HHwCkfIGJatLEDdomEFes5aQgUDfVmLNBu6E2WbtptGt8uLB93nLak3RNxYV9keM8+j/++bH9OI4Th6H/hcBCLMRCLMRCLMRCLMRCLMRC+lYG9JNBEkiRoFNT4zluHfKEkzKzhKujvjowDgDEE3nB0o7W0nJmWtYGxkEoBwCmPBWEcVY+N/DHRhBTokikMNoEo0POwEG84K0SsC4YZ5yVgSZXvXEYACIvf1MF3Mb1JWm8vLum5nx+g6WGjMjzd6qA27gSSBMJB+P04fUtH6iOzFN+4VYVqN4aYtxAaMh8AMDUnzB9m1iPGnUbYzQZCpXjSTm91MJO/YsbTARVAED70Ymph0r66xgVgFsGyLMLygmPq4u0paqVF1Gj4eiKNGYAeF6L5QBK375YfXI2WJafPdeRDr0zvKaqo/edEHDLILL5r/H/+74TdkCMVjcRJuRrb4QoPS4BCE/9FpnJ0zVTHTt/vIUBAN5W3NxkJW+BYbISjSPdTci9kXhNzOQ5toeXAAJ4PySM7l2ap3VZEGVvSu4XZXNjCnDL5JmXNJ76J+wcLuCvsyfVrDhD5aR9ZDVUw7VXCZnTJPAm06lXyw/lthmgSsq+O0ULQrknQID5tHE+fwAuq/EiQUZ+MyiAuB9TZ8IdzOxm6zKTJ0p7Qm0lWTk5KRv7B9O4SnAmY9v2cn3aixQA5HbG/pIX7cEzgnij2fD2mMZP1TCOZ+VFc4JtSvBm1riHV0MAAPWz9loR5JgkqOt61ai/zE1H7KpHq0Oelv0S1RbMQJcGAu0lH7lmKomMfeQHO9/rBa8es76Wt3O78l75Zz0S02WzNVC30joNAPDDjWVV+0iEcTK695YnmwpyutQCSuU1LX+q5R+2xs6UBzd1r/3m2zuq+vrvW8c1JEqKOUo/yesaIz/lmeconTP1lYWFJT1VrxGyqnGb8PxoK5rdf9oEJvLNiD9EGWNzHQqZEBSfNUSRQHIu7eHOQizEQizEQizEQvp77QHSG64neaTlnPcCkb3Io0h+nMVXtHu/nuQR5Nx36IHRm9wu4WzRFzahPIJI5P8gGbPFeV99l5nvJ+TBg8OLdU+IuYPk/YxERq3Tjb5HAgSDRxCJudgj8tAh0f9ZnNv67kG8OiS4mrgKBhDfNGqGk/K7JtLy7iDvLqTT9VhWeelO8t2KD9l7JGyzQPn1teRqJuwgwyWLOlZKCWQvE9R1PrsXxYGXcNeQlwdndA+Z8Y4AstGPjM/qlmT/I7lC0XfIxZuy75D2iicOd078TgZ7lRkBCOpqAxTRVqhedyJJdZH58fqt1wC4rnlBrQ4AeOIaX+kCgBs3VYMzMa2c1wXGS+rstAjAvAHQ5InfH+mwlkf37e2WiOVtn2A6akUb153ijS7nx8ye50RTpEjUUh+/6bPE/nIpkicQo3DsPzotxEIsxEIs5BDKf/fcdrM3DUgLAAAAAElFTkSuQmCC" alt="ADAM">
+  </div>
+  <b>Manual</b>
+  <a href="#projeto">O projeto</a>
+<a href="#identidade">Identidade visual</a>
+<a href="#cor">Cor</a>
+<a href="#tipografia">Tipografia</a>
+<a href="#sistema">Design system</a>
+<a href="#movimento">Movimento</a>
+<a href="#app">O app, tela a tela</a>
+<a href="#regras">Regras do produto</a>
+<a href="#privacidade">Privacidade</a>
+<a href="#uso">Como usar isto</a>
+<a href="#aberto">O que está em aberto</a>
+  <b>Arquivos</b>
+  <a href="index.html">Protótipo navegável</a>
+  <a href="telas/">Telas em SVG</a>
+</nav>
+<main>
+<div class="capa">
+  <div class="lock">
+    <img class="s" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABtBAMAAACsKHnVAAAAGFBMVEX///////8AAAD///////////////////+tnBnwAAAACHRSTlOdTgD+BM4wboFNRSgAAAUkSURBVHjavVhdbxtFFD2+dlOK6qydvlSJ7YwnpkKFOi6pqJCAhKo88YJ4r5SfUP4JEup7/wCo5QUJqd9FAppQJ62okNrJdE2hLWp24zRtCfE1D+vdnV2vNzZSOk/r8T17Z+69c+bczUgMOUhAAcgWh7OuWo7j1FqvDuSGs68oyDvrx0udCRoKULHnlVOqa2QbQy2JiiuY9B4vZIbZNGUP+o/zQy2JKwYYI45RAef3yAO/xj18vjcehHh9eyC9Rx4ujApY/P+btvc807sAqJexr8Kp3BDmxvh3MECCtQKEjs3nUliONte/uBVHJLEGCdaQZaulgfmmBkTRR3We93uQrBXNW+fqXtyjDvb3A0gh93TLQn3A3voAle6VuXxK6HJBUMAaANGVuT6ndjEG6AXFW3QjLZPbIICkUEqediq91KSNfSBIVqq2dW1ZXhfeVGR827c+UrSl8qU6MGcDQKWZdDDD52yjXuRJFwD4JFx0rU8em7aPC0Amsz+Avszuc13/1w9VB2j/MZYCwAvKhH8e0wB4qple8f8YIRbxAxwUtW/dhOmBLwsAdCnKeuG7l1v5CmjGWMEJG4CumefmbGD98aw8aAvkeDFEbAvWYL7ad9LK1TunLkKCNXL2o4NhjOtNAHa89ji7ugqSUF4tla+E1XPdBYAjz+IICbDqvbRgZqoz6QDd8Q96maWlDtYAwHEcP1vZYvvBm2Eg7r3tAhNPXwKgUsPaGHPi28lISCsslaqrAOpMoHPPelf3FE9kZIuwfi4EP5//1QW61fd/rHbG2tXxNScugtyMhLx/KJyb1Rog9ngpRlRgDeQAXQvXRAU/KipurQDa+kznAGafrMrVO00NxK09b7JstXQBGQnQziEA5e/z4wMIVoE+sr5uAJjVOS9TtGpZUwF1RChTAbWj5yw0TKqcb3FCDElAgeQvW3UjJh7NXAtKxbRmhdrKE2umn8hYBqUS1o8CbT05XiolMp9KuB86sy1d0rtzay9h4ra4MQQZh0uj99aTScC8UCQUIMvFpvYKMCEp+dCD7OWntcqbALh6rbGrh961QxZrQHbdRA8+QNLRR36sbi/oiBqOAHztbd1uB7VfetwFMtM/He4D7Pxt+UrApIquEADzYrp0MOLLdQCwL6UCuLIQTt4kAKiJVA+0atxkGgDz1QT7UPPp+wYzrAsvJGkeuGqw8ikCoI+k6yU6Fc7e1wLgnYW49X6zLdt4diAEn3RdoL39Mp6H7a6hyMybog0AeOgVwbJIXFIkUy3/Cqa7LUfGqDJ4q3F/9q7gt36f7ow5MqD37nbXqFYSBiuvLKiADLQVxpvNijDvqmPa51MVVZ7meaDSZvijGFIamR4iaFMDXDbkyCChG8nUCTupiY2xhp01DwXr3aX0w/ihAEiKqYEANsXSTRsgKVmpPwckDoA1E1bPzuRGtaAcmvnwjYA/imNulPlsg76yvzYUaivr1o1IixndQ/RQ2J962i5NewsDQaKP1KddHfsmYBZgt08F4Kpw4x1KWYzW0iRTRVoPZOdHbZpSP6Wc7QdEGHAoD/TNiAA9NiKASylrOp/UKZqs3PcJIemDlMmA8fFKJ3jgmYFqPWcnNq88YBPy7juVxG9k7ecJgaKlMw/YdhIBmenD8Su63Ci6v7Wr425iJTAXokv57oy6CBKeDElsXndCXUq3vlzRpihN7natQGZuqpi2S/yoJlZEbyna65UH0kxvTJRe0FInz2uuLI6vubs24CA+zZeRJNWB/wAMptggvqlvlAAAAABJRU5ErkJggg==" alt="">
+    <img class="w" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAAB6BAMAAAAIdAHTAAAAGFBMVEX///////8AAAD///////////////////+tnBnwAAAACHRSTlOfbgD9BTHQR1GdOREAAARmSURBVHja7Zpdb1s1GMf/x6eMCbVbklbdS8eRcTvERdOl63Y1IY0JIdAkhOAL9CP0Ar4HHwCkfIGJatLEDdomEFes5aQgUDfVmLNBu6E2WbtptGt8uLB93nLak3RNxYV9keM8+j/++bH9OI4Th6H/hcBCLMRCLMRCLMRCLMRCLMRC+lYG9JNBEkiRoFNT4zluHfKEkzKzhKujvjowDgDEE3nB0o7W0nJmWtYGxkEoBwCmPBWEcVY+N/DHRhBTokikMNoEo0POwEG84K0SsC4YZ5yVgSZXvXEYACIvf1MF3Mb1JWm8vLum5nx+g6WGjMjzd6qA27gSSBMJB+P04fUtH6iOzFN+4VYVqN4aYtxAaMh8AMDUnzB9m1iPGnUbYzQZCpXjSTm91MJO/YsbTARVAED70Ymph0r66xgVgFsGyLMLygmPq4u0paqVF1Gj4eiKNGYAeF6L5QBK375YfXI2WJafPdeRDr0zvKaqo/edEHDLILL5r/H/+74TdkCMVjcRJuRrb4QoPS4BCE/9FpnJ0zVTHTt/vIUBAN5W3NxkJW+BYbISjSPdTci9kXhNzOQ5toeXAAJ4PySM7l2ap3VZEGVvSu4XZXNjCnDL5JmXNJ76J+wcLuCvsyfVrDhD5aR9ZDVUw7VXCZnTJPAm06lXyw/lthmgSsq+O0ULQrknQID5tHE+fwAuq/EiQUZ+MyiAuB9TZ8IdzOxm6zKTJ0p7Qm0lWTk5KRv7B9O4SnAmY9v2cn3aixQA5HbG/pIX7cEzgnij2fD2mMZP1TCOZ+VFc4JtSvBm1riHV0MAAPWz9loR5JgkqOt61ai/zE1H7KpHq0Oelv0S1RbMQJcGAu0lH7lmKomMfeQHO9/rBa8es76Wt3O78l75Zz0S02WzNVC30joNAPDDjWVV+0iEcTK695YnmwpyutQCSuU1LX+q5R+2xs6UBzd1r/3m2zuq+vrvW8c1JEqKOUo/yesaIz/lmeconTP1lYWFJT1VrxGyqnGb8PxoK5rdf9oEJvLNiD9EGWNzHQqZEBSfNUSRQHIu7eHOQizEQizEQizEQvp77QHSG64neaTlnPcCkb3Io0h+nMVXtHu/nuQR5Nx36IHRm9wu4WzRFzahPIJI5P8gGbPFeV99l5nvJ+TBg8OLdU+IuYPk/YxERq3Tjb5HAgSDRxCJudgj8tAh0f9ZnNv67kG8OiS4mrgKBhDfNGqGk/K7JtLy7iDvLqTT9VhWeelO8t2KD9l7JGyzQPn1teRqJuwgwyWLOlZKCWQvE9R1PrsXxYGXcNeQlwdndA+Z8Y4AstGPjM/qlmT/I7lC0XfIxZuy75D2iicOd078TgZ7lRkBCOpqAxTRVqhedyJJdZH58fqt1wC4rnlBrQ4AeOIaX+kCgBs3VYMzMa2c1wXGS+rstAjAvAHQ5InfH+mwlkf37e2WiOVtn2A6akUb153ijS7nx8ye50RTpEjUUh+/6bPE/nIpkicQo3DsPzotxEIsxEIs5BDKf/fcdrM3DUgLAAAAAElFTkSuQmCC" alt="ADAM">
+  </div>
+  <h1>Manual do ADAM Admin</h1>
+  <p class="lead">O app de administração da Associação Desportiva de Apoio ao
+  Menor. Este documento reúne o que o produto é, como ele se parece e como
+  mexer nele sem quebrá-lo.</p>
+  <div class="numeros">
+    <div><b>78</b><span>telas desenhadas</span></div>
+    <div><b>39</b><span>estados derivados</span></div>
+    <div><b>3</b><span>setores</span></div>
+    <div><b>12</b><span>validadores automáticos</span></div>
+  </div>
+</div>
+<section id="projeto">
+<h2><span class="n">01</span>O projeto</h2>
+<p class="sub">Para quem abriu este arquivo sem contexto nenhum.</p>
+
+<p>A <b>ADAM</b> é uma associação de utilidade pública que atende crianças e
+adolescentes em Atibaia (SP) e em São José de Caiana (PB). O trabalho acontece
+em três frentes que o app chama de setores: <b>Jogo</b> (treinos e jogos),
+<b>Secretaria</b> (cadastro e números) e <b>Estudo</b> (biblioteca, chamada e
+devocional).</p>
+
+<p>O <b>ADAM Admin</b> é o app de quem trabalha na ONG: coordenação,
+treinadores, professores e secretaria. <b>Não é app para as crianças nem para
+as famílias.</b> Ele organiza a rotina: quem treina hoje, quem veio, quem está
+com qual livro, e quantas crianças o projeto alcançou no mês.</p>
+
+<div class="cartoes">
+  <div class="cartao"><h4>Unidades</h4>
+    <p>Atibaia, que é a sede, na Praça Olímpia; e São José de Caiana, na
+    Paraíba.</p></div>
+  <div class="cartao"><h4>Turmas</h4>
+    <p>Pequenos, de 7 a 11 anos, e Maiores, de 12 a 17. A turma sai da idade, e
+    não de um campo do formulário.</p></div>
+  <div class="cartao"><h4>Funções</h4>
+    <p>Treinador, Professor, Secretaria e Administrador. Função diz onde o nome
+    da pessoa aparece; permissão diz o quanto ela mexe.</p></div>
+</div>
+
+<h3>Três coisas que atravessam todas as decisões</h3>
+<div class="nota">
+  <p><b>Custo zero.</b> É uma ONG. Toda dependência passa por esse filtro antes
+  de entrar, e custo inevitável se sinaliza cedo, não no fim.</p>
+</div>
+<div class="nota">
+  <p><b>Funciona sem internet.</b> Os treinos acontecem numa praça pública. Toda
+  leitura vem do aparelho e toda escrita entra numa fila que sobe sozinha quando
+  a rede volta. A interface promete isso ao usuário, então tem de ser verdade.</p>
+</div>
+<div class="nota perigo">
+  <p><b>São dados de crianças.</b> A categoria mais sensível que existe na LGPD.
+  Nome real de criança nunca entra em ambiente que não seja produção, foto é
+  sempre silhueta no design, e contato de responsável aparece mascarado.</p>
+</div>
+
+<h3>Alvo técnico</h3>
+<ul>
+  <li>Tela de referência <b>390 × 844</b> (iPhone 14/15). Em Android médio
+      (360 × 800) a margem cai de 20 para 16 e a largura de conteúdo de 350
+      para 328, sem mudar mais nada.</li>
+  <li><b>Tema escuro apenas.</b> Não existe tema claro: nenhum token e nenhuma
+      tela foram feitos para ele.</li>
+  <li>Só mobile. Sem tablet, sem web.</li>
+  <li>React Native com Expo, TypeScript, Supabase no tier gratuito.</li>
+</ul>
+</section>
+<section id="identidade">
+<h2><span class="n">02</span>Identidade visual</h2>
+<p class="sub">A marca da ADAM, e como ela se comporta dentro do app.</p>
+
+<h3>As duas peças</h3>
+<p>A marca tem um <b>símbolo</b> (a mão estilizada) e uma <b>assinatura</b> (a
+palavra ADAM). As duas andam juntas no lockup horizontal; o símbolo trabalha
+sozinho quando o espaço é pequeno, como no ícone do app.</p>
+
+<div class="marcas">
+  <div><div class="mbox escuro"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABtBAMAAACsKHnVAAAAGFBMVEX///////8AAAD///////////////////+tnBnwAAAACHRSTlOdTgD+BM4wboFNRSgAAAUkSURBVHjavVhdbxtFFD2+dlOK6qydvlSJ7YwnpkKFOi6pqJCAhKo88YJ4r5SfUP4JEup7/wCo5QUJqd9FAppQJ62okNrJdE2hLWp24zRtCfE1D+vdnV2vNzZSOk/r8T17Z+69c+bczUgMOUhAAcgWh7OuWo7j1FqvDuSGs68oyDvrx0udCRoKULHnlVOqa2QbQy2JiiuY9B4vZIbZNGUP+o/zQy2JKwYYI45RAef3yAO/xj18vjcehHh9eyC9Rx4ujApY/P+btvc807sAqJexr8Kp3BDmxvh3MECCtQKEjs3nUliONte/uBVHJLEGCdaQZaulgfmmBkTRR3We93uQrBXNW+fqXtyjDvb3A0gh93TLQn3A3voAle6VuXxK6HJBUMAaANGVuT6ndjEG6AXFW3QjLZPbIICkUEqediq91KSNfSBIVqq2dW1ZXhfeVGR827c+UrSl8qU6MGcDQKWZdDDD52yjXuRJFwD4JFx0rU8em7aPC0Amsz+Avszuc13/1w9VB2j/MZYCwAvKhH8e0wB4qple8f8YIRbxAxwUtW/dhOmBLwsAdCnKeuG7l1v5CmjGWMEJG4CumefmbGD98aw8aAvkeDFEbAvWYL7ad9LK1TunLkKCNXL2o4NhjOtNAHa89ji7ugqSUF4tla+E1XPdBYAjz+IICbDqvbRgZqoz6QDd8Q96maWlDtYAwHEcP1vZYvvBm2Eg7r3tAhNPXwKgUsPaGHPi28lISCsslaqrAOpMoHPPelf3FE9kZIuwfi4EP5//1QW61fd/rHbG2tXxNScugtyMhLx/KJyb1Rog9ngpRlRgDeQAXQvXRAU/KipurQDa+kznAGafrMrVO00NxK09b7JstXQBGQnQziEA5e/z4wMIVoE+sr5uAJjVOS9TtGpZUwF1RChTAbWj5yw0TKqcb3FCDElAgeQvW3UjJh7NXAtKxbRmhdrKE2umn8hYBqUS1o8CbT05XiolMp9KuB86sy1d0rtzay9h4ra4MQQZh0uj99aTScC8UCQUIMvFpvYKMCEp+dCD7OWntcqbALh6rbGrh961QxZrQHbdRA8+QNLRR36sbi/oiBqOAHztbd1uB7VfetwFMtM/He4D7Pxt+UrApIquEADzYrp0MOLLdQCwL6UCuLIQTt4kAKiJVA+0atxkGgDz1QT7UPPp+wYzrAsvJGkeuGqw8ikCoI+k6yU6Fc7e1wLgnYW49X6zLdt4diAEn3RdoL39Mp6H7a6hyMybog0AeOgVwbJIXFIkUy3/Cqa7LUfGqDJ4q3F/9q7gt36f7ow5MqD37nbXqFYSBiuvLKiADLQVxpvNijDvqmPa51MVVZ7meaDSZvijGFIamR4iaFMDXDbkyCChG8nUCTupiY2xhp01DwXr3aX0w/ihAEiKqYEANsXSTRsgKVmpPwckDoA1E1bPzuRGtaAcmvnwjYA/imNulPlsg76yvzYUaivr1o1IixndQ/RQ2J962i5NewsDQaKP1KddHfsmYBZgt08F4Kpw4x1KWYzW0iRTRVoPZOdHbZpSP6Wc7QdEGHAoD/TNiAA9NiKASylrOp/UKZqs3PcJIemDlMmA8fFKJ3jgmYFqPWcnNq88YBPy7juVxG9k7ecJgaKlMw/YdhIBmenD8Su63Ci6v7Wr425iJTAXokv57oy6CBKeDElsXndCXUq3vlzRpihN7natQGZuqpi2S/yoJlZEbyna65UH0kxvTJRe0FInz2uuLI6vubs24CA+zZeRJNWB/wAMptggvqlvlAAAAABJRU5ErkJggg==" alt=""></div>
+       <p class="mlegenda">Símbolo, branco</p></div>
+  <div><div class="mbox claro"><img src="data:image/png;base64,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" alt=""></div>
+       <p class="mlegenda">Símbolo, roxo</p></div>
+  <div><div class="mbox escuro"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAAB6BAMAAAAIdAHTAAAAGFBMVEX///////8AAAD///////////////////+tnBnwAAAACHRSTlOfbgD9BTHQR1GdOREAAARmSURBVHja7Zpdb1s1GMf/x6eMCbVbklbdS8eRcTvERdOl63Y1IY0JIdAkhOAL9CP0Ar4HHwCkfIGJatLEDdomEFes5aQgUDfVmLNBu6E2WbtptGt8uLB93nLak3RNxYV9keM8+j/++bH9OI4Th6H/hcBCLMRCLMRCLMRCLMRCLMRC+lYG9JNBEkiRoFNT4zluHfKEkzKzhKujvjowDgDEE3nB0o7W0nJmWtYGxkEoBwCmPBWEcVY+N/DHRhBTokikMNoEo0POwEG84K0SsC4YZ5yVgSZXvXEYACIvf1MF3Mb1JWm8vLum5nx+g6WGjMjzd6qA27gSSBMJB+P04fUtH6iOzFN+4VYVqN4aYtxAaMh8AMDUnzB9m1iPGnUbYzQZCpXjSTm91MJO/YsbTARVAED70Ymph0r66xgVgFsGyLMLygmPq4u0paqVF1Gj4eiKNGYAeF6L5QBK375YfXI2WJafPdeRDr0zvKaqo/edEHDLILL5r/H/+74TdkCMVjcRJuRrb4QoPS4BCE/9FpnJ0zVTHTt/vIUBAN5W3NxkJW+BYbISjSPdTci9kXhNzOQ5toeXAAJ4PySM7l2ap3VZEGVvSu4XZXNjCnDL5JmXNJ76J+wcLuCvsyfVrDhD5aR9ZDVUw7VXCZnTJPAm06lXyw/lthmgSsq+O0ULQrknQID5tHE+fwAuq/EiQUZ+MyiAuB9TZ8IdzOxm6zKTJ0p7Qm0lWTk5KRv7B9O4SnAmY9v2cn3aixQA5HbG/pIX7cEzgnij2fD2mMZP1TCOZ+VFc4JtSvBm1riHV0MAAPWz9loR5JgkqOt61ai/zE1H7KpHq0Oelv0S1RbMQJcGAu0lH7lmKomMfeQHO9/rBa8es76Wt3O78l75Zz0S02WzNVC30joNAPDDjWVV+0iEcTK695YnmwpyutQCSuU1LX+q5R+2xs6UBzd1r/3m2zuq+vrvW8c1JEqKOUo/yesaIz/lmeconTP1lYWFJT1VrxGyqnGb8PxoK5rdf9oEJvLNiD9EGWNzHQqZEBSfNUSRQHIu7eHOQizEQizEQizEQvp77QHSG64neaTlnPcCkb3Io0h+nMVXtHu/nuQR5Nx36IHRm9wu4WzRFzahPIJI5P8gGbPFeV99l5nvJ+TBg8OLdU+IuYPk/YxERq3Tjb5HAgSDRxCJudgj8tAh0f9ZnNv67kG8OiS4mrgKBhDfNGqGk/K7JtLy7iDvLqTT9VhWeelO8t2KD9l7JGyzQPn1teRqJuwgwyWLOlZKCWQvE9R1PrsXxYGXcNeQlwdndA+Z8Y4AstGPjM/qlmT/I7lC0XfIxZuy75D2iicOd078TgZ7lRkBCOpqAxTRVqhedyJJdZH58fqt1wC4rnlBrQ4AeOIaX+kCgBs3VYMzMa2c1wXGS+rstAjAvAHQ5InfH+mwlkf37e2WiOVtn2A6akUb153ijS7nx8ye50RTpEjUUh+/6bPE/nIpkicQo3DsPzotxEIsxEIs5BDKf/fcdrM3DUgLAAAAAElFTkSuQmCC" alt=""></div>
+       <p class="mlegenda">Assinatura, branco</p></div>
+  <div><div class="mbox claro"><img src="data:image/png;base64,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" alt=""></div>
+       <p class="mlegenda">Assinatura, roxo</p></div>
+</div>
+
+<h3>Como ela aparece no app</h3>
+<p>No topo de cada setor, em branco, no tamanho pequeno, à esquerda. O lockup do
+app é gerado: o espaço entre o símbolo e a assinatura sai da largura real do
+símbolo, e não de um número digitado. É por isso que ele nunca desalinha quando
+o tamanho muda.</p>
+<p>Na abertura, a marca se monta: o símbolo cresce de 18% ao tamanho cheio
+girando de −14° a 0°, e as letras <b>A, D, A, M</b> saem de trás da mão, da
+esquerda para a direita, em cascata de 90 ms. A coreografia inteira dura 2,6 s,
+comprimida do vídeo institucional de 8 s.</p>
+
+<h3>Área de proteção e tamanho mínimo</h3>
+<ul>
+  <li>Reserve em volta da marca, de todos os lados, a <b>altura do símbolo</b>.
+      Nada entra nessa área: nem texto, nem borda de card, nem foto.</li>
+  <li>Tamanho mínimo do símbolo em tela: <b>24 px</b> de altura. Abaixo disso a
+      mão vira mancha.</li>
+  <li>Tamanho mínimo do lockup completo: <b>26 px</b> de altura.</li>
+</ul>
+
+<h3>O que não fazer</h3>
+<div class="proibido">
+  <div>Não esticar nem espremer. A proporção é uma só.</div>
+  <div>Não recolorir. Branco, roxo institucional, ou a versão tridimensional.</div>
+  <div>Não aplicar sombra, contorno ou brilho por fora do que já existe.</div>
+  <div>Não girar. A única rotação é a da animação de abertura, e ela termina em 0°.</div>
+  <div>Não colocar sobre foto sem o contorno branco da versão apropriada.</div>
+  <div>Não trocar a fonte da assinatura por Inter. A assinatura é desenho, não texto.</div>
+</div>
+</section>
+<section id="cor">
+<h2><span class="n">03</span>Cor</h2>
+<p class="sub">Os contrastes desta página são calculados na hora, a partir dos
+mesmos tokens que desenham o app. Se um número aqui estiver errado, o app
+também está.</p>
+
+<div class="nota">
+  <p><b>A regra que mais importa: o roxo institucional saiu das áreas grandes.</b>
+  Ele fica reservado para ação e destaque — botão primário, pílula ativa da
+  barra, chip de filtro selecionado. O topo das telas é azul quase preto com um
+  brilho roxo contido no canto, e não um gradiente saturado de ponta a ponta.
+  Roxo em área grande cansa e rouba o destaque de onde ele precisa estar.</p>
+</div>
+
+<h3>Base</h3>
+<div class="cores"><figure class="sw">
+  <div class="sw-cor" style="background:#0A0A12"></div>
+  <figcaption>
+    <b>Fundo</b><code>#0A0A12</code>
+    <span class="tag neutro"></span>
+    <em>O fundo do app. Tudo assenta aqui.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#15151F"></div>
+  <figcaption>
+    <b>Superfície</b><code>#15151F</code>
+    <span class="tag neutro"></span>
+    <em>Card, card de lista, campo.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#1E1E2B"></div>
+  <figcaption>
+    <b>Superfície 2</b><code>#1E1E2B</code>
+    <span class="tag neutro"></span>
+    <em>Botão secundário, campo de formulário, chip.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#2E2E42"></div>
+  <figcaption>
+    <b>Borda</b><code>#2E2E42</code>
+    <span class="tag neutro"></span>
+    <em>Contorno de card e de campo.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#23233A"></div>
+  <figcaption>
+    <b>Divisória</b><code>#23233A</code>
+    <span class="tag neutro"></span>
+    <em>Linha entre itens de uma lista.</em>
+  </figcaption>
+</figure></div>
+
+<h3>Texto</h3>
+<div class="cores"><figure class="sw">
+  <div class="sw-cor" style="background:#FFFFFF"></div>
+  <figcaption>
+    <b>Texto</b><code>#FFFFFF</code>
+    <span class="tag ok">18.12:1 sobre surface</span>
+    <em>Título, valor, nome. O que se lê primeiro.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#9A9AAD"></div>
+  <figcaption>
+    <b>Texto secundário</b><code>#9A9AAD</code>
+    <span class="tag ok">6.56:1 sobre surface</span>
+    <em>Meta, legenda, apoio.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#8A8AA0"></div>
+  <figcaption>
+    <b>Texto terciário</b><code>#8A8AA0</code>
+    <span class="tag ok">5.37:1 sobre surface</span>
+    <em>Era #6C6C80 e reprovava AA com 3,53:1. Foi corrigido, e não deve voltar atrás.</em>
+  </figcaption>
+</figure></div>
+
+<h3>Marca</h3>
+<div class="cores"><figure class="sw">
+  <div class="sw-cor" style="background:#9E05D2"></div>
+  <figcaption>
+    <b>Roxo institucional</b><code>#9E05D2</code>
+    <span class="tag neutro"></span>
+    <em>SÓ área cheia: botão primário, pílula ativa, chip selecionado.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#C24BEE"></div>
+  <figcaption>
+    <b>Roxo claro</b><code>#C24BEE</code>
+    <span class="tag ok">4.78:1 sobre surface</span>
+    <em>Texto e dado sobre superfície.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#D06CF5"></div>
+  <figcaption>
+    <b>Roxo chapado</b><code>#D06CF5</code>
+    <span class="tag ok">5.60:1 sobre surface2</span>
+    <em>Texto sobre superfície 2 e sobre chip roxo.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#3A0A52"></div>
+  <figcaption>
+    <b>Roxo escuro</b><code>#3A0A52</code>
+    <span class="tag neutro"></span>
+    <em>Fundo de chip e de selo roxo.</em>
+  </figcaption>
+</figure></div>
+
+<h3>Semântica</h3>
+<p>Dado de frequência usa cor semântica, que informa em vez de decorar.</p>
+<div class="cores"><figure class="sw">
+  <div class="sw-cor" style="background:#3DD68C"></div>
+  <figcaption>
+    <b>Sucesso</b><code>#3DD68C</code>
+    <span class="tag ok">7.82:1 sobre successBg</span>
+    <em>Em dia, presente, saudável.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#0E2E22"></div>
+  <figcaption>
+    <b>Fundo de sucesso</b><code>#0E2E22</code>
+    <span class="tag neutro"></span>
+    <em></em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#F5A524"></div>
+  <figcaption>
+    <b>Atenção</b><code>#F5A524</code>
+    <span class="tag ok">7.36:1 sobre warnBg</span>
+    <em>Pendente, a definir, em queda.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#33240A"></div>
+  <figcaption>
+    <b>Fundo de atenção</b><code>#33240A</code>
+    <span class="tag neutro"></span>
+    <em></em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#FF7A85"></div>
+  <figcaption>
+    <b>Perigo</b><code>#FF7A85</code>
+    <span class="tag ok">6.48:1 sobre dangerBg</span>
+    <em>Atrasado, remover, erro.</em>
+  </figcaption>
+</figure>
+<figure class="sw">
+  <div class="sw-cor" style="background:#3A1418"></div>
+  <figcaption>
+    <b>Fundo de perigo</b><code>#3A1418</code>
+    <span class="tag neutro"></span>
+    <em></em>
+  </figcaption>
+</figure></div>
+
+<div class="nota aviso">
+  <p><b>Cor nunca é o único sinal.</b> O chip de percentual leva seta (▲▼) e vive
+  sob um título de seção que diz o significado. O selo de função leva o rótulo
+  escrito ao lado. "Atrasado" é a palavra escrita num selo vermelho, e não uma
+  data em cor diferente: cor sozinha não se lê com pressa, e cobrar livro
+  atrasado é conversa que se tem de pé na praça.</p>
+</div>
+
+<h3>Vidro</h3>
+<p>A camada flutuante de controles (barra inferior, pílulas, campo de busca) usa
+material de vidro: desfoque de 28, saturação 1.4,
+branco de fundo 7%, brilho no topo 16%,
+e borda que vai de 30% no topo a
+16% na base.</p>
+<div class="nota aviso">
+  <p><b>Vidro não vale para card.</b> Card sobre fundo chapado não tem o que
+  refratar: fica só leitoso.</p>
+</div>
+</section>
+<section id="tipografia">
+<h2><span class="n">04</span>Tipografia</h2>
+<p class="sub">Inter, em dez degraus. Nada fora desta tabela.</p>
+
+<p><b>Instalar Inter de verdade</b> no app (expo-font) e no Figma. Fallback de
+sistema desloca o layout, e várias medidas do design saem da largura real do
+texto: pílula, selo e botão têm a largura do rótulo mais o respiro, e não um
+número chutado.</p>
+
+<table>
+  <tr><th>Token</th><th>Tamanho</th><th>Peso</th><th>Amostra</th></tr>
+  <tr>
+  <td><code>display</code></td>
+  <td class="num">32 px</td>
+  <td class="num">700</td>
+  <td style="font-size:32px;font-weight:700;line-height:1.25">Crianças que foram</td>
+</tr>
+<tr>
+  <td><code>h1</code></td>
+  <td class="num">24 px</td>
+  <td class="num">700</td>
+  <td style="font-size:24px;font-weight:700;line-height:1.25">Crianças que foram</td>
+</tr>
+<tr>
+  <td><code>h2</code></td>
+  <td class="num">20 px</td>
+  <td class="num">600</td>
+  <td style="font-size:20px;font-weight:600;line-height:1.25">Crianças que foram</td>
+</tr>
+<tr>
+  <td><code>body</code></td>
+  <td class="num">16 px</td>
+  <td class="num">400</td>
+  <td style="font-size:16px;font-weight:400;line-height:1.25">Crianças que foram</td>
+</tr>
+<tr>
+  <td><code>bodyM</code></td>
+  <td class="num">16 px</td>
+  <td class="num">500</td>
+  <td style="font-size:16px;font-weight:500;line-height:1.25">Crianças que foram</td>
+</tr>
+<tr>
+  <td><code>bodyB</code></td>
+  <td class="num">16 px</td>
+  <td class="num">600</td>
+  <td style="font-size:16px;font-weight:600;line-height:1.25">Crianças que foram</td>
+</tr>
+<tr>
+  <td><code>small</code></td>
+  <td class="num">14 px</td>
+  <td class="num">400</td>
+  <td style="font-size:14px;font-weight:400;line-height:1.25">Crianças que foram</td>
+</tr>
+<tr>
+  <td><code>smallM</code></td>
+  <td class="num">14 px</td>
+  <td class="num">500</td>
+  <td style="font-size:14px;font-weight:500;line-height:1.25">Crianças que foram</td>
+</tr>
+<tr>
+  <td><code>caption</code></td>
+  <td class="num">12 px</td>
+  <td class="num">500</td>
+  <td style="font-size:12px;font-weight:500;line-height:1.25">Crianças que foram</td>
+</tr>
+<tr>
+  <td><code>over</code></td>
+  <td class="num">12 px</td>
+  <td class="num">600</td>
+  <td style="font-size:12px;font-weight:600;line-height:1.25">Crianças que foram</td>
+</tr>
+</table>
+
+<p><code>over</code> é o rótulo de seção, sempre em caixa alta e com
+espaçamento de 1,2 px entre letras. Ele foi de 11 px para 12 px por contraste.</p>
+</section>
+<section id="sistema">
+<h2><span class="n">05</span>Design system</h2>
+<p class="sub">A grade, os componentes, e as cinco regras que produzem o resto.</p>
+
+<h3>Grade</h3>
+<table>
+  <tr><th>Medida</th><th>Valor</th><th>O que é</th></tr>
+  <tr><td><b>W × H</b></td><td class="num">390 × 844</td><td>a tela de referência</td></tr>
+  <tr><td><b>M</b></td><td class="num">20</td><td>margem lateral</td></tr>
+  <tr><td><b>CW</b></td><td class="num">350</td><td>largura de conteúdo</td></tr>
+  <tr><td><b>HERO</b></td><td class="num">156</td><td>altura fixa do topo, em toda tela interna</td></tr>
+  <tr><td><b>NAV</b></td><td class="num">752 / 60</td><td>onde a barra inferior começa, e a altura dela</td></tr>
+  <tr><td><b>Raio</b></td><td class="num">chip 16 · field 12 · btn 16 · card 16 · nav 24</td><td>chip e botão têm o mesmo raio: chip não é pílula</td></tr>
+  <tr><td><b>Espaço</b></td><td class="num">xs 4 · sm 8 · md 12 · lg 16 · xl 20 · 2xl 24 · 3xl 32 · 4xl 40</td><td>base 4</td></tr>
+</table>
+
+<h3>As cinco regras que geram o layout</h3>
+<div class="cartoes">
+  <div class="cartao"><h4>Uma medida, uma fonte</h4>
+    <p>Nenhum número aparece duas vezes. Se dá para derivar, deriva.</p></div>
+  <div class="cartao"><h4>Altura de card nasce do conteúdo</h4>
+    <p>Nunca digitada. Foi o defeito mais comum do projeto: card com altura fixa
+    e conteúdo que cresceu gerou 104 px de vão morto numa tela e transbordo em
+    outras duas.</p></div>
+  <div class="cartao"><h4>Largura sai da medida do texto</h4>
+    <p>Pílula, selo e botão têm a largura real do rótulo mais o respiro interno.</p></div>
+  <div class="cartao"><h4>Série repetida é distribuída</h4>
+    <p>As oito semanas, as barras do gráfico, os dias: a largura sai da divisão
+    do espaço útil, então as duas margens ficam iguais por construção.</p></div>
+  <div class="cartao"><h4>Nada abaixo de 706</h4>
+    <p>706 para texto, 748 para caixa. A barra inferior é flutuante com degradê
+    atrás: o que passa por baixo se apaga, não é cortado.</p></div>
+  <div class="cartao"><h4>Alvo de toque 44 × 44</h4>
+    <p>Em tudo que é clicável, inclusive nos itens da barra inferior. Dezesseis
+    pixels de texto não são alvo de toque.</p></div>
+</div>
+
+<h3>Componentes</h3>
+<p>Hero (com variante de voltar e de setor) · Card · Chip · Linha de chips ·
+Barra de período · Segmentado · Campo de busca · Campo de formulário ·
+<b>Contador</b> · Botão (primário e secundário) · Selo · Overline · Avatar com
+foto ou iniciais · Silhueta · Escala de 0 a 5 · Linha de opção · Linha de porta
+· Linha de documento · Marca de pronto · Barra · Anel · Calendário · Campo de
+futebol · Barra de abas · Scrim.</p>
+
+<div class="nota">
+  <p><b>Nomes de camada são deliberados.</b> <code>Card_Ativos</code>,
+  <code>Hero_Titulo</code>, <code>Nav_Lente</code>: é isso que faz a transição
+  entre a tela de esqueleto e a tela cheia interpolar em vez de piscar. O Smart
+  Animate do Figma casa camadas por nome <b>e</b> por posição na hierarquia, e
+  renomear uma camada quebra a interpolação. Ao portar para componentes, mantenha
+  o paralelo estrutural mesmo que o nome do componente mude.</p>
+</div>
+</section>
+<section id="movimento">
+<h2><span class="n">06</span>Movimento</h2>
+<p class="sub">Durações e curvas em tabela, para ninguém inventar um valor por tela.</p>
+
+<table><tr><th>Duração</th><th>ms</th><th>Onde</th></tr><tr><td><b>instant</b></td><td class="num">100 ms</td><td>feedback de toque, mudança de estado de botão</td></tr>
+<tr><td><b>fast</b></td><td class="num">150 ms</td><td>chip, foco, tooltip</td></tr>
+<tr><td><b>base</b></td><td class="num">200 ms</td><td>troca de aba, accordion</td></tr>
+<tr><td><b>medium</b></td><td class="num">300 ms</td><td>transição de tela, bottom sheet</td></tr>
+<tr><td><b>slow</b></td><td class="num">400 ms</td><td>entrada de tela cheia, abertura do app</td></tr></table>
+<table><tr><th>Curva</th><th>Bézier</th><th>Onde</th></tr><tr><td><b>out</b></td><td><code>cubic-bezier(0, 0, 0.2, 1)</code></td><td>entrada</td></tr>
+<tr><td><b>in</b></td><td><code>cubic-bezier(0.4, 0, 1, 1)</code></td><td>saída, sempre mais rápida que a entrada</td></tr>
+<tr><td><b>inout</b></td><td><code>cubic-bezier(0.4, 0, 0.2, 1)</code></td><td>percurso entre dois pontos visíveis</td></tr>
+<tr><td><b>spring</b></td><td><code>cubic-bezier(0.34, 1.3, 0.64, 1)</code></td><td>pull to refresh</td></tr>
+<tr><td><b>liquido</b></td><td><code>cubic-bezier(0.22, 1.4, 0.36, 1)</code></td><td>passa do alvo e volta</td></tr>
+<tr><td><b>lente</b></td><td><code>cubic-bezier(0.16, 1, 0.3, 1)</code></td><td>a lente da aba</td></tr></table>
+
+<div class="nota aviso">
+  <p><b>Animar só opacidade e transform.</b> <code>width</code>,
+  <code>height</code>, <code>top</code> e <code>margin</code> forçam recálculo de
+  layout e travam em lista longa e celular fraco.</p>
+</div>
+
+<div class="nota perigo">
+  <p><b>Movimento reduzido não é opcional.</b> Movimento grande provoca enjoo e
+  tontura de verdade em quem tem sensibilidade vestibular. Respeitar
+  <code>AccessibilityInfo.isReduceMotionEnabled()</code>, e a regra é
+  <b>trocar deslocamento por opacidade, nunca remover o feedback</b>.</p>
+</div>
+
+<h3>Ritmo das cadeias automáticas</h3>
+<p>Toda espera automática tem de ser <b>maior</b> que a animação de entrada
+daquele quadro. Espera menor que a animação é corrida: no melhor caso a tela
+pisca antes de ser lida, no pior a cadeia trava. E todo quadro da abertura
+aceita toque além do relógio: o relógio é o caminho normal, o toque é a saída
+quando ele falha.</p>
+</section>
+<section id="app">
+<h2><span class="n">07</span>O app, tela a tela</h2>
+<p class="sub">As 78 telas do design. Clique em qualquer uma para abrir o
+SVG em tamanho real; para navegar entre elas, abra o
+<a href="index.html">protótipo</a>.</p>
+
+<h3>A anatomia que se repete</h3>
+<p>Os três setores têm a mesma estrutura interna, e isso é de propósito: quem
+aprende um aprendeu os três. Cada setor tem <b>o que acontece agora</b>,
+<b>o histórico</b> e <b>onde se configura</b>. A barra inferior troca de setor;
+o segmentado no topo troca de assunto dentro do setor; os chips filtram a mesma
+lista.</p>
+
+<div class="cartoes">
+  <div class="cartao"><h4>Jogo</h4>
+    <p>Treinos · Jogos · Escala. Planejar não é aba, é ação: aba é onde a pessoa
+    fica, ação é de onde ela volta.</p></div>
+  <div class="cartao"><h4>Secretaria</h4>
+    <p>Números · Cadastros. Toda métrica mora aqui, e é daqui que sai
+    relatório.</p></div>
+  <div class="cartao"><h4>Estudo</h4>
+    <p>Biblioteca · Chamada · Devocional. A ordem é a de uso: as duas primeiras
+    são o que se faz de pé, toda semana.</p></div>
+</div>
+
+<h3>Jogo <em>28 telas</em></h3>
+<div class="telas"><a class="tela" href="telas/11-jogo-treinos.svg" target="_blank">
+  <img src="telas/11-jogo-treinos.svg" alt="11 Jogo · treinos" loading="lazy">
+  <span>11 Jogo · treinos</span>
+</a>
+<a class="tela" href="telas/11b-jogo-jogos.svg" target="_blank">
+  <img src="telas/11b-jogo-jogos.svg" alt="11b Jogo · jogos" loading="lazy">
+  <span>11b Jogo · jogos</span>
+</a>
+<a class="tela" href="telas/11c-jogo-escalacao.svg" target="_blank">
+  <img src="telas/11c-jogo-escalacao.svg" alt="11c Jogo · escalacao" loading="lazy">
+  <span>11c Jogo · escalacao</span>
+</a>
+<a class="tela" href="telas/11n-jogo-escalacao-society.svg" target="_blank">
+  <img src="telas/11n-jogo-escalacao-society.svg" alt="11n Jogo · escalacao society" loading="lazy">
+  <span>11n Jogo · escalacao society</span>
+</a>
+<a class="tela" href="telas/11q-jogo-convocar.svg" target="_blank">
+  <img src="telas/11q-jogo-convocar.svg" alt="11q Jogo · convocar" loading="lazy">
+  <span>11q Jogo · convocar</span>
+</a>
+<a class="tela" href="telas/11r-jogo-compartilhar.svg" target="_blank">
+  <img src="telas/11r-jogo-compartilhar.svg" alt="11r Jogo · compartilhar" loading="lazy">
+  <span>11r Jogo · compartilhar</span>
+</a>
+<a class="tela" href="telas/11o-jogo-convocados.svg" target="_blank">
+  <img src="telas/11o-jogo-convocados.svg" alt="11o Convocados · em campo" loading="lazy">
+  <span>11o Convocados · em campo</span>
+</a>
+<a class="tela" href="telas/11o2-jogo-convocados-banco.svg" target="_blank">
+  <img src="telas/11o2-jogo-convocados-banco.svg" alt="11o2 Convocados · banco" loading="lazy">
+  <span>11o2 Convocados · banco</span>
+</a>
+<a class="tela" href="telas/11p-jogo-convocados-society.svg" target="_blank">
+  <img src="telas/11p-jogo-convocados-society.svg" alt="11p Convocados society · em campo" loading="lazy">
+  <span>11p Convocados society · em campo</span>
+</a>
+<a class="tela" href="telas/11p2-jogo-convocados-society-banco.svg" target="_blank">
+  <img src="telas/11p2-jogo-convocados-society-banco.svg" alt="11p2 Convocados society · banco" loading="lazy">
+  <span>11p2 Convocados society · banco</span>
+</a>
+<a class="tela" href="telas/11d-treino-exercicios.svg" target="_blank">
+  <img src="telas/11d-treino-exercicios.svg" alt="11d Treino · exercicios" loading="lazy">
+  <span>11d Treino · exercicios</span>
+</a>
+<a class="tela" href="telas/11e-jogo-escala.svg" target="_blank">
+  <img src="telas/11e-jogo-escala.svg" alt="11e Jogo · escala" loading="lazy">
+  <span>11e Jogo · escala</span>
+</a>
+<a class="tela" href="telas/11m-treino-avaliacao.svg" target="_blank">
+  <img src="telas/11m-treino-avaliacao.svg" alt="11m Treino · avaliacao" loading="lazy">
+  <span>11m Treino · avaliacao</span>
+</a>
+<a class="tela" href="telas/11s-treino-avaliacoes.svg" target="_blank">
+  <img src="telas/11s-treino-avaliacoes.svg" alt="11s Treino · avaliacoes" loading="lazy">
+  <span>11s Treino · avaliacoes</span>
+</a>
+<a class="tela" href="telas/11s2-treino-avaliacoes-agosto.svg" target="_blank">
+  <img src="telas/11s2-treino-avaliacoes-agosto.svg" alt="11s2 Avaliacoes · agosto" loading="lazy">
+  <span>11s2 Avaliacoes · agosto</span>
+</a>
+<a class="tela" href="telas/11s3-treino-avaliacoes-julho.svg" target="_blank">
+  <img src="telas/11s3-treino-avaliacoes-julho.svg" alt="11s3 Avaliacoes · julho" loading="lazy">
+  <span>11s3 Avaliacoes · julho</span>
+</a>
+<a class="tela" href="telas/11f-jogo-planejar.svg" target="_blank">
+  <img src="telas/11f-jogo-planejar.svg" alt="11f Jogo · planejar" loading="lazy">
+  <span>11f Jogo · planejar</span>
+</a>
+<a class="tela" href="telas/11g-jogo-novo.svg" target="_blank">
+  <img src="telas/11g-jogo-novo.svg" alt="11g Jogo · novo jogo" loading="lazy">
+  <span>11g Jogo · novo jogo</span>
+</a>
+<a class="tela" href="telas/11v-jogo-categoria.svg" target="_blank">
+  <img src="telas/11v-jogo-categoria.svg" alt="11v Jogo · categoria" loading="lazy">
+  <span>11v Jogo · categoria</span>
+</a>
+<a class="tela" href="telas/11w-jogo-data-hora.svg" target="_blank">
+  <img src="telas/11w-jogo-data-hora.svg" alt="11w Jogo · data e hora" loading="lazy">
+  <span>11w Jogo · data e hora</span>
+</a>
+<a class="tela" href="telas/11x-jogos-filtros.svg" target="_blank">
+  <img src="telas/11x-jogos-filtros.svg" alt="11x Jogos · filtros" loading="lazy">
+  <span>11x Jogos · filtros</span>
+</a>
+<a class="tela" href="telas/11y-comissao-tecnica.svg" target="_blank">
+  <img src="telas/11y-comissao-tecnica.svg" alt="11y Comissão técnica" loading="lazy">
+  <span>11y Comissão técnica</span>
+</a>
+<a class="tela" href="telas/11z-exercicio-categoria.svg" target="_blank">
+  <img src="telas/11z-exercicio-categoria.svg" alt="11z Exercício · categoria" loading="lazy">
+  <span>11z Exercício · categoria</span>
+</a>
+<a class="tela" href="telas/11h-jogo-biblioteca.svg" target="_blank">
+  <img src="telas/11h-jogo-biblioteca.svg" alt="11h Jogo · biblioteca" loading="lazy">
+  <span>11h Jogo · biblioteca</span>
+</a>
+<a class="tela" href="telas/11i-jogo-data.svg" target="_blank">
+  <img src="telas/11i-jogo-data.svg" alt="11i Jogo · data do treino" loading="lazy">
+  <span>11i Jogo · data do treino</span>
+</a>
+<a class="tela" href="telas/11j-jogo-novo-exercicio.svg" target="_blank">
+  <img src="telas/11j-jogo-novo-exercicio.svg" alt="11j Jogo · novo exercicio" loading="lazy">
+  <span>11j Jogo · novo exercicio</span>
+</a>
+<a class="tela" href="telas/11k-jogo-detalhe-exercicio.svg" target="_blank">
+  <img src="telas/11k-jogo-detalhe-exercicio.svg" alt="11k Jogo · detalhe do exercicio" loading="lazy">
+  <span>11k Jogo · detalhe do exercicio</span>
+</a>
+<a class="tela" href="telas/11l-jogo-escolher-treinador.svg" target="_blank">
+  <img src="telas/11l-jogo-escolher-treinador.svg" alt="11l Jogo · escolher treinador" loading="lazy">
+  <span>11l Jogo · escolher treinador</span>
+</a></div>
+<h3>Secretaria <em>19 telas</em></h3>
+<div class="telas"><a class="tela" href="telas/04-home.svg" target="_blank">
+  <img src="telas/04-home.svg" alt="04 Home" loading="lazy">
+  <span>04 Home</span>
+</a>
+<a class="tela" href="telas/05-participantes.svg" target="_blank">
+  <img src="telas/05-participantes.svg" alt="05 Participantes" loading="lazy">
+  <span>05 Participantes</span>
+</a>
+<a class="tela" href="telas/06-perfil.svg" target="_blank">
+  <img src="telas/06-perfil.svg" alt="06 Perfil do participante" loading="lazy">
+  <span>06 Perfil do participante</span>
+</a>
+<a class="tela" href="telas/07-metricas.svg" target="_blank">
+  <img src="telas/07-metricas.svg" alt="07 Metricas" loading="lazy">
+  <span>07 Metricas</span>
+</a>
+<a class="tela" href="telas/07b-relatorio-retencao.svg" target="_blank">
+  <img src="telas/07b-relatorio-retencao.svg" alt="07b Relatório · retenção" loading="lazy">
+  <span>07b Relatório · retenção</span>
+</a>
+<a class="tela" href="telas/07c-relatorio-qualidade.svg" target="_blank">
+  <img src="telas/07c-relatorio-qualidade.svg" alt="07c Relatório · qualidade" loading="lazy">
+  <span>07c Relatório · qualidade</span>
+</a>
+<a class="tela" href="telas/07d-relatorio-jogos.svg" target="_blank">
+  <img src="telas/07d-relatorio-jogos.svg" alt="07d Relatório · jogos" loading="lazy">
+  <span>07d Relatório · jogos</span>
+</a>
+<a class="tela" href="telas/12-secretaria.svg" target="_blank">
+  <img src="telas/12-secretaria.svg" alt="12 Secretaria" loading="lazy">
+  <span>12 Secretaria</span>
+</a>
+<a class="tela" href="telas/12b-secretaria-periodo.svg" target="_blank">
+  <img src="telas/12b-secretaria-periodo.svg" alt="12b Secretaria · filtros" loading="lazy">
+  <span>12b Secretaria · filtros</span>
+</a>
+<a class="tela" href="telas/12e-secretaria-cadastros.svg" target="_blank">
+  <img src="telas/12e-secretaria-cadastros.svg" alt="12e Secretaria · cadastros" loading="lazy">
+  <span>12e Secretaria · cadastros</span>
+</a>
+<a class="tela" href="telas/17-cadastrar-crianca.svg" target="_blank">
+  <img src="telas/17-cadastrar-crianca.svg" alt="17 Cadastrar criança" loading="lazy">
+  <span>17 Cadastrar criança</span>
+</a>
+<a class="tela" href="telas/17b-editar-ficha.svg" target="_blank">
+  <img src="telas/17b-editar-ficha.svg" alt="17b Editar ficha" loading="lazy">
+  <span>17b Editar ficha</span>
+</a>
+<a class="tela" href="telas/17c-foto-crianca.svg" target="_blank">
+  <img src="telas/17c-foto-crianca.svg" alt="17c Foto da criança" loading="lazy">
+  <span>17c Foto da criança</span>
+</a>
+<a class="tela" href="telas/17d-responsaveis.svg" target="_blank">
+  <img src="telas/17d-responsaveis.svg" alt="17d Responsáveis" loading="lazy">
+  <span>17d Responsáveis</span>
+</a>
+<a class="tela" href="telas/17e-responsavel-editar.svg" target="_blank">
+  <img src="telas/17e-responsavel-editar.svg" alt="17e Responsável" loading="lazy">
+  <span>17e Responsável</span>
+</a>
+<a class="tela" href="telas/17f-documentos.svg" target="_blank">
+  <img src="telas/17f-documentos.svg" alt="17f Documentos" loading="lazy">
+  <span>17f Documentos</span>
+</a>
+<a class="tela" href="telas/17g-documento-anexar.svg" target="_blank">
+  <img src="telas/17g-documento-anexar.svg" alt="17g Anexar documento" loading="lazy">
+  <span>17g Anexar documento</span>
+</a>
+<a class="tela" href="telas/17h-funcao-campo.svg" target="_blank">
+  <img src="telas/17h-funcao-campo.svg" alt="17h Função em campo" loading="lazy">
+  <span>17h Função em campo</span>
+</a>
+<a class="tela" href="telas/12f-criancas-cadastradas.svg" target="_blank">
+  <img src="telas/12f-criancas-cadastradas.svg" alt="12f Crianças cadastradas" loading="lazy">
+  <span>12f Crianças cadastradas</span>
+</a></div>
+<h3>Estudo <em>19 telas</em></h3>
+<div class="telas"><a class="tela" href="telas/13-estudo.svg" target="_blank">
+  <img src="telas/13-estudo.svg" alt="13 Estudo" loading="lazy">
+  <span>13 Estudo</span>
+</a>
+<a class="tela" href="telas/13b-aula-pequenos.svg" target="_blank">
+  <img src="telas/13b-aula-pequenos.svg" alt="13b Aula dos Pequenos" loading="lazy">
+  <span>13b Aula dos Pequenos</span>
+</a>
+<a class="tela" href="telas/13d-estudo-definir-aula.svg" target="_blank">
+  <img src="telas/13d-estudo-definir-aula.svg" alt="13d Estudo · definir aula" loading="lazy">
+  <span>13d Estudo · definir aula</span>
+</a>
+<a class="tela" href="telas/13e-chamada.svg" target="_blank">
+  <img src="telas/13e-chamada.svg" alt="13e Chamada · Pequenos" loading="lazy">
+  <span>13e Chamada · Pequenos</span>
+</a>
+<a class="tela" href="telas/13m-sem-ficha.svg" target="_blank">
+  <img src="telas/13m-sem-ficha.svg" alt="13m Sem ficha · Pequenos" loading="lazy">
+  <span>13m Sem ficha · Pequenos</span>
+</a>
+<a class="tela" href="telas/13m2-sem-ficha-maiores.svg" target="_blank">
+  <img src="telas/13m2-sem-ficha-maiores.svg" alt="13m2 Sem ficha · Maiores" loading="lazy">
+  <span>13m2 Sem ficha · Maiores</span>
+</a>
+<a class="tela" href="telas/13e2-chamada-maiores.svg" target="_blank">
+  <img src="telas/13e2-chamada-maiores.svg" alt="13e2 Chamada · Maiores" loading="lazy">
+  <span>13e2 Chamada · Maiores</span>
+</a>
+<a class="tela" href="telas/13f-estudo-livros.svg" target="_blank">
+  <img src="telas/13f-estudo-livros.svg" alt="13f Estudo · biblioteca" loading="lazy">
+  <span>13f Estudo · biblioteca</span>
+</a>
+<a class="tela" href="telas/13g-livro-emprestar.svg" target="_blank">
+  <img src="telas/13g-livro-emprestar.svg" alt="13g Emprestar livro" loading="lazy">
+  <span>13g Emprestar livro</span>
+</a>
+<a class="tela" href="telas/13h-livro-quem-leva.svg" target="_blank">
+  <img src="telas/13h-livro-quem-leva.svg" alt="13h Quem leva o livro" loading="lazy">
+  <span>13h Quem leva o livro</span>
+</a>
+<a class="tela" href="telas/13i-livro-data-entrega.svg" target="_blank">
+  <img src="telas/13i-livro-data-entrega.svg" alt="13i Data de entrega" loading="lazy">
+  <span>13i Data de entrega</span>
+</a>
+<a class="tela" href="telas/13j-livro-novo.svg" target="_blank">
+  <img src="telas/13j-livro-novo.svg" alt="13j Novo título" loading="lazy">
+  <span>13j Novo título</span>
+</a>
+<a class="tela" href="telas/13k-livro.svg" target="_blank">
+  <img src="telas/13k-livro.svg" alt="13k Livro do acervo" loading="lazy">
+  <span>13k Livro do acervo</span>
+</a>
+<a class="tela" href="telas/13l-livro-qual.svg" target="_blank">
+  <img src="telas/13l-livro-qual.svg" alt="13l Qual livro" loading="lazy">
+  <span>13l Qual livro</span>
+</a>
+<a class="tela" href="telas/13r-estudo-acervo.svg" target="_blank">
+  <img src="telas/13r-estudo-acervo.svg" alt="13r Acervo" loading="lazy">
+  <span>13r Acervo</span>
+</a>
+<a class="tela" href="telas/13n-cobranca-contato.svg" target="_blank">
+  <img src="telas/13n-cobranca-contato.svg" alt="13n Contato · livro atrasado" loading="lazy">
+  <span>13n Contato · livro atrasado</span>
+</a>
+<a class="tela" href="telas/13o-livro-tipo.svg" target="_blank">
+  <img src="telas/13o-livro-tipo.svg" alt="13o Tipo do livro" loading="lazy">
+  <span>13o Tipo do livro</span>
+</a>
+<a class="tela" href="telas/13s-livro-tipo-novo.svg" target="_blank">
+  <img src="telas/13s-livro-tipo-novo.svg" alt="13s Novo tipo de livro" loading="lazy">
+  <span>13s Novo tipo de livro</span>
+</a>
+<a class="tela" href="telas/13q-livro-foto.svg" target="_blank">
+  <img src="telas/13q-livro-foto.svg" alt="13q Capa do livro" loading="lazy">
+  <span>13q Capa do livro</span>
+</a></div>
+<h3>Ajustes <em>7 telas</em></h3>
+<div class="telas"><a class="tela" href="telas/10-ajustes.svg" target="_blank">
+  <img src="telas/10-ajustes.svg" alt="10 Ajustes" loading="lazy">
+  <span>10 Ajustes</span>
+</a>
+<a class="tela" href="telas/14-ajustes-usuarios.svg" target="_blank">
+  <img src="telas/14-ajustes-usuarios.svg" alt="14 Ajustes · usuarios" loading="lazy">
+  <span>14 Ajustes · usuarios</span>
+</a>
+<a class="tela" href="telas/14b-ajustes-novo-usuario.svg" target="_blank">
+  <img src="telas/14b-ajustes-novo-usuario.svg" alt="14b Ajustes · novo usuario" loading="lazy">
+  <span>14b Ajustes · novo usuario</span>
+</a>
+<a class="tela" href="telas/14c-ajustes-usuario.svg" target="_blank">
+  <img src="telas/14c-ajustes-usuario.svg" alt="14c Ajustes · usuario" loading="lazy">
+  <span>14c Ajustes · usuario</span>
+</a>
+<a class="tela" href="telas/14d-ajustes-registro.svg" target="_blank">
+  <img src="telas/14d-ajustes-registro.svg" alt="14d Ajustes · registro" loading="lazy">
+  <span>14d Ajustes · registro</span>
+</a>
+<a class="tela" href="telas/15-ajustes-conta.svg" target="_blank">
+  <img src="telas/15-ajustes-conta.svg" alt="15 Ajustes · minha conta" loading="lazy">
+  <span>15 Ajustes · minha conta</span>
+</a>
+<a class="tela" href="telas/16-ajustes-unidades.svg" target="_blank">
+  <img src="telas/16-ajustes-unidades.svg" alt="16 Ajustes · unidades e turmas" loading="lazy">
+  <span>16 Ajustes · unidades e turmas</span>
+</a></div>
+<h3>Abertura e acesso <em>3 telas</em></h3>
+<div class="telas"><a class="tela" href="telas/01-splash.svg" target="_blank">
+  <img src="telas/01-splash.svg" alt="01 Splash" loading="lazy">
+  <span>01 Splash</span>
+</a>
+<a class="tela" href="telas/02-login.svg" target="_blank">
+  <img src="telas/02-login.svg" alt="02 Login" loading="lazy">
+  <span>02 Login</span>
+</a>
+<a class="tela" href="telas/03-home-carregando.svg" target="_blank">
+  <img src="telas/03-home-carregando.svg" alt="03 Home carregando" loading="lazy">
+  <span>03 Home carregando</span>
+</a></div>
+<h3>Estados do app <em>2 telas</em></h3>
+<div class="telas"><a class="tela" href="telas/08-estado-vazio.svg" target="_blank">
+  <img src="telas/08-estado-vazio.svg" alt="08 Estado vazio" loading="lazy">
+  <span>08 Estado vazio</span>
+</a>
+<a class="tela" href="telas/09-erro-sincronizacao.svg" target="_blank">
+  <img src="telas/09-erro-sincronizacao.svg" alt="09 Erro de sincronizacao" loading="lazy">
+  <span>09 Erro de sincronizacao</span>
+</a></div>
+</section>
+<section id="regras">
+<h2><span class="n">08</span>Regras do produto</h2>
+<p class="sub">Não são sugestão: o design foi desenhado assumindo que valem.
+Esta é a seleção que mais muda código; a lista completa está nos documentos de
+estrutura.</p>
+<div class="regra"><div class="id">R1</div><div><b>Turma sai da idade, não do formulário</b><p>7 a 11 vai para Pequenos, 12 ou mais para os Maiores. Perguntar abriria a chance de cadastrar uma criança de 9 anos nos Maiores, e a partir daí a lista mente.</p></div></div>
+<div class="regra"><div class="id">R2</div><div><b>Categoria do jogo define quem é elegível</b><p>Sub-14 são as crianças de 13 e 14 anos, filtradas por idade na data do jogo. Não existe lista de convocáveis mantida à mão.</p></div></div>
+<div class="regra"><div class="id">R3</div><div><b>Modalidade define quantos entram em campo</b><p>Campo são 11; Society são 7. Categoria é idade, modalidade é formato: as duas aparecem no card do jogo, em pesos diferentes.</p></div></div>
+<div class="regra"><div class="id">R4</div><div><b>Função em campo é opcional, de propósito</b><p>Criança que acabou de chegar não tem posição, e obrigar a escolher inventa um dado que ninguém conferiu. Quem não tem função aparece em Todos e some nos outros filtros: é o empurrão para completar a ficha.</p></div></div>
+<div class="regra"><div class="id">R5</div><div><b>Posição na tática é fração do campo, nunca pixel</b><p>A mesma formação serve para o campo de 11 e para o de 7. Guardar pixel quebra na primeira tela de tamanho diferente.</p></div></div>
+<div class="regra"><div class="id">R7</div><div><b>"A definir" é estado válido e visível</b><p>Sessão sem responsável é normal na quinta e problema no sábado. O app conta quantas faltam, em vez de deixar a pessoa varrer a lista contando.</p></div></div>
+<div class="regra"><div class="id">R8</div><div><b>Avaliação de treino é inteiramente opcional</b><p>Resposta arrancada à força vira 3 em tudo, e aí o dado não serve.</p></div></div>
+<div class="regra"><div class="id">R10</div><div><b>Filtro tem de filtrar de verdade</b><p>As linhas que ficam sobem, o card encolhe, o botão acompanha e a média é recalculada só com o que está na tela. Filtro que deixa buraco parece app travado.</p></div></div>
+<div class="regra"><div class="id">R11</div><div><b>Contagem só onde exige ação</b><p>"Precisam de atenção · 4" leva número. "Frequência saudável" não leva: é o que sobra.</p></div></div>
+<div class="regra"><div class="id">R12</div><div><b>O período é um só para toda a Secretaria</b><p>O painel e o relatório nunca podem estar falando de meses diferentes.</p></div></div>
+<div class="regra"><div class="id">R13</div><div><b>Offline primeiro</b><p>Toda leitura vem do banco local; toda escrita entra numa fila que sobe sozinha. A fila é visível e contável: fila invisível é fila que ninguém confia.</p></div></div>
+<div class="regra"><div class="id">R20</div><div><b>Contato do responsável é exibido mascarado</b><p>(11) 9 ****-**21. O número completo só para quem tem permissão de ficha.</p></div></div>
+<div class="regra"><div class="id">R24</div><div><b>Card com seta é porta</b><p>Se tem chevron, tocar navega. Se não navega, não desenhe o chevron. Existe validador que confere isso nas 78 telas.</p></div></div>
+<div class="regra"><div class="id">R25</div><div><b>Documento é lista fixa de quatro</b><p>RG ou certidão, comprovante de residência, isenção de responsabilidade, direito de imagem. Lista maior que a exigência real cria pendência que nunca fecha, e pendência que nunca fecha ensina a ignorar o aviso.</p></div></div>
+<div class="regra"><div class="id">R27</div><div><b>Contato de responsável não é documento</b><p>Mora em Responsáveis, com WhatsApp e emergência como selo com texto, nunca só cor: a quem ligar primeiro é decisão sob pressão.</p></div></div>
+<div class="regra"><div class="id">R28</div><div><b>A foto da criança é sempre silhueta no design</b><p>E rosto real nunca entra em seed, teste ou captura de tela.</p></div></div>
+<div class="regra"><div class="id">R30</div><div><b>Devolver livro é um toque, não uma tela</b><p>"O livro voltou" é da mesma natureza de "a criança veio".</p></div></div>
+<div class="regra"><div class="id">R31</div><div><b>Número que não fecha é defeito</b><p>Painel e relatório do mesmo período dizem o mesmo número; as quebras somam o total; mês ≤ trimestre ≤ ano. Existe validador.</p></div></div>
+<div class="regra"><div class="id">R32</div><div><b>Empréstimo só para criança cadastrada</b><p>E a lista sai do cadastro, não de uma segunda lista mantida à mão.</p></div></div>
+<div class="regra"><div class="id">R34</div><div><b>A chamada é por turma e cada uma se salva sozinha</b><p>Duas por dia, Pequenos e Maiores. Lista única de 74 nomes obriga a procurar.</p></div></div>
+<div class="regra"><div class="id">R41</div><div><b>Duas ações na mesma linha ficam cada uma no seu pedaço</b><p>Na linha do empréstimo, a marca à esquerda devolve e o resto da linha abre o contato de quem levou.</p></div></div>
+<div class="regra"><div class="id">R42</div><div><b>O tipo do livro sai de lista, e a lista cresce pelo app</b><p>Escolher é de lista; criar é ato deliberado, com tela própria e com os tipos existentes à vista.</p></div></div>
+<div class="regra"><div class="id">R45</div><div><b>Disponibilidade é derivada, nunca digitada</b><p>"4 de 5" sai da contagem de empréstimos abertos daquele título.</p></div></div>
+<div class="regra"><div class="id">R46</div><div><b>A ordem das abas é a ordem de uso</b><p>A primeira aba de um setor é a tarefa mais frequente dele, não a mais importante no organograma.</p></div></div>
+<div class="regra"><div class="id">R47</div><div><b>Número pequeno usa contador de mais e menos, não teclado</b><p>Teclado numérico cobre metade da tela para receber um toque, e aceita 55 no lugar de 5 sem reclamar.</p></div></div>
+</section>
+<section id="privacidade">
+<h2><span class="n">09</span>Privacidade</h2>
+<p class="sub">O app guarda dados pessoais de crianças e adolescentes em
+situação de vulnerabilidade. É a categoria mais sensível que existe na LGPD.</p>
+
+<div class="nota perigo">
+  <p><b>Nome real de criança nunca entra em ambiente que não seja produção.</b>
+  Sem seed com nome real, sem dump de produção em máquina de desenvolvimento,
+  sem captura de tela com nome real em documento, apresentação ou repositório.
+  Todos os nomes deste design são fictícios, e é para isso que eles existem.</p>
+</div>
+
+<ul>
+  <li><b>A foto é silhueta no design, sempre.</b> Rosto de criança real não entra
+      em tela de exemplo. Na ficha sem foto, aparecem as iniciais.</li>
+  <li><b>Sem autorização de imagem, a foto não sai do app.</b> A tela da foto
+      mostra o estado da autorização, e a linha leva para os documentos.</li>
+  <li><b>Contato do responsável é mascarado por padrão:</b> (11) 9 ****-**21. O
+      número completo só para quem tem permissão de ficha.</li>
+  <li><b>Do empréstimo atrasado se chega só ao contato</b>, e não à ficha
+      inteira. Abrir a ficha completa para copiar um telefone expõe dado
+      sensível sem motivo.</li>
+  <li><b>RLS por unidade.</b> Quem trabalha em Caiana não precisa ler a ficha
+      das crianças de Atibaia.</li>
+  <li><b>Toda leitura e escrita de ficha passa pelo registro de acessos.</b> É o
+      que permite responder "quem viu o quê" se alguém perguntar. A tela mostra
+      30 dias e o sistema guarda 90.</li>
+  <li><b>Desativar usuário revoga acesso na hora</b>, e preserva o histórico: a
+      linha não se apaga, porque é ela que mantém "quem fez a chamada"
+      respondível seis meses depois.</li>
+</ul>
+</section>
+<section id="uso">
+<h2><span class="n">10</span>Como usar isto</h2>
+<p class="sub">O que tem nesta pasta, e o que fazer com cada coisa.</p>
+
+<h3>O protótipo</h3>
+<p><a href="index.html"><b>index.html</b></a> abre em qualquer navegador, sem
+instalar nada. Ele não é um vídeo nem uma sequência de imagens: os filtros
+filtram de verdade, as chamadas marcam presença, o contador conta, e as
+transições têm a duração e a curva da tabela de movimento. É lá que se vê o
+movimento em vez de ler sobre ele.</p>
+<p>Para ver a variante de movimento reduzido, ligue "reduzir movimento" no
+sistema e recarregue a página.</p>
+
+<h3>As telas</h3>
+<p>A pasta <b>telas/</b> tem os 78 SVGs, um por tela, com a geometria
+exata. Abrem no navegador, no Figma, no Illustrator e em qualquer editor de
+texto — SVG é texto.</p>
+
+<h3>O Figma</h3>
+<p>O design vai para o Figma por um <b>plugin local</b>, e não pela API: o plano
+gratuito não dá acesso à API de escrita. O plugin mora na pasta
+<code>plugin-adam-Figma</code>, fora daqui, e se instala em
+<i>Plugins › Development › Import plugin from manifest</i>. Rodar o plugin
+recria a seção inteira: 78 telas, 39 estados e as ligações de protótipo.</p>
+<div class="nota aviso">
+  <p><b>Instale a fonte Inter antes de abrir o arquivo.</b> Sem ela o Figma
+  substitui a fonte e o layout desloca, porque várias medidas saem da largura
+  real do texto.</p>
+</div>
+
+<h3>O gerador</h3>
+<p>Nada aqui foi desenhado à mão no Figma. Tudo sai de Python: os tokens, as
+telas, os estados, o protótipo e este manual. A consequência prática é a que
+importa: <b>toda correção vai para o gerador</b>, nunca para um SVG solto.
+Corrigir um arquivo conserta uma tela; corrigir o gerador conserta a classe do
+defeito nas 78.</p>
+
+<h3>Os validadores</h3>
+<p>Cada um nasceu de um defeito que passou. Rodam contra os SVGs gerados, e a
+regra do projeto é que <b>todo defeito que escapa vira validador</b>.</p>
+<table>
+  <tr><th>#</th><th>O que pega</th><th></th></tr>
+  <tr><td class="num"><b>1</b></td><td><b>vazamento de texto</b></td><td>texto que sai do container</td></tr><tr><td class="num"><b>2</b></td><td><b>série fora de centro</b></td><td>as oito semanas, as barras, os dias</td></tr><tr><td class="num"><b>3</b></td><td><b>barra inferior</b></td><td>nada abaixo de 706 de texto ou 748 de caixa</td></tr><tr><td class="num"><b>4</b></td><td><b>transbordo de card</b></td><td>conteúdo que passa do card</td></tr><tr><td class="num"><b>5</b></td><td><b>respiro do card</b></td><td>o mesmo espaço em cima e embaixo</td></tr><tr><td class="num"><b>6</b></td><td><b>abas mal distribuídas</b></td><td>o trilho dividido em partes iguais</td></tr><tr><td class="num"><b>7</b></td><td><b>selo fora do eixo óptico</b></td><td>e coluna ragada</td></tr><tr><td class="num"><b>8</b></td><td><b>colisão de texto com selo</b></td><td>caixa contra caixa, não linha de base</td></tr><tr><td class="num"><b>8b</b></td><td><b>colisão de texto com texto</b></td><td>título contra valor à direita</td></tr><tr><td class="num"><b>9</b></td><td><b>respiro entre blocos</b></td><td>e sobreposição de blocos irmãos</td></tr><tr><td class="num"><b>10</b></td><td><b>porta sem destino</b></td><td>card com seta que não leva a nada</td></tr><tr><td class="num"><b>11</b></td><td><b>número que não fecha</b></td><td>painel contra relatório, quebra contra total</td></tr>
+</table>
+<p>Quem for programar o app pode traduzir os cinco últimos para teste de tela:
+todos descrevem defeito que o app também pode ter.</p>
+</section>
+<section id="aberto">
+<h2><span class="n">11</span>O que está em aberto</h2>
+<p class="sub">Pontos em que o design não decide sozinho. Resolver por conta
+própria durante a implementação gera retrabalho.</p>
+
+<table>
+  <tr><th>#</th><th>A pergunta</th><th>Onde isso pega</th></tr>
+  <tr><td class="num"><b>A1</b></td><td><b>A nota do treino é inteira ou tem decimal?</b>
+      A tela oferece seis alvos inteiros de 0 a 5; o histórico mostra 4,5.</td>
+      <td>muda a coluna e a leitura da tela</td></tr>
+  <tr><td class="num"><b>A4</b></td><td><b>Administrador é função ou permissão?</b>
+      A lista de usuários mostra como selo de função, mas o formulário de novo
+      usuário só oferece três chips.</td><td>muda o enum</td></tr>
+  <tr><td class="num"><b>A7</b></td><td><b>O filtro de unidade é conveniência ou limite de acesso?</b>
+      Um treinador de Atibaia deve ver os números de Caiana?</td>
+      <td>muda as políticas de RLS</td></tr>
+  <tr><td class="num"><b>A8</b></td><td><b>A convocação considera turma, ou só idade?</b></td>
+      <td>muda o filtro de elegíveis</td></tr>
+  <tr><td class="num"><b>A9</b></td><td><b>A escala do treino escolhe um técnico, mas planejar fala de comissão.</b>
+      O responsável é uma coluna ou é a linha da comissão com papel de técnico?</td>
+      <td>muda o esquema</td></tr>
+  <tr><td class="num"><b>A12</b></td><td><b>4-3-2 e 4-1-4 somam 9 de linha.</b>
+      Foram lidas como 4-3-2-1 e 4-1-4-1.</td><td>confirmar</td></tr>
+  <tr><td class="num"><b>A16</b></td><td><b>Quem pode criar tipo de livro?</b>
+      O tipo criado vale para o acervo inteiro.</td>
+      <td>recomendação: coordenar ou total</td></tr>
+  <tr><td class="num"><b>A18</b></td><td><b>"Tipo" ou "categoria" de livro?</b>
+      O design usa "tipo" porque "categoria" já significa Sub-11 a Sub-17 no
+      Jogo e as quatro categorias de treino.</td><td>renomear é uma passada</td></tr>
+</table>
+
+<h3>Telas que a navegação promete e ainda não existem</h3>
+<ul>
+  <li>recuperar senha (o link existe e não leva a nada, por ser fluxo de backend)</li>
+  <li>detalhe do erro de sincronização</li>
+  <li>classificação e resultados de campeonato além da fase alcançada</li>
+</ul>
+
+<h3>Pendência do próprio design</h3>
+<p>A folha de design system (<code>00-design-system.svg</code>) existe no plugin
+mas o gerador dela se perdeu, e por isso ela não documenta os componentes novos:
+foto, silhueta, linha de documento, marca de pronto, linha de porta, barra de
+período, roda de data e hora e contador.</p>
+</section>
+<hr>
+<p class="sub">Manual gerado por <code>manual.py</code> a partir de
+<code>tokens.py</code>, <code>ativos.py</code> e da pasta de telas. Se alguma
+medida aqui divergir do app, o gerador é a fonte de verdade do design.</p>
+</main>
+</body></html>

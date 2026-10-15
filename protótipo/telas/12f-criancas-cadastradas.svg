@@ -1,0 +1,198 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Criancas_Cadastradas" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Crianças cadastradas</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">74 fichas  ·  toque para abrir</text>
+  </g>
+  <g id="Campo_Busca">
+    <rect id="Campo_Busca_Fundo" x="20" y="172" width="350" height="48" rx="12" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <circle cx="43.5" cy="194.5" r="5.8" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M47.8 198.8 L52 203" fill="none" stroke="#8A8AA0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Campo_Busca_Placeholder" x="66" y="202" font-family="Inter" font-size="16" font-weight="400" fill="#8A8AA0">Buscar por nome</text>
+  </g>
+  <g id="Filtros_Ficha_Unidade">
+      <g id="FichaU_Todos">
+    <rect id="FichaU_Todos_Fundo" x="20" y="236" width="70" height="44" rx="16" fill="#9E05D2"/><rect id="FichaU_Todos_Brilho" x="20" y="236" width="70" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FichaU_Todos_Rotulo" x="55.0" y="262.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Todos</text>
+  </g>
+      <g id="FichaU_Atibaia">
+    <rect id="FichaU_Atibaia_Fundo" x="98" y="236" width="78" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FichaU_Atibaia_Rotulo" x="137.0" y="262.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Atibaia</text>
+  </g>
+      <g id="FichaU_Caiana">
+    <rect id="FichaU_Caiana_Fundo" x="184" y="236" width="78" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FichaU_Caiana_Rotulo" x="223.0" y="262.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Caiana</text>
+  </g>
+  </g>
+  <g id="Card_Ficha_1">
+    <rect id="Card_Ficha_1_Fundo" x="20" y="304" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Ficha_1_Avatar">
+    <circle id="Card_Ficha_1_Avatar_Fundo" cx="58" cy="340" r="21" fill="#2E5D4B"/>
+    <text id="Card_Ficha_1_Avatar_Iniciais" x="58" y="344.9" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF" opacity="0">EG</text>
+      <g id="Card_Ficha_1_Avatar_Foto" opacity="0.55">
+    <circle id="Card_Ficha_1_Avatar_Foto_Cabeca" cx="58" cy="336.22" r="6.3" fill="#FFFFFF"/>
+    <path id="Card_Ficha_1_Avatar_Foto_Ombros" d="M44.5 356.1 C45.4 341.3 70.6 341.3 71.5 356.1 A21.0 21.0 0 0 1 44.5 356.1 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Card_Ficha_1_Nome" x="90" y="334" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Enzo Gabriel R.</text>
+    <text id="Card_Ficha_1_Meta" x="90" y="354" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">14 anos  ·  Atibaia</text>
+      <g id="Card_Ficha_1_Estado">
+    <rect id="Card_Ficha_1_Estado_Fundo" x="244" y="328.6" width="82" height="22" rx="11.0" fill="#0E2E22"/>
+    <text id="Card_Ficha_1_Estado_Rotulo" x="256.0" y="343.92" font-family="Inter" font-size="12" font-weight="500" fill="#3DD68C">completa</text>
+  </g>
+    <path d="M344 334 L349 339.5 L344 345" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g id="Card_Ficha_2">
+    <rect id="Card_Ficha_2_Fundo" x="20" y="384" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Ficha_2_Avatar">
+    <circle id="Card_Ficha_2_Avatar_Fundo" cx="58" cy="420" r="21" fill="#5D2E43"/>
+    <text id="Card_Ficha_2_Avatar_Iniciais" x="58" y="424.9" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">SA</text>
+      <g id="Card_Ficha_2_Avatar_Foto" opacity="0">
+    <circle id="Card_Ficha_2_Avatar_Foto_Cabeca" cx="58" cy="416.22" r="6.3" fill="#FFFFFF"/>
+    <path id="Card_Ficha_2_Avatar_Foto_Ombros" d="M44.5 436.1 C45.4 421.3 70.6 421.3 71.5 436.1 A21.0 21.0 0 0 1 44.5 436.1 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Card_Ficha_2_Nome" x="90" y="414" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Sophia Almeida</text>
+    <text id="Card_Ficha_2_Meta" x="90" y="434" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">8 anos  ·  Atibaia</text>
+      <g id="Card_Ficha_2_Estado">
+    <rect id="Card_Ficha_2_Estado_Fundo" x="224" y="408.6" width="102" height="22" rx="11.0" fill="#33240A"/>
+    <text id="Card_Ficha_2_Estado_Rotulo" x="236.0" y="423.92" font-family="Inter" font-size="12" font-weight="500" fill="#F5A524">2 pendentes</text>
+  </g>
+    <path d="M344 414 L349 419.5 L344 425" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g id="Card_Ficha_3">
+    <rect id="Card_Ficha_3_Fundo" x="20" y="464" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Ficha_3_Avatar">
+    <circle id="Card_Ficha_3_Avatar_Fundo" cx="58" cy="500" r="21" fill="#5D2E4E"/>
+    <text id="Card_Ficha_3_Avatar_Iniciais" x="58" y="504.9" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF" opacity="0">HR</text>
+      <g id="Card_Ficha_3_Avatar_Foto" opacity="0.55">
+    <circle id="Card_Ficha_3_Avatar_Foto_Cabeca" cx="58" cy="496.22" r="6.3" fill="#FFFFFF"/>
+    <path id="Card_Ficha_3_Avatar_Foto_Ombros" d="M44.5 516.1 C45.4 501.3 70.6 501.3 71.5 516.1 A21.0 21.0 0 0 1 44.5 516.1 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Card_Ficha_3_Nome" x="90" y="494" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Helena Ribeiro</text>
+    <text id="Card_Ficha_3_Meta" x="90" y="514" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">9 anos  ·  Atibaia</text>
+      <g id="Card_Ficha_3_Estado">
+    <rect id="Card_Ficha_3_Estado_Fundo" x="244" y="488.6" width="82" height="22" rx="11.0" fill="#0E2E22"/>
+    <text id="Card_Ficha_3_Estado_Rotulo" x="256.0" y="503.92" font-family="Inter" font-size="12" font-weight="500" fill="#3DD68C">completa</text>
+  </g>
+    <path d="M344 494 L349 499.5 L344 505" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g id="Card_Ficha_4">
+    <rect id="Card_Ficha_4_Fundo" x="20" y="544" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Ficha_4_Avatar">
+    <circle id="Card_Ficha_4_Avatar_Fundo" cx="58" cy="580" r="21" fill="#2E4F5D"/>
+    <text id="Card_Ficha_4_Avatar_Iniciais" x="58" y="584.9" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">MT</text>
+      <g id="Card_Ficha_4_Avatar_Foto" opacity="0">
+    <circle id="Card_Ficha_4_Avatar_Foto_Cabeca" cx="58" cy="576.22" r="6.3" fill="#FFFFFF"/>
+    <path id="Card_Ficha_4_Avatar_Foto_Ombros" d="M44.5 596.1 C45.4 581.3 70.6 581.3 71.5 596.1 A21.0 21.0 0 0 1 44.5 596.1 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Card_Ficha_4_Nome" x="90" y="574" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Miguel Tavares</text>
+    <text id="Card_Ficha_4_Meta" x="90" y="594" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">15 anos  ·  Caiana</text>
+      <g id="Card_Ficha_4_Estado">
+    <rect id="Card_Ficha_4_Estado_Fundo" x="230" y="568.6" width="96" height="22" rx="11.0" fill="#33240A"/>
+    <text id="Card_Ficha_4_Estado_Rotulo" x="242.0" y="583.9200000000001" font-family="Inter" font-size="12" font-weight="500" fill="#F5A524">1 pendente</text>
+  </g>
+    <path d="M344 574 L349 579.5 L344 585" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g id="Card_Ficha_5">
+    <rect id="Card_Ficha_5_Fundo" x="20" y="624" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Ficha_5_Avatar">
+    <circle id="Card_Ficha_5_Avatar_Fundo" cx="58" cy="660" r="21" fill="#2E4F5D"/>
+    <text id="Card_Ficha_5_Avatar_Iniciais" x="58" y="664.9" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF" opacity="0">AB</text>
+      <g id="Card_Ficha_5_Avatar_Foto" opacity="0.55">
+    <circle id="Card_Ficha_5_Avatar_Foto_Cabeca" cx="58" cy="656.22" r="6.3" fill="#FFFFFF"/>
+    <path id="Card_Ficha_5_Avatar_Foto_Ombros" d="M44.5 676.1 C45.4 661.3 70.6 661.3 71.5 676.1 A21.0 21.0 0 0 1 44.5 676.1 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Card_Ficha_5_Nome" x="90" y="654" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Ana Beatriz L.</text>
+    <text id="Card_Ficha_5_Meta" x="90" y="674" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">12 anos  ·  Atibaia</text>
+      <g id="Card_Ficha_5_Estado">
+    <rect id="Card_Ficha_5_Estado_Fundo" x="224" y="648.6" width="102" height="22" rx="11.0" fill="#33240A"/>
+    <text id="Card_Ficha_5_Estado_Rotulo" x="236.0" y="663.9200000000001" font-family="Inter" font-size="12" font-weight="500" fill="#F5A524">2 pendentes</text>
+  </g>
+    <path d="M344 654 L349 659.5 L344 665" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g id="Scrim_Nav">
+    <rect id="Scrim_Fundo" x="0" y="712" width="390" height="132" fill="url(#grad_scrim)"/>
+    <rect id="Scrim_Brilho" x="-4" y="726" width="398" height="112" fill="url(#grad_brilho_nav)"/>
+  </g>
+  <g id="Nav_Bottom">
+    <rect id="Nav_Fundo" x="20" y="752" width="350" height="60" rx="24" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <rect id="Nav_Lente_Halo" x="196.8" y="746" width="84" height="72" fill="url(#grad_lente_halo)"/>
+    <rect id="Nav_Lente" x="210.8" y="762.0" width="56" height="40" rx="16" fill="#9E05D2"/>
+    <rect id="Nav_Lente_Brilho" x="210.8" y="762.0" width="56" height="40" rx="16" fill="url(#grad_lente)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+      <g id="Nav_Chamada">
+    <rect id="Nav_Chamada_Alvo" x="20.0" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(63.8 782.0) scale(1.3) translate(-9 -9)"><path d="M5.5 2.5 h-3 a1.5 1.5 0 0 0 -1.5 1.5 v12 a1.5 1.5 0 0 0 1.5 1.5 h13 a1.5 1.5 0 0 0 1.5 -1.5 v-12 a1.5 1.5 0 0 0 -1.5 -1.5 h-3" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="5.5" y="0.8" width="7" height="3.6" rx="1.2" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M5 10.5 L8 13.5 L13.2 8" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Jogo">
+    <rect id="Nav_Jogo_Alvo" x="107.4" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(151.2 782.0) scale(1.3) translate(-9 -9)"><rect x="0.5" y="1.5" width="17" height="15" rx="2" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M9 1.5 L9 16.5" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="9" r="3.1" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M0.5 5.8 L3.8 5.8 L3.8 12.2 L0.5 12.2" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 5.8 L14.2 5.8 L14.2 12.2 L17.5 12.2" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Secretaria">
+    <rect id="Nav_Secretaria_Alvo" x="195.1" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(238.8 782.0) scale(1.3) translate(-9 -9)"><path d="M2 17 L2 10" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 17 L8.5 2" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 17 L15 7" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Estudo">
+    <rect id="Nav_Estudo_Alvo" x="282.4" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(326.2 782.0) scale(1.3) translate(-9 -9)"><path d="M9 4 L9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4 C6.6 2.2 3.6 2 1.2 2.8 L1.2 14.2 C3.8 13.4 6.8 14.6 9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4 C11.4 2.2 14.4 2 16.8 2.8 L16.8 14.2 C14.2 13.4 11.2 14.6 9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+  </g>
+</svg>

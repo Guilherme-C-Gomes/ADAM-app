@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -11,24 +12,30 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { AdamSymbol, AdamWordmark } from '@/components/brand/adam-mark'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import { entrar as entrarNaConta, ErroDeAcesso, retomarSessao } from '@/lib/auth'
+import { VERSAO } from '@/lib/versao'
+import { color, onDark, radius, space, target, type } from '@/theme/tokens'
+import { COR_FOCO, useFoco } from '@/hooks/use-foco'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
+  const focoEmail = useFoco()
+  const focoSenha = useFoco()
   const [entrando, setEntrando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  // Ligado por padrao: o celular e da pessoa, e pedir senha a cada chamada
+  // (duas por dia) faz desistir do app. Desliga no aparelho compartilhado.
+  const [lembrar, setLembrar] = useState(true)
 
-  const podeEntrar = !entrando
+  const podeEntrar = !entrando && email.trim().length > 0
 
   /**
-   * MODO PROTOTIPO: entra sem backend.
-   *
-   * A autenticacao real com Supabase ja esteve aqui e volta quando o
-   * projeto existir — basta trocar este corpo por signInWithPassword.
-   * O atraso curto preserva a sensacao de rede, entao o estado de
-   * carregamento continua sendo exercitado durante as demos.
+   * Entra pela conta do Supabase (lib/auth.ts). Os campos avisam o iOS o
+   * que sao (`textContentType`), e e isso que liga as Senhas do iCloud:
+   * o teclado oferece a senha salva, preenche com Face ID e, no primeiro
+   * login, pergunta se quer salvar.
    */
   // A espera abaixo termina depois que a tela pode ter saido; sem esta
   // guarda, o replace dispararia uma navegacao fantasma.
@@ -40,14 +47,48 @@ export default function Login() {
     }
   }, [])
 
+  /**
+   * Ja tem sessao lembrada neste aparelho? Entra direto. Sem isto, quem
+   * chegava pelo login (o atalho da Tela de Inicio salvo nesta tela, ou o
+   * navegador reaberto aqui) digitava a senha de novo mesmo com o "Lembrar
+   * este aparelho" ligado — so a abertura em "/" procurava a sessao.
+   */
+  const [conferindo, setConferindo] = useState(true)
+  useEffect(() => {
+    let ativo = true
+    retomarSessao().then((lembrado) => {
+      if (!ativo) return
+      if (lembrado) router.replace('/chamada')
+      else setConferindo(false)
+    })
+    return () => {
+      ativo = false
+    }
+  }, [])
+
   const entrar = useCallback(async () => {
     setErro(null)
     setEntrando(true)
-    await new Promise((r) => setTimeout(r, motion.slow))
-    if (!montado.current) return
-    setEntrando(false)
-    router.replace('/inicio')
-  }, [])
+    try {
+      await entrarNaConta(email, senha, lembrar)
+      if (!montado.current) return
+      router.replace('/chamada')
+    } catch (e) {
+      if (!montado.current) return
+      setErro(e instanceof ErroDeAcesso ? e.message : 'Não foi possível entrar. Tente de novo.')
+    } finally {
+      if (montado.current) setEntrando(false)
+    }
+  }, [email, senha, lembrar])
+
+  if (conferindo) {
+    return (
+      <SafeAreaView style={[styles.screen, styles.conferindo]} edges={['top', 'bottom']}>
+        <AdamSymbol size={36} />
+        <ActivityIndicator color={color.primaryCh} />
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -63,13 +104,16 @@ export default function Login() {
         <View style={styles.field}>
           <Text style={styles.label}>E-mail</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, focoEmail.focado && styles.focado]}
+            {...focoEmail.eventos}
             value={email}
             onChangeText={setEmail}
-            placeholder="coordenacao@adam.org.br"
+            placeholder="seu.email@adam.ong.br"
             placeholderTextColor={color.faint}
             autoCapitalize="none"
+            autoCorrect={false}
             autoComplete="email"
+            textContentType="username"
             keyboardType="email-address"
             inputMode="email"
             returnKeyType="next"
@@ -78,13 +122,15 @@ export default function Login() {
 
         <View style={styles.field}>
           <Text style={styles.label}>Senha</Text>
-          <View style={styles.inputRow}>
+          <View style={[styles.inputRow, focoSenha.focado && styles.focado]}>
             <TextInput
+              {...focoSenha.eventos}
               style={styles.inputFlex}
               value={senha}
               onChangeText={setSenha}
               secureTextEntry={!mostrarSenha}
               autoComplete="current-password"
+              textContentType="password"
               placeholder="••••••••••"
               placeholderTextColor={color.faint}
               returnKeyType="go"
@@ -94,9 +140,7 @@ export default function Login() {
               onPress={() => setMostrarSenha((v) => !v)}
               hitSlop={space.md}
               accessibilityRole="button">
-              <Text style={styles.inputAction}>
-                {mostrarSenha ? 'Ocultar' : 'Mostrar'}
-              </Text>
+              <Text style={styles.inputAction}>{mostrarSenha ? 'Ocultar' : 'Mostrar'}</Text>
             </Pressable>
           </View>
         </View>
@@ -118,6 +162,19 @@ export default function Login() {
           )}
         </Pressable>
 
+        <View style={styles.lembrar}>
+          <View style={styles.lembrarTexto}>
+            <Text style={styles.lembrarTitulo}>Lembrar este aparelho</Text>
+            <Text style={styles.lembrarLegenda}>Não pede a senha de novo neste celular</Text>
+          </View>
+          <Switch
+            value={lembrar}
+            onValueChange={setLembrar}
+            trackColor={{ true: color.primary, false: color.surface2 }}
+            accessibilityLabel="Lembrar este aparelho"
+          />
+        </View>
+
         {erro !== null ? <Text style={styles.erro}>{erro}</Text> : null}
 
         {/*
@@ -126,29 +183,24 @@ export default function Login() {
           fazer em vez de nao levar a lugar nenhum.
         */}
         <Pressable
-          onPress={() => setErro('Peça a redefinição para a coordenação: coordenacao@adam.org.br')}
+          onPress={() => setErro('Peça para a coordenação do ADAM redefinir a sua senha.')}
           hitSlop={space.sm}
           accessibilityRole="button">
           <Text style={styles.link}>Esqueci minha senha</Text>
         </Pressable>
-
-        <View style={styles.notice}>
-          <Text style={styles.noticeIcon}>!</Text>
-          <View style={styles.noticeText}>
-            <Text style={styles.noticeTitle}>Modo demonstração</Text>
-            <Text style={styles.noticeBody}>
-              Entre com qualquer e-mail e senha para navegar
-            </Text>
-          </View>
-        </View>
       </View>
 
-      <Text style={styles.footer}>ADAM Admin v1 · ONG de utilidade pública</Text>
+      <Text style={styles.footer}>ADAM {VERSAO} · ONG de utilidade pública</Text>
     </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
+  conferindo: { alignItems: 'center', justifyContent: 'center', gap: space.lg },
+  lembrar: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  lembrarTexto: { flex: 1, gap: 2 },
+  lembrarTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  lembrarLegenda: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
   screen: { flex: 1, backgroundColor: color.bg },
   content: { flex: 1, paddingHorizontal: space.lg, gap: space.lg },
   header: { marginTop: space.xxl, gap: space.sm },
@@ -163,10 +215,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.campo,
     borderCurve: 'continuous',
     backgroundColor: color.surface2,
+    borderWidth: 1,
+    borderColor: 'transparent',
     color: color.text,
     ...type.body,
     fontFamily: 'Inter_400Regular',
   },
+  focado: { borderColor: COR_FOCO },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -175,6 +230,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.campo,
     borderCurve: 'continuous',
     backgroundColor: color.surface2,
+    borderWidth: 1,
+    borderColor: 'transparent',
     gap: space.sm,
   },
   inputFlex: {
@@ -227,13 +284,6 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface,
     borderWidth: 1,
     borderColor: color.border,
-  },
-  noticeIcon: {
-    ...type.body,
-    fontFamily: 'Inter_700Bold',
-    color: color.warn,
-    width: 20,
-    textAlign: 'center',
   },
   noticeText: { flex: 1, gap: space.xs },
   noticeTitle: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },

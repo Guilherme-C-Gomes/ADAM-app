@@ -1,0 +1,118 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Estudo_Definir" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Definir aula</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Aula dos Pequenos</text>
+  </g>
+  <g id="Card_Aula_Quando">
+    <rect id="Card_Aula_Quando_Fundo" x="20" y="172" width="350" height="164" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Campo_Data">
+    <rect id="Campo_Data_Alvo" x="24" y="176" width="167.0" height="88" fill="#15151F" opacity="0"/>
+    <text id="Aula_Data_Etiqueta" x="36" y="200" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">DATA</text>
+    <text id="Aula_Data_Valor" x="36" y="230" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">sáb 19/09</text>
+    <path d="M161.0 218 L166.0 223.5 L161.0 229" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <line id="Aula_Divisoria_Campos" x1="195.0" y1="188" x2="195.0" y2="252" stroke="#23233A" stroke-width="1"/>
+      <g id="Campo_Hora">
+    <rect id="Campo_Hora_Alvo" x="199.0" y="176" width="167.0" height="88" fill="#15151F" opacity="0"/>
+    <text id="Aula_Hora_Etiqueta" x="211.0" y="200" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">HORÁRIO</text>
+    <text id="Aula_Hora_Valor" x="211.0" y="230" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">08h  ·  Pequenos</text>
+    <path d="M344 218 L349 223.5 L344 229" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <line id="Aula_Divisoria_Professor" x1="36" y1="268" x2="354" y2="268" stroke="#23233A" stroke-width="1"/>
+      <g id="Campo_Professor">
+    <rect id="Campo_Professor_Alvo" x="24" y="274" width="342" height="56" fill="#15151F" opacity="0"/>
+    <text id="Aula_Professor_Etiqueta" x="36" y="292" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">PROFESSOR RESPONSÁVEL</text>
+      <g id="Aula_Professor_Avatar">
+    <circle id="Aula_Professor_Avatar_Fundo" cx="47" cy="316" r="11" fill="#3A0A52"/>
+    <text id="Aula_Professor_Avatar_Iniciais" x="47" y="319.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">MA</text>
+  </g>
+    <text id="Aula_Professor_Valor" x="66" y="316" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Marina Alves</text>
+    <path d="M344 304 L349 309.5 L344 315" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+  <g id="Aula_Tema">
+    <text id="Aula_Tema_Etiqueta" x="20" y="369" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">HISTÓRIA DO DEVOCIONAL</text>
+    <rect id="Aula_Tema_Fundo" x="20" y="377" width="350" height="52" rx="12" fill="#1E1E2B" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Aula_Tema_Valor" x="36" y="408.0" font-family="Inter" font-size="16" font-weight="400" fill="#FFFFFF">Davi e Golias</text>
+  </g>
+<text id="Overline_Material" x="20" y="462" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">MATERIAL DE APOIO</text>
+  <g id="Card_Material_Aula">
+    <rect id="Card_Material_Aula_Fundo" x="20" y="474" width="350" height="126" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Aula_Arquivo">
+    <rect id="Aula_Arquivo_Alvo" x="24" y="482" width="342" height="52" fill="#15151F" opacity="0"/>
+    <path d="M43 493 h8 l4 4 v13 h-12 z" fill="none" stroke="#C24BEE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M46 501 h6 M46 505 h6" fill="none" stroke="#C24BEE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Aula_Arquivo_Nome" x="74" y="506" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">devocional-3-davi-e-golias.pdf</text>
+    <text id="Aula_Arquivo_Meta" x="74" y="524" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">PDF  ·  1,2 MB</text>
+    <path d="M344 500 L349 505.5 L344 511" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <line id="Card_Material_Aula_Divisoria_1" x1="74" y1="538" x2="354" y2="538" stroke="#23233A" stroke-width="1"/>
+      <g id="Aula_Anexar">
+    <rect id="Aula_Anexar_Alvo" x="24" y="540" width="342" height="52" fill="#15151F" opacity="0"/>
+    <path d="M52 554.5 l-6.5 6.5 a3 3 0 0 0 4.2 4.2 l6.5 -6.5 a5 5 0 0 0 -7 -7 l-7 7 a7 7 0 0 0 9.9 9.9" fill="none" stroke="#C24BEE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Aula_Anexar_Nome" x="74" y="564" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Anexar outro arquivo</text>
+    <text id="Aula_Anexar_Meta" x="74" y="582" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">PDF, foto ou link</text>
+    <path d="M344 558 L349 563.5 L344 569" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+  <g id="Botao_SalvarAula">
+    <rect id="Botao_SalvarAula_Fundo" x="20" y="724" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_SalvarAula_Rotulo" x="195.0" y="755.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Salvar aula</text>
+  </g>
+</svg>

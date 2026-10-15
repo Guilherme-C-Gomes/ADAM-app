@@ -1,35 +1,24 @@
-import { router } from 'expo-router'
-import { useMemo, useState } from 'react'
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native'
+import { router, useFocusEffect } from 'expo-router'
+import { useCallback, useState } from 'react'
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Anel, Card, Chip, Contador, Overline } from '@/components/ui'
-import { BannerOffline } from '@/components/ui/estados'
+import { Aviso } from '@/components/ui/form'
+import { Icone } from '@/components/ui/icone'
+import { CardQueda } from '@/components/ui/metricas'
 import { HeroSetor } from '@/components/ui/setor'
 import { Esqueleto, SkeletonCard, SkeletonChips, SkeletonFaixa } from '@/components/ui/skeleton'
-import { useCarregamento } from '@/hooks/use-carregamento'
-import { useModoOffline } from '@/hooks/use-modo-offline'
-import {
-  contaAtual,
-  filaOffline,
-  participantes,
-  proximoTreino,
-  resumo,
-  ultimoTreino,
-  unidadesInfo,
-  type Unidade,
-} from '@/data/mock'
+import { rotuloLongo } from '@/data/calendario'
+import { useUnidades } from '@/data/chamada'
+import { emQueda, useParticipantes } from '@/data/fichas'
+import { deISO, useTreinosDeHoje } from '@/data/metricas'
+import { usePerfil } from '@/data/perfis'
 import { color, motion, onDark, radius, space, type } from '@/theme/tokens'
 
-type FiltroUnidade = 'Todos' | Unidade
-const FILTROS: FiltroUnidade[] = ['Todos', 'Atibaia', 'Caiana']
+/** Uma cor por unidade, na ordem do banco. */
+const CORES_UNIDADE = [color.primary, color.primaryLt, color.primaryDk]
 
 function saudacaoPorHorario() {
   const hora = new Date().getHours()
@@ -38,62 +27,73 @@ function saudacaoPorHorario() {
   return 'Boa noite'
 }
 
+/** "08:00" vira "08h"; "08:30" vira "08h30". */
+const hora = (h: string) => (h.endsWith(':00') ? `${h.slice(0, 2)}h` : h.replace(':', 'h'))
+
 /**
- * Formata a mao, sem Intl: o Hermes do Expo Go as vezes sobe sem os
- * dados de localizacao completos e `Intl.DateTimeFormat('pt-BR', ...)`
- * derruba o app com RangeError nesse caso.
+ * Home do ADM e da Secretaria (dado sensivel). Os numeros saem do banco e
+ * batem com a Secretaria: os ativos sao as fichas ativas, "em queda" e a
+ * mesma conta da lista, e o ultimo treino e o ultimo dia com chamada
+ * encerrada.
  */
-const DIAS_SEMANA = [
-  'Domingo',
-  'Segunda-feira',
-  'Terça-feira',
-  'Quarta-feira',
-  'Quinta-feira',
-  'Sexta-feira',
-  'Sábado',
-]
-const MESES = [
-  'janeiro',
-  'fevereiro',
-  'março',
-  'abril',
-  'maio',
-  'junho',
-  'julho',
-  'agosto',
-  'setembro',
-  'outubro',
-  'novembro',
-  'dezembro',
-]
-
-function dataDeHoje() {
-  const agora = new Date()
-  return `${DIAS_SEMANA[agora.getDay()]}, ${agora.getDate()} de ${MESES[agora.getMonth()]}`
-}
-
 export default function Home() {
-  const [unidade, setUnidade] = useState<FiltroUnidade>('Todos')
-  const carregando = useCarregamento()
-  const offline = useModoOffline()
+  // o cumprimento e de quem esta logado
+  const { pessoa } = usePerfil()
+  const unidades = useUnidades()
+  const [unidadeId, setUnidadeId] = useState<string | null>(null)
+  const fichas = useParticipantes()
+  const treinos = useTreinosDeHoje(unidadeId)
+  const recarregarFichas = fichas.recarregar
+  const recarregarTreinos = treinos.recarregar
 
-  const ativos = useMemo(
-    () => (unidade === 'Todos' ? resumo.ativos : resumo.porUnidade[unidade]),
-    [unidade],
+  useFocusEffect(
+    useCallback(() => {
+      recarregarFichas()
+      recarregarTreinos()
+    }, [recarregarFichas, recarregarTreinos]),
   )
 
-  const emQueda = useMemo(
-    () => participantes.filter((p) => p.frequencia < 60).length,
-    [],
-  )
+  const nomeDe = (id: string) => unidades.dados.find((u) => u.id === id)?.nome ?? ''
+  const daUnidade = fichas.lista.filter((p) => !unidadeId || p.unidadeId === unidadeId)
+  const ativos = daUnidade.length
+  const quedas = daUnidade.filter(emQueda).length
+  const porUnidade = unidades.dados.map((u, i) => ({
+    ...u,
+    cor: CORES_UNIDADE[i % CORES_UNIDADE.length],
+    total: fichas.lista.filter((p) => p.unidadeId === u.id).length,
+  }))
 
-  const presentesUltimoTreino = Math.round(ativos * (ultimoTreino.pctPresenca / 100))
+  // Presenca no ultimo treino: quem foi, de quem era esperado naquele dia
+  // (as turmas e unidades que tiveram chamada) — mais quem foi sem ser
+  // esperado, para a conta nunca passar de 100%.
+  const ultimo = treinos.ultimo
+  let presentes = 0
+  let esperados = 0
+  if (ultimo) {
+    const daChamada = new Set(ultimo.turmas.map((t) => `${t.unidadeId}:${t.turma}`))
+    const esperadosIds = new Set(
+      fichas.lista
+        .filter((p) =>
+          daChamada.has(`${p.unidadeId}:${p.turma === 'Maiores' ? 'maiores' : 'pequenos'}`),
+        )
+        .map((p) => p.id),
+    )
+    presentes = ultimo.presentes.size
+    esperados = new Set([...esperadosIds, ...ultimo.presentes]).size
+  }
+  const pctUltimo = esperados ? Math.round((presentes / esperados) * 100) : 0
+  const locaisUltimo = ultimo
+    ? [...new Set(ultimo.turmas.map((t) => nomeDe(t.unidadeId)))].join(' e ')
+    : ''
+
+  const carregando = fichas.carregando || treinos.carregando
+  const erro = fichas.erro ?? treinos.erro
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
       <HeroSetor
-        titulo={`${saudacaoPorHorario()}, ${contaAtual.primeiroNome}`}
-        subtitulo={dataDeHoje()}
+        titulo={`${saudacaoPorHorario()}, ${pessoa.nome.split(' ')[0]}`}
+        subtitulo={rotuloLongo(new Date())}
       />
 
       <ScrollView
@@ -112,133 +112,112 @@ export default function Home() {
           </Esqueleto>
         ) : (
           <>
-        <View style={st.filtros}>
-          {FILTROS.map((f) => (
-            <Chip key={f} rotulo={f} ativo={unidade === f} onPress={() => setUnidade(f)} />
-          ))}
-        </View>
+            <View style={st.filtros}>
+              <Chip rotulo="Todos" ativo={unidadeId === null} onPress={() => setUnidadeId(null)} />
+              {unidades.dados.map((u) => (
+                <Chip
+                  key={u.id}
+                  rotulo={u.nome}
+                  ativo={unidadeId === u.id}
+                  onPress={() => setUnidadeId(u.id)}
+                />
+              ))}
+            </View>
 
-        <Pressable
-          onPress={() => router.push('/secretaria/participantes')}
-          accessibilityRole="button"
-          accessibilityLabel="Buscar participante">
-          <View style={st.busca}>
-            <Text style={st.buscaIcone}>⌕</Text>
-            <Text style={st.buscaPlaceholder}>Buscar participante</Text>
-          </View>
-        </Pressable>
+            <Pressable
+              onPress={() => router.push('/secretaria/participantes')}
+              accessibilityRole="button"
+              accessibilityLabel="Buscar participante">
+              <View style={st.busca}>
+                <Icone nome="busca" cor={color.muted} />
+                <Text style={st.buscaPlaceholder}>Buscar participante</Text>
+              </View>
+            </Pressable>
 
-        <Overline>Resumo de hoje</Overline>
+            <Overline>Resumo de hoje</Overline>
           </>
         )}
 
-        {carregando ? null : offline ? (
-          <BannerOffline
-            chamadas={filaOffline.chamadas}
-            registros={filaOffline.registros}
-            motivos={filaOffline.motivos}
-            onTentar={() => {}}
-          />
-        ) : (
+        {carregando ? null : (
           <>
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
-        <Card>
-          <Text style={st.cardTitulo}>Participantes ativos</Text>
-          <View style={st.valorLinha}>
-            <Contador valor={ativos} style={st.valor} />
-            <Text style={st.valorMeta}>crianças e adolescentes</Text>
-          </View>
+            {erro ? (
+              <Aviso
+                tom="ambar"
+                titulo={erro}
+                texto="Toque para tentar de novo"
+                onPress={() => {
+                  recarregarFichas()
+                  recarregarTreinos()
+                }}
+              />
+            ) : null}
 
-          {unidade === 'Todos' ? (
-            <>
-              <View style={st.barraDupla}>
-                {unidadesInfo.map((u) => (
-                  <View
-                    key={u.nome}
-                    style={[
-                      st.barraSegmento,
-                      {
-                        flex: resumo.porUnidade[u.nome],
-                        backgroundColor: u.nome === 'Atibaia' ? color.primary : color.primaryLt,
-                      },
-                    ]}
-                  />
-                ))}
-              </View>
-              {unidadesInfo.map((u) => (
-                <View key={u.nome} style={st.legendaLinha}>
-                  <View
-                    style={[
-                      st.ponto,
-                      { backgroundColor: u.nome === 'Atibaia' ? color.primary : color.primaryLt },
-                    ]}
-                  />
-                  <Text style={st.legenda}>{u.nomeCompleto}</Text>
-                  <Text style={st.legendaValor}>
-                    {resumo.porUnidade[u.nome]}{' '}
-                    {Math.round((resumo.porUnidade[u.nome] / ativos) * 100)}%
+            <Animated.View entering={FadeInDown.duration(motion.medium)}>
+              <Card>
+                <Text style={st.cardTitulo}>Participantes ativos</Text>
+                <View style={st.valorLinha}>
+                  <Contador valor={ativos} style={st.valor} />
+                  <Text style={st.valorMeta}>
+                    {ativos === 1 ? 'criança ou adolescente' : 'crianças e adolescentes'}
                   </Text>
                 </View>
-              ))}
-            </>
-          ) : (
-            <>
-              <View style={st.barraDupla}>
-                <View style={[st.barraSegmento, { flex: 1, backgroundColor: color.primary }]} />
-              </View>
-              <View style={st.legendaLinha}>
-                <View style={[st.ponto, { backgroundColor: color.primary }]} />
-                <Text style={st.legenda}>{unidade}</Text>
-                <Text style={st.legendaValor}>{ativos} 100%</Text>
-              </View>
-            </>
-          )}
-        </Card>
-        </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
-        <Card style={st.cardTreino}>
-          <View style={st.treinoTexto}>
-            <Text style={st.cardTitulo}>Presença no último treino</Text>
-            <View style={st.valorLinha}>
-              <Contador valor={presentesUltimoTreino} style={st.valor} />
-              <Text style={st.valorMeta}>de {ativos}</Text>
-            </View>
-            <Text style={st.legenda}>
-              {ultimoTreino.data} · {ultimoTreino.local}
-            </Text>
-            <Text style={st.legenda}>
-              Próximo treino: {proximoTreino.data} · {proximoTreino.hora}
-            </Text>
-          </View>
-          <Anel pct={ultimoTreino.pctPresenca} />
-        </Card>
-        </Animated.View>
+                {unidadeId === null && ativos ? (
+                  <>
+                    <View style={st.barraDupla}>
+                      {porUnidade
+                        .filter((u) => u.total)
+                        .map((u) => (
+                          <View
+                            key={u.id}
+                            style={[st.barraSegmento, { flex: u.total, backgroundColor: u.cor }]}
+                          />
+                        ))}
+                    </View>
+                    {porUnidade.map((u) => (
+                      <View key={u.id} style={st.legendaLinha}>
+                        <View style={[st.ponto, { backgroundColor: u.cor }]} />
+                        <Text style={st.legenda}>{u.nome}</Text>
+                        <Text style={st.legendaValor}>
+                          {u.total} {Math.round((u.total / ativos) * 100)}%
+                        </Text>
+                      </View>
+                    ))}
+                  </>
+                ) : null}
+              </Card>
+            </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-        <Pressable
-          onPress={() =>
-            router.push({
-              pathname: '/secretaria/participantes',
-              params: { filtro: 'baixa' },
-            })
-          }
-          style={({ pressed }) => pressed && st.pressed}
-          accessibilityRole="button"
-          accessibilityLabel={`${emQueda} participantes em queda de frequência, ver lista`}>
-          <Card style={st.cardAlerta}>
-            <View style={st.acento} />
-            <View style={st.alertaTexto}>
-              <Text style={st.cardTitulo}>{emQueda} em queda de frequência</Text>
-              <Text style={st.legenda}>
-                Abaixo de 60% de presença — vale contato da equipe
-              </Text>
-            </View>
-            <Text style={st.chevron}>›</Text>
-          </Card>
-        </Pressable>
-        </Animated.View>
+            <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+              <Card style={st.cardTreino}>
+                <View style={st.treinoTexto}>
+                  <Text style={st.cardTitulo}>Presença no último treino</Text>
+                  {ultimo ? (
+                    <>
+                      <View style={st.valorLinha}>
+                        <Contador valor={presentes} style={st.valor} />
+                        <Text style={st.valorMeta}>de {esperados}</Text>
+                      </View>
+                      <Text style={st.legenda}>
+                        {rotuloLongo(deISO(ultimo.data))} · {locaisUltimo}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={st.legenda}>Nenhuma chamada encerrada ainda</Text>
+                  )}
+                  <Text style={st.legenda}>
+                    {treinos.proximo
+                      ? `Próximo treino: ${rotuloLongo(deISO(treinos.proximo.data))} · ${hora(treinos.proximo.hora)}`
+                      : 'Próximo treino: nenhum planejado no app'}
+                  </Text>
+                </View>
+                {ultimo ? <Anel pct={pctUltimo} /> : null}
+              </Card>
+            </Animated.View>
 
+            <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+              <CardQueda quedas={quedas} unidade={unidadeId ? nomeDe(unidadeId) : null} />
+            </Animated.View>
           </>
         )}
       </ScrollView>
@@ -293,7 +272,6 @@ const st = StyleSheet.create({
     borderCurve: 'continuous',
     backgroundColor: color.surface2,
   },
-  buscaIcone: { ...type.body, color: color.faint },
   buscaPlaceholder: { ...type.body, fontFamily: 'Inter_400Regular', color: color.faint },
 
   cardTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
@@ -339,7 +317,6 @@ const st = StyleSheet.create({
     gap: space.md,
   },
   alertaTexto: { flex: 1, gap: space.xs },
-  chevron: { ...type.body, color: color.faint },
   pressed: { opacity: 0.7 },
   acento: {
     position: 'absolute',

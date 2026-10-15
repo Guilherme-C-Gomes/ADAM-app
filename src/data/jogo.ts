@@ -1,162 +1,45 @@
 /**
- * Dados de demonstracao do setor Jogo.
- *
- * Ficticios, como o resto do prototipo. As regras que moldam estes tipos
- * estao no documento de estrutura: turma sai da idade (R1), categoria do
- * jogo define elegibilidade (R2), modalidade define quantos entram em
- * campo (R3), posicao na tatica e fracao do campo e nunca pixel (R5),
- * "a definir" e estado valido e visivel (R7).
+ * As regras do setor Jogo — nada de dado aqui (os dados moram no banco,
+ * via data/jogo-dados.ts). Estao no documento de estrutura: turma sai da
+ * idade (R1), categoria do jogo define elegibilidade (R2), modalidade define
+ * quantos entram em campo (R3), posicao na tatica e fracao do campo e nunca
+ * pixel (R5), "a definir" e estado valido e visivel (R7).
  */
 
-export type CategoriaExercicio = 'Aquecimento' | 'Técnica' | 'Tático' | 'Jogo' | 'Físico'
+export const CATEGORIAS_EXERCICIO = ['Aquecimento', 'Fundamentos', 'Físico', 'Tático'] as const
+export type CategoriaExercicio = (typeof CATEGORIAS_EXERCICIO)[number]
 
-export type Exercicio = {
-  id: string
-  nome: string
-  categoria: CategoriaExercicio
-  duracaoMin: number
-  material?: string
+/** Tela 11z: o que cada categoria quer dizer, para o treinador achar depois. */
+export const DESCRICAO_CATEGORIA: Record<CategoriaExercicio, string> = {
+  Aquecimento: 'Começo do treino: corpo e mobilidade',
+  Fundamentos: 'Passe, domínio, recepção, condução',
+  Físico: 'Arrancada, resistência, mudança de direção',
+  Tático: 'Jogo reduzido, posicionamento, decisão',
 }
 
-export const exercicios: Exercicio[] = [
-  { id: 'e1', nome: 'Aquecimento e mobilidade', categoria: 'Aquecimento', duracaoMin: 10 },
-  { id: 'e2', nome: 'Passe curto em duplas', categoria: 'Técnica', duracaoMin: 15, material: '1 bola por dupla' },
-  { id: 'e3', nome: 'Domínio orientado', categoria: 'Técnica', duracaoMin: 12, material: '8 cones' },
-  { id: 'e4', nome: 'Recepção com bola rasteira', categoria: 'Técnica', duracaoMin: 15 },
-  { id: 'e5', nome: 'Condução em zigue-zague', categoria: 'Técnica', duracaoMin: 10, material: '10 cones' },
-  { id: 'e6', nome: 'Jogo reduzido 3 × 3', categoria: 'Jogo', duracaoMin: 20, material: '4 coletes' },
-  { id: 'e7', nome: 'Finalização em dupla', categoria: 'Tático', duracaoMin: 15 },
-]
-
-export type Turma = 'Pequenos' | 'Maiores'
-
-export type ExercicioDoTreino = {
-  exercicioId: string
-  /** Copiada do exercicio, editavel no plano. */
-  duracaoMin: number
-  feito: boolean
-}
-
-export type Treino = {
-  id: string
-  turma: Turma
-  /** Rotulo curto: "sáb 12/09". */
-  data: string
-  hora: string
-  local: string
-  /** null = "a definir" (R7). */
-  responsavel: string | null
-  hoje: boolean
-  exercicios: ExercicioDoTreino[]
-}
-
-export const treinos: Treino[] = [
-  {
-    id: 't1',
-    turma: 'Pequenos',
-    data: 'sáb 05/09',
-    hora: '08h',
-    local: 'Praça Olímpia',
-    responsavel: 'Marina Alves',
-    hoje: true,
-    exercicios: [
-      { exercicioId: 'e1', duracaoMin: 10, feito: true },
-      { exercicioId: 'e2', duracaoMin: 15, feito: true },
-      { exercicioId: 'e3', duracaoMin: 12, feito: true },
-      { exercicioId: 'e4', duracaoMin: 15, feito: false },
-      { exercicioId: 'e6', duracaoMin: 20, feito: false },
-    ],
-  },
-  {
-    id: 't2',
-    turma: 'Maiores',
-    data: 'sáb 05/09',
-    hora: '10h',
-    local: 'Praça Olímpia',
-    responsavel: 'Chico Barbosa',
-    hoje: true,
-    exercicios: [
-      { exercicioId: 'e1', duracaoMin: 10, feito: false },
-      { exercicioId: 'e5', duracaoMin: 10, feito: false },
-      { exercicioId: 'e7', duracaoMin: 15, feito: false },
-    ],
-  },
-  {
-    id: 't3',
-    turma: 'Pequenos',
-    data: 'sáb 12/09',
-    hora: '08h',
-    local: 'Praça Olímpia',
-    responsavel: 'Marina Alves',
-    hoje: false,
-    exercicios: [
-      { exercicioId: 'e1', duracaoMin: 10, feito: false },
-      { exercicioId: 'e2', duracaoMin: 15, feito: false },
-      { exercicioId: 'e3', duracaoMin: 12, feito: false },
-      { exercicioId: 'e4', duracaoMin: 15, feito: false },
-    ],
-  },
-  {
-    id: 't4',
-    turma: 'Maiores',
-    data: 'sáb 12/09',
-    hora: '10h',
-    local: 'Praça Olímpia',
-    responsavel: null,
-    hoje: false,
-    exercicios: [],
-  },
-]
-
-/** Escala da semana: quem cobre cada horario (tela 11e). */
-export type LinhaEscala = {
-  id: string
-  dia: string
-  hora: string
-  tecnico: string | null
-  turma: Turma
-}
-
-export const escalaSemana: LinhaEscala[] = [
-  { id: 'x1', dia: 'Sáb', hora: '08h', tecnico: 'Marina Alves', turma: 'Pequenos' },
-  { id: 'x2', dia: 'Sáb', hora: '10h', tecnico: 'Chico Barbosa', turma: 'Maiores' },
-  { id: 'x3', dia: 'Qua', hora: '19h', tecnico: null, turma: 'Pequenos' },
-  { id: 'x4', dia: 'Qua', hora: '20h', tecnico: null, turma: 'Maiores' },
-]
-
-export const MODALIDADES = ['Campo', 'Society', 'Fut7'] as const
+export const MODALIDADES = ['Campo', 'Society'] as const
 export type Modalidade = (typeof MODALIDADES)[number]
 
-/** R3: campo leva 11 em campo; society e fut7 levam 7. */
+/** R4: a posicao em campo e opcional na ficha; quem nao tem so aparece em "Todos". */
+export const POSICOES = ['Goleiro', 'Defesa', 'Meio', 'Ataque'] as const
+export type FuncaoCampo = (typeof POSICOES)[number]
+
+/** R3: campo leva 11 em campo; society leva 7. */
 export function jogadoresEmCampo(modalidade: Modalidade) {
   return modalidade === 'Campo' ? 11 : 7
 }
 
-export type Partida = {
-  id: string
-  adversario: string
-  categoria: string
-  modalidade: Modalidade
-  dia: string
-  /** DD/MM, para a mensagem da convocacao. */
-  data: string
-  hora: string
-  local: string
-}
-
-export const partidas: Partida[] = [
-  { id: 'j1', adversario: 'São Bento', categoria: 'Sub-14', modalidade: 'Campo', dia: 'domingo', data: '06/09', hora: '15h', local: 'Campo do Guarani' },
-  { id: 'j2', adversario: 'Vila Nova', categoria: 'Sub-17', modalidade: 'Society', dia: 'domingo', data: '06/09', hora: '17h', local: 'Campo do Guarani' },
-  { id: 'j3', adversario: 'Olímpico', categoria: 'Sub-12', modalidade: 'Fut7', dia: 'sábado', data: '12/09', hora: '09h', local: 'Praça Olímpia' },
-]
-
-export const campeonato = {
-  nome: 'Campeonato Regional',
-  rodada: '3ª rodada',
-  posicao: '2º lugar',
-  pontos: 10,
-  jogos: 3,
-}
+/** Tela 11v: categoria e faixa de idade. Quem convoca e a ficha (R2). */
+export const CATEGORIAS = [
+  'Sub-11',
+  'Sub-12',
+  'Sub-13',
+  'Sub-14',
+  'Sub-15',
+  'Sub-16',
+  'Sub-17',
+] as const
+export type Categoria = (typeof CATEGORIAS)[number]
 
 /**
  * R5: cada posicao e uma fracao do campo (0 a 1), entao a mesma formacao
@@ -165,7 +48,7 @@ export const campeonato = {
  */
 export type PosicaoTatica = { numero: number; fx: number; fy: number }
 
-export const FORMACOES_CAMPO = ['4-4-2', '4-3-3', '3-5-2'] as const
+export const FORMACOES_CAMPO = ['4-4-2', '4-3-3', '3-5-2', '4-5-1', '4-3-2-1', '4-1-4-1'] as const
 export type FormacaoCampo = (typeof FORMACOES_CAMPO)[number]
 
 export const formacoes: Record<FormacaoCampo, PosicaoTatica[]> = {
@@ -208,6 +91,45 @@ export const formacoes: Record<FormacaoCampo, PosicaoTatica[]> = {
     { numero: 10, fx: 0.38, fy: 0.84 },
     { numero: 11, fx: 0.62, fy: 0.84 },
   ],
+  '4-5-1': [
+    { numero: 1, fx: 0.5, fy: 0.08 },
+    { numero: 2, fx: 0.16, fy: 0.28 },
+    { numero: 3, fx: 0.38, fy: 0.26 },
+    { numero: 4, fx: 0.62, fy: 0.26 },
+    { numero: 5, fx: 0.84, fy: 0.28 },
+    { numero: 6, fx: 0.1, fy: 0.56 },
+    { numero: 7, fx: 0.3, fy: 0.54 },
+    { numero: 8, fx: 0.5, fy: 0.56 },
+    { numero: 9, fx: 0.7, fy: 0.54 },
+    { numero: 10, fx: 0.9, fy: 0.56 },
+    { numero: 11, fx: 0.5, fy: 0.86 },
+  ],
+  '4-3-2-1': [
+    { numero: 1, fx: 0.5, fy: 0.08 },
+    { numero: 2, fx: 0.16, fy: 0.28 },
+    { numero: 3, fx: 0.38, fy: 0.26 },
+    { numero: 4, fx: 0.62, fy: 0.26 },
+    { numero: 5, fx: 0.84, fy: 0.28 },
+    { numero: 6, fx: 0.26, fy: 0.48 },
+    { numero: 7, fx: 0.5, fy: 0.46 },
+    { numero: 8, fx: 0.74, fy: 0.48 },
+    { numero: 9, fx: 0.36, fy: 0.68 },
+    { numero: 10, fx: 0.64, fy: 0.68 },
+    { numero: 11, fx: 0.5, fy: 0.88 },
+  ],
+  '4-1-4-1': [
+    { numero: 1, fx: 0.5, fy: 0.08 },
+    { numero: 2, fx: 0.16, fy: 0.26 },
+    { numero: 3, fx: 0.38, fy: 0.24 },
+    { numero: 4, fx: 0.62, fy: 0.24 },
+    { numero: 5, fx: 0.84, fy: 0.26 },
+    { numero: 6, fx: 0.5, fy: 0.42 },
+    { numero: 7, fx: 0.14, fy: 0.62 },
+    { numero: 8, fx: 0.38, fy: 0.6 },
+    { numero: 9, fx: 0.62, fy: 0.6 },
+    { numero: 10, fx: 0.86, fy: 0.62 },
+    { numero: 11, fx: 0.5, fy: 0.86 },
+  ],
 }
 
 export const FORMACOES_7 = ['2-3-1', '3-2-1', '2-2-2'] as const
@@ -246,37 +168,14 @@ export const formacoes7: Record<Formacao7, PosicaoTatica[]> = {
 /** R3 de novo: a lista de formacoes depende da modalidade. */
 export function formacoesDe(modalidade: Modalidade) {
   return modalidade === 'Campo'
-    ? { nomes: FORMACOES_CAMPO as readonly string[], mapa: formacoes as Record<string, PosicaoTatica[]> }
-    : { nomes: FORMACOES_7 as readonly string[], mapa: formacoes7 as Record<string, PosicaoTatica[]> }
-}
-
-export type SituacaoConvocacao = 'Em campo' | 'Banco'
-
-export type Convocacao = {
-  participanteId: string
-  situacao: SituacaoConvocacao
-}
-
-/** Convocacao do jogo j1 (ADAM × São Bento, Sub-14, campo: 11 + banco). */
-export const convocacoes: Record<string, Convocacao[]> = {
-  j1: [
-    { participanteId: '13', situacao: 'Em campo' },
-    { participanteId: '14', situacao: 'Em campo' },
-    { participanteId: '15', situacao: 'Em campo' },
-    { participanteId: '16', situacao: 'Em campo' },
-    { participanteId: '17', situacao: 'Em campo' },
-    { participanteId: '18', situacao: 'Em campo' },
-    { participanteId: '19', situacao: 'Em campo' },
-    { participanteId: '20', situacao: 'Em campo' },
-    { participanteId: '21', situacao: 'Em campo' },
-    { participanteId: '22', situacao: 'Em campo' },
-    { participanteId: '23', situacao: 'Em campo' },
-    { participanteId: '24', situacao: 'Banco' },
-    { participanteId: '26', situacao: 'Banco' },
-    { participanteId: '11', situacao: 'Banco' },
-  ],
-  j2: [],
-  j3: [],
+    ? {
+        nomes: FORMACOES_CAMPO as readonly string[],
+        mapa: formacoes as Record<string, PosicaoTatica[]>,
+      }
+    : {
+        nomes: FORMACOES_7 as readonly string[],
+        mapa: formacoes7 as Record<string, PosicaoTatica[]>,
+      }
 }
 
 /**
@@ -288,13 +187,16 @@ export function idadesDaCategoria(categoria: string) {
   return Number.isFinite(teto) && teto > 0 ? { min: teto - 1, max: teto } : { min: 0, max: 99 }
 }
 
-/** Ultima avaliacao de treino (tela 11m alimenta o card da aba Treinos). */
-export const avaliacaoRecente = {
-  avaliados: 12,
-  treino: 4.2,
-  entenderam: 3.8,
-  dificuldade: 2.4,
-}
-
 /** R9: so "entenderam" abaixo de 3 vira alerta. */
 export const LIMITE_COMPREENSAO = 3
+
+/** "Marina Alves" -> "MA" */
+export function iniciaisDe(nome: string) {
+  return nome
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((p) => p.charAt(0))
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+}

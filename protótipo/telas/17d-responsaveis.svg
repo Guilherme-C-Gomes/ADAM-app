@@ -1,0 +1,125 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Responsaveis" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Responsáveis</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Ana Beatriz L.</text>
+  </g>
+<text id="Overline_Principal" x="20" y="188" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">MÃE</text>
+  <g id="Card_Contato_1">
+    <rect id="Card_Contato_1_Fundo" x="20" y="200" width="350" height="100" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Contato_1">
+    <rect id="Contato_1_Alvo" x="24" y="200" width="342" height="92" fill="#15151F" opacity="0"/>
+    <text id="Contato_1_Nome" x="36" y="228" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Cláudia Ribeiro</text>
+      <g id="Contato_1_Relacao">
+    <rect id="Contato_1_Relacao_Fundo" x="275" y="211.8" width="51" height="24" rx="12" fill="#3A0A52"/>
+    <text id="Contato_1_Relacao_Rotulo" x="287.0" y="228.12" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">mãe</text>
+  </g>
+    <path d="M39 244 h3.5 l1.5 4 -2 1.5 a10 10 0 0 0 4.5 4.5 l1.5 -2 4 1.5 v3.5 a1.5 1.5 0 0 1 -1.8 1.5 C43 258 38 253 37.5 245.8 A1.5 1.5 0 0 1 39 244 z" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Contato_1_Telefone" x="64" y="256" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">(11) 9 8765-4321</text>
+    <path d="M344 222 L349 227.5 L344 233" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <g id="Contato_1_Selo_What">
+    <rect id="Contato_1_Selo_What_Fundo" x="36" y="268" width="88" height="24" rx="12" fill="#0E2E22"/>
+    <text id="Contato_1_Selo_What_Rotulo" x="48.0" y="284.32" font-family="Inter" font-size="12" font-weight="500" fill="#3DD68C">WhatsApp</text>
+  </g>
+      <g id="Contato_1_Selo_prin">
+    <rect id="Contato_1_Selo_prin_Fundo" x="132" y="268" width="78" height="24" rx="12" fill="#33240A"/>
+    <text id="Contato_1_Selo_prin_Rotulo" x="144.0" y="284.32" font-family="Inter" font-size="12" font-weight="500" fill="#F5A524">principal</text>
+  </g>
+  </g>
+  </g>
+<text id="Overline_Segundo" x="20" y="336" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">PAI</text>
+  <g id="Card_Contato_2">
+    <rect id="Card_Contato_2_Fundo" x="20" y="348" width="350" height="100" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Contato_2">
+    <rect id="Contato_2_Alvo" x="24" y="348" width="342" height="92" fill="#15151F" opacity="0"/>
+    <text id="Contato_2_Nome" x="36" y="376" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Marcos Ribeiro</text>
+      <g id="Contato_2_Relacao">
+    <rect id="Contato_2_Relacao_Fundo" x="283" y="359.8" width="43" height="24" rx="12" fill="#3A0A52"/>
+    <text id="Contato_2_Relacao_Rotulo" x="295.0" y="376.12" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">pai</text>
+  </g>
+    <path d="M39 392 h3.5 l1.5 4 -2 1.5 a10 10 0 0 0 4.5 4.5 l1.5 -2 4 1.5 v3.5 a1.5 1.5 0 0 1 -1.8 1.5 C43 406 38 401 37.5 393.8 A1.5 1.5 0 0 1 39 392 z" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Contato_2_Telefone" x="64" y="404" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">(11) 9 9123-4567</text>
+    <path d="M344 370 L349 375.5 L344 381" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <g id="Contato_2_Selo_What">
+    <rect id="Contato_2_Selo_What_Fundo" x="36" y="416" width="88" height="24" rx="12" fill="#0E2E22"/>
+    <text id="Contato_2_Selo_What_Rotulo" x="48.0" y="432.32" font-family="Inter" font-size="12" font-weight="500" fill="#3DD68C">WhatsApp</text>
+  </g>
+  </g>
+  </g>
+  <g id="Vazio_Contato_2" opacity="0">
+    <rect id="Vazio_Contato_2_Fundo" x="20" y="348" width="350" height="100" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <rect id="Vazio_Contato_2_Alvo" x="24" y="352" width="342" height="92" fill="#15151F" opacity="0"/>
+    <circle id="Vazio_Contato_2_Anel" cx="58" cy="398" r="18" fill="#1E1E2B" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Vazio_Contato_2_Mais" x="58" y="404" text-anchor="middle" font-family="Inter" font-size="20" font-weight="600" fill="#D06CF5">+</text>
+    <text id="Vazio_Contato_2_Titulo" x="90" y="392" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Adicionar o pai</text>
+    <text id="Vazio_Contato_2_Texto" x="90" y="414" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Opcional. Ou avó, ou quem busca a criança</text>
+    <path d="M344 392 L349 397.5 L344 403" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g id="Card_Aviso_Contato">
+    <rect id="Card_Aviso_Contato_Fundo" x="20" y="484" width="350" height="101" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <circle cx="45" cy="523" r="8.2" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M45 519 L45 524" fill="none" stroke="#8A8AA0" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="527" r="1.1" fill="#8A8AA0"/>
+    <text id="Aviso_Contato_Titulo" x="70" y="522" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Um número é o principal</text>
+    <text id="Aviso_Contato_L1" x="70" y="544" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Dele saem a convocação e a cobrança, e</text>
+    <text id="Aviso_Contato_L2" x="70" y="562" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">é o único que o professor consegue ver.</text>
+  </g>
+  <g id="Botao_SalvarContatos">
+    <rect id="Botao_SalvarContatos_Fundo" x="20" y="724" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_SalvarContatos_Rotulo" x="195.0" y="755.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Salvar responsáveis</text>
+  </g>
+</svg>

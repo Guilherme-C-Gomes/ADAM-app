@@ -1,0 +1,171 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Livro_QuemLeva" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Quem vai levar</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Só crianças cadastradas</text>
+  </g>
+  <g id="Campo_Busca">
+    <rect id="Campo_Busca_Fundo" x="20" y="172" width="350" height="48" rx="12" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <circle cx="43.5" cy="194.5" r="5.8" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M47.8 198.8 L52 203" fill="none" stroke="#8A8AA0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Campo_Busca_Placeholder" x="66" y="202" font-family="Inter" font-size="16" font-weight="400" fill="#8A8AA0">Buscar por nome</text>
+  </g>
+  <g id="Card_QuemLeva">
+    <rect id="Card_QuemLeva_Fundo" x="20" y="242" width="350" height="292" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="QuemLeva_1">
+    <rect id="QuemLeva_1_Alvo" x="24" y="262" width="342" height="44" fill="#15151F" opacity="0"/>
+      <g id="QuemLeva_1_Radio">
+    <circle id="QuemLeva_1_Radio_Anel" cx="52" cy="280" r="11" fill="none" stroke="#9E05D2" stroke-width="1.8"/>
+    <circle id="QuemLeva_1_Radio_Ponto" cx="52" cy="280" r="5.5" fill="#9E05D2" opacity="1"/>
+  </g>
+      <g id="QuemLeva_1_Avatar">
+    <circle id="QuemLeva_1_Avatar_Fundo" cx="94" cy="284" r="14" fill="#2E4F5D"/>
+    <text id="QuemLeva_1_Avatar_Iniciais" x="94" y="287.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">AB</text>
+      <g id="QuemLeva_1_Avatar_Foto" opacity="0">
+    <circle id="QuemLeva_1_Avatar_Foto_Cabeca" cx="94" cy="281.48" r="4.2" fill="#FFFFFF"/>
+    <path id="QuemLeva_1_Avatar_Foto_Ombros" d="M85.0 294.7 C85.6 284.8 102.4 284.8 103.0 294.7 A14.0 14.0 0 0 1 85.0 294.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="QuemLeva_1_Nome" x="118" y="289" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Ana Beatriz L.</text>
+    <text id="QuemLeva_1_Turma" x="354" y="289" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">Maiores</text>
+  </g>
+    <line id="QuemLeva_Divisoria_1" x1="118" y1="306" x2="354" y2="306" stroke="#23233A" stroke-width="1"/>
+      <g id="QuemLeva_2">
+    <rect id="QuemLeva_2_Alvo" x="24" y="314" width="342" height="44" fill="#15151F" opacity="0"/>
+      <g id="QuemLeva_2_Radio">
+    <circle id="QuemLeva_2_Radio_Anel" cx="52" cy="332" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="QuemLeva_2_Radio_Ponto" cx="52" cy="332" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+      <g id="QuemLeva_2_Avatar">
+    <circle id="QuemLeva_2_Avatar_Fundo" cx="94" cy="336" r="14" fill="#5D2E43"/>
+    <text id="QuemLeva_2_Avatar_Iniciais" x="94" y="339.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">SA</text>
+      <g id="QuemLeva_2_Avatar_Foto" opacity="0">
+    <circle id="QuemLeva_2_Avatar_Foto_Cabeca" cx="94" cy="333.48" r="4.2" fill="#FFFFFF"/>
+    <path id="QuemLeva_2_Avatar_Foto_Ombros" d="M85.0 346.7 C85.6 336.8 102.4 336.8 103.0 346.7 A14.0 14.0 0 0 1 85.0 346.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="QuemLeva_2_Nome" x="118" y="341" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Sophia Almeida</text>
+    <text id="QuemLeva_2_Turma" x="354" y="341" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">Pequenos</text>
+  </g>
+    <line id="QuemLeva_Divisoria_2" x1="118" y1="358" x2="354" y2="358" stroke="#23233A" stroke-width="1"/>
+      <g id="QuemLeva_3">
+    <rect id="QuemLeva_3_Alvo" x="24" y="366" width="342" height="44" fill="#15151F" opacity="0"/>
+      <g id="QuemLeva_3_Radio">
+    <circle id="QuemLeva_3_Radio_Anel" cx="52" cy="384" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="QuemLeva_3_Radio_Ponto" cx="52" cy="384" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+      <g id="QuemLeva_3_Avatar">
+    <circle id="QuemLeva_3_Avatar_Fundo" cx="94" cy="388" r="14" fill="#5D2E4E"/>
+    <text id="QuemLeva_3_Avatar_Iniciais" x="94" y="391.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">HR</text>
+      <g id="QuemLeva_3_Avatar_Foto" opacity="0">
+    <circle id="QuemLeva_3_Avatar_Foto_Cabeca" cx="94" cy="385.48" r="4.2" fill="#FFFFFF"/>
+    <path id="QuemLeva_3_Avatar_Foto_Ombros" d="M85.0 398.7 C85.6 388.8 102.4 388.8 103.0 398.7 A14.0 14.0 0 0 1 85.0 398.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="QuemLeva_3_Nome" x="118" y="393" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Helena Ribeiro</text>
+    <text id="QuemLeva_3_Turma" x="354" y="393" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">Pequenos</text>
+  </g>
+    <line id="QuemLeva_Divisoria_3" x1="118" y1="410" x2="354" y2="410" stroke="#23233A" stroke-width="1"/>
+      <g id="QuemLeva_4">
+    <rect id="QuemLeva_4_Alvo" x="24" y="418" width="342" height="44" fill="#15151F" opacity="0"/>
+      <g id="QuemLeva_4_Radio">
+    <circle id="QuemLeva_4_Radio_Anel" cx="52" cy="436" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="QuemLeva_4_Radio_Ponto" cx="52" cy="436" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+      <g id="QuemLeva_4_Avatar">
+    <circle id="QuemLeva_4_Avatar_Fundo" cx="94" cy="440" r="14" fill="#2E5D4B"/>
+    <text id="QuemLeva_4_Avatar_Iniciais" x="94" y="443.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">EG</text>
+      <g id="QuemLeva_4_Avatar_Foto" opacity="0">
+    <circle id="QuemLeva_4_Avatar_Foto_Cabeca" cx="94" cy="437.48" r="4.2" fill="#FFFFFF"/>
+    <path id="QuemLeva_4_Avatar_Foto_Ombros" d="M85.0 450.7 C85.6 440.8 102.4 440.8 103.0 450.7 A14.0 14.0 0 0 1 85.0 450.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="QuemLeva_4_Nome" x="118" y="445" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Enzo Gabriel R.</text>
+    <text id="QuemLeva_4_Turma" x="354" y="445" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">Maiores</text>
+  </g>
+    <line id="QuemLeva_Divisoria_4" x1="118" y1="462" x2="354" y2="462" stroke="#23233A" stroke-width="1"/>
+      <g id="QuemLeva_5">
+    <rect id="QuemLeva_5_Alvo" x="24" y="470" width="342" height="44" fill="#15151F" opacity="0"/>
+      <g id="QuemLeva_5_Radio">
+    <circle id="QuemLeva_5_Radio_Anel" cx="52" cy="488" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="QuemLeva_5_Radio_Ponto" cx="52" cy="488" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+      <g id="QuemLeva_5_Avatar">
+    <circle id="QuemLeva_5_Avatar_Fundo" cx="94" cy="492" r="14" fill="#4A3A6A"/>
+    <text id="QuemLeva_5_Avatar_Iniciais" x="94" y="495.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">MT</text>
+      <g id="QuemLeva_5_Avatar_Foto" opacity="0">
+    <circle id="QuemLeva_5_Avatar_Foto_Cabeca" cx="94" cy="489.48" r="4.2" fill="#FFFFFF"/>
+    <path id="QuemLeva_5_Avatar_Foto_Ombros" d="M85.0 502.7 C85.6 492.8 102.4 492.8 103.0 502.7 A14.0 14.0 0 0 1 85.0 502.7 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="QuemLeva_5_Nome" x="118" y="497" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Miguel Tavares</text>
+    <text id="QuemLeva_5_Turma" x="354" y="497" text-anchor="end" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">Maiores</text>
+  </g>
+  </g>
+  <g id="Card_Aviso_Quem">
+    <rect id="Card_Aviso_Quem_Fundo" x="20" y="546" width="350" height="101" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <circle cx="45" cy="585" r="8.2" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M45 581 L45 586" fill="none" stroke="#8A8AA0" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="589" r="1.1" fill="#8A8AA0"/>
+    <text id="Aviso_Quem_Titulo" x="70" y="584" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Quem não tem ficha não aparece</text>
+    <text id="Aviso_Quem_L1" x="70" y="606" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Cadastre a criança na Secretaria antes</text>
+    <text id="Aviso_Quem_L2" x="70" y="624" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">de emprestar o livro.</text>
+  </g>
+  <g id="Botao_ConfirmarQuemLeva">
+    <rect id="Botao_ConfirmarQuemLeva_Fundo" x="20" y="724" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_ConfirmarQuemLeva_Rotulo" x="195.0" y="755.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Confirmar</text>
+  </g>
+</svg>

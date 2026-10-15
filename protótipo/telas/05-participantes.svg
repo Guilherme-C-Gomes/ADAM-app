@@ -1,0 +1,200 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Participantes" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Hero_Titulo" x="20" y="96" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Participantes</text>
+    <text id="Hero_Subtitulo" x="20" y="122" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">74 ativos  ·  atualizado hoje, 08:12</text>
+  </g>
+  <g id="Campo_Busca">
+    <rect id="Campo_Busca_Fundo" x="20" y="172" width="350" height="48" rx="12" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <circle cx="43.5" cy="194.5" r="5.8" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M47.8 198.8 L52 203" fill="none" stroke="#8A8AA0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Campo_Busca_Placeholder" x="66" y="202" font-family="Inter" font-size="16" font-weight="400" fill="#8A8AA0">Buscar por nome</text>
+  </g>
+  <g id="Filtros">
+      <g id="Filtro_Todos">
+    <rect id="Filtro_Todos_Fundo" x="20" y="228" width="64" height="44" rx="16" fill="#9E05D2"/><rect id="Filtro_Todos_Brilho" x="20" y="228" width="64" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Filtro_Todos_Rotulo" x="52.0" y="254.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Todos</text>
+  </g>
+      <g id="Filtro_Atibaia">
+    <rect id="Filtro_Atibaia_Fundo" x="91" y="228" width="72" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Filtro_Atibaia_Rotulo" x="127.0" y="254.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Atibaia</text>
+  </g>
+      <g id="Filtro_Caiana">
+    <rect id="Filtro_Caiana_Fundo" x="170" y="228" width="72" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Filtro_Caiana_Rotulo" x="206.0" y="254.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Caiana</text>
+  </g>
+      <g id="Filtro_BaixaFreq">
+    <rect id="Filtro_BaixaFreq_Fundo" x="249" y="228" width="99" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Filtro_BaixaFreq_Rotulo" x="298.5" y="254.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Baixa freq.</text>
+  </g>
+  </g>
+<text id="Overline_Atencao" x="20" y="304" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">PRECISAM DE ATENÇÃO  ·  4</text>
+  <g id="Card_Participante_1">
+    <rect id="Card_Participante_1_Fundo" x="20" y="316" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Participante_1_Avatar">
+    <circle id="Card_Participante_1_Avatar_Fundo" cx="58" cy="352" r="21" fill="#2E5D4B"/>
+    <text id="Card_Participante_1_Avatar_Iniciais" x="58" y="356.9" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF" opacity="0">EG</text>
+      <g id="Card_Participante_1_Avatar_Foto" opacity="0.55">
+    <circle id="Card_Participante_1_Avatar_Foto_Cabeca" cx="58" cy="348.22" r="6.3" fill="#FFFFFF"/>
+    <path id="Card_Participante_1_Avatar_Foto_Ombros" d="M44.5 368.1 C45.4 353.3 70.6 353.3 71.5 368.1 A21.0 21.0 0 0 1 44.5 368.1 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Card_Participante_1_Nome" x="90" y="348" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Enzo Gabriel R.</text>
+    <text id="Card_Participante_1_Meta" x="90" y="368" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">16 anos  ·  Caiana</text>
+      <g id="Card_Participante_1_Chip">
+    <rect id="Card_Participante_1_Chip_Fundo" x="280" y="336" width="74" height="32" rx="10" fill="#3A1418"/>
+    <text id="Card_Participante_1_Chip_Valor" x="305.965" y="357" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FF7A85">28%</text>
+    <path d="M341 347 L341 357 M337 353 L341 357 L345 353" fill="none" stroke="#FF7A85" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+  <g id="Card_Participante_2">
+    <rect id="Card_Participante_2_Fundo" x="20" y="396" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Participante_2_Avatar">
+    <circle id="Card_Participante_2_Avatar_Fundo" cx="58" cy="432" r="21" fill="#5D2E43"/>
+    <text id="Card_Participante_2_Avatar_Iniciais" x="58" y="436.9" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF" opacity="0">SA</text>
+      <g id="Card_Participante_2_Avatar_Foto" opacity="0.55">
+    <circle id="Card_Participante_2_Avatar_Foto_Cabeca" cx="58" cy="428.22" r="6.3" fill="#FFFFFF"/>
+    <path id="Card_Participante_2_Avatar_Foto_Ombros" d="M44.5 448.1 C45.4 433.3 70.6 433.3 71.5 448.1 A21.0 21.0 0 0 1 44.5 448.1 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Card_Participante_2_Nome" x="90" y="428" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Sophia Almeida</text>
+    <text id="Card_Participante_2_Meta" x="90" y="448" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">8 anos  ·  Atibaia</text>
+      <g id="Card_Participante_2_Chip">
+    <rect id="Card_Participante_2_Chip_Fundo" x="280" y="416" width="74" height="32" rx="10" fill="#3A1418"/>
+    <text id="Card_Participante_2_Chip_Valor" x="305.965" y="437" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FF7A85">33%</text>
+    <path d="M341 427 L341 437 M337 433 L341 437 L345 433" fill="none" stroke="#FF7A85" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+  <g id="Card_Participante_3">
+    <rect id="Card_Participante_3_Fundo" x="20" y="476" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Participante_3_Avatar">
+    <circle id="Card_Participante_3_Avatar_Fundo" cx="58" cy="512" r="21" fill="#5D2E4E"/>
+    <text id="Card_Participante_3_Avatar_Iniciais" x="58" y="516.9" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF" opacity="0">HR</text>
+      <g id="Card_Participante_3_Avatar_Foto" opacity="0.55">
+    <circle id="Card_Participante_3_Avatar_Foto_Cabeca" cx="58" cy="508.22" r="6.3" fill="#FFFFFF"/>
+    <path id="Card_Participante_3_Avatar_Foto_Ombros" d="M44.5 528.1 C45.4 513.3 70.6 513.3 71.5 528.1 A21.0 21.0 0 0 1 44.5 528.1 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Card_Participante_3_Nome" x="90" y="508" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Helena Ribeiro</text>
+    <text id="Card_Participante_3_Meta" x="90" y="528" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">9 anos  ·  Atibaia</text>
+      <g id="Card_Participante_3_Chip">
+    <rect id="Card_Participante_3_Chip_Fundo" x="280" y="496" width="74" height="32" rx="10" fill="#33240A"/>
+    <text id="Card_Participante_3_Chip_Valor" x="305.965" y="517" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#F5A524">44%</text>
+    <path d="M341 507 L341 517 M337 513 L341 517 L345 513" fill="none" stroke="#F5A524" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+  <g id="Card_Participante_4">
+    <rect id="Card_Participante_4_Fundo" x="20" y="556" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Participante_4_Avatar">
+    <circle id="Card_Participante_4_Avatar_Fundo" cx="58" cy="592" r="21" fill="#2E5D52"/>
+    <text id="Card_Participante_4_Avatar_Iniciais" x="58" y="596.9" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF" opacity="0">DN</text>
+      <g id="Card_Participante_4_Avatar_Foto" opacity="0.55">
+    <circle id="Card_Participante_4_Avatar_Foto_Cabeca" cx="58" cy="588.22" r="6.3" fill="#FFFFFF"/>
+    <path id="Card_Participante_4_Avatar_Foto_Ombros" d="M44.5 608.1 C45.4 593.3 70.6 593.3 71.5 608.1 A21.0 21.0 0 0 1 44.5 608.1 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Card_Participante_4_Nome" x="90" y="588" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Davi Nascimento</text>
+    <text id="Card_Participante_4_Meta" x="90" y="608" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">11 anos  ·  Atibaia</text>
+      <g id="Card_Participante_4_Chip">
+    <rect id="Card_Participante_4_Chip_Fundo" x="280" y="576" width="74" height="32" rx="10" fill="#33240A"/>
+    <text id="Card_Participante_4_Chip_Valor" x="305.965" y="597" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#F5A524">46%</text>
+    <path d="M341 587 L341 597 M337 593 L341 597 L345 593" fill="none" stroke="#F5A524" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+<text id="Overline_Saudavel" x="20" y="640" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">FREQUÊNCIA SAUDÁVEL</text>
+  <g id="Card_Participante_5">
+    <rect id="Card_Participante_5_Fundo" x="20" y="652" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Participante_5_Avatar">
+    <circle id="Card_Participante_5_Avatar_Fundo" cx="58" cy="688" r="21" fill="#2E4F5D"/>
+    <text id="Card_Participante_5_Avatar_Iniciais" x="58" y="692.9" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF" opacity="0">MT</text>
+      <g id="Card_Participante_5_Avatar_Foto" opacity="0.55">
+    <circle id="Card_Participante_5_Avatar_Foto_Cabeca" cx="58" cy="684.22" r="6.3" fill="#FFFFFF"/>
+    <path id="Card_Participante_5_Avatar_Foto_Ombros" d="M44.5 704.1 C45.4 689.3 70.6 689.3 71.5 704.1 A21.0 21.0 0 0 1 44.5 704.1 z" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <text id="Card_Participante_5_Nome" x="90" y="684" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Miguel Tavares</text>
+    <text id="Card_Participante_5_Meta" x="90" y="704" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">15 anos  ·  Caiana</text>
+      <g id="Card_Participante_5_Chip">
+    <rect id="Card_Participante_5_Chip_Fundo" x="280" y="672" width="74" height="32" rx="10" fill="#0E2E22"/>
+    <text id="Card_Participante_5_Chip_Valor" x="305.965" y="693" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#3DD68C">62%</text>
+    <path d="M341 693 L341 683 M337 687 L341 683 L345 687" fill="none" stroke="#3DD68C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+  <g id="Scrim_Nav">
+    <rect id="Scrim_Fundo" x="0" y="712" width="390" height="132" fill="url(#grad_scrim)"/>
+    <rect id="Scrim_Brilho" x="-4" y="726" width="398" height="112" fill="url(#grad_brilho_nav)"/>
+  </g>
+  <g id="Nav_Bottom">
+    <rect id="Nav_Fundo" x="20" y="752" width="350" height="60" rx="24" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <rect id="Nav_Lente_Halo" x="196.8" y="746" width="84" height="72" fill="url(#grad_lente_halo)"/>
+    <rect id="Nav_Lente" x="210.8" y="762.0" width="56" height="40" rx="16" fill="#9E05D2"/>
+    <rect id="Nav_Lente_Brilho" x="210.8" y="762.0" width="56" height="40" rx="16" fill="url(#grad_lente)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+      <g id="Nav_Chamada">
+    <rect id="Nav_Chamada_Alvo" x="20.0" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(63.8 782.0) scale(1.3) translate(-9 -9)"><path d="M5.5 2.5 h-3 a1.5 1.5 0 0 0 -1.5 1.5 v12 a1.5 1.5 0 0 0 1.5 1.5 h13 a1.5 1.5 0 0 0 1.5 -1.5 v-12 a1.5 1.5 0 0 0 -1.5 -1.5 h-3" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="5.5" y="0.8" width="7" height="3.6" rx="1.2" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M5 10.5 L8 13.5 L13.2 8" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Jogo">
+    <rect id="Nav_Jogo_Alvo" x="107.4" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(151.2 782.0) scale(1.3) translate(-9 -9)"><rect x="0.5" y="1.5" width="17" height="15" rx="2" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M9 1.5 L9 16.5" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="9" r="3.1" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M0.5 5.8 L3.8 5.8 L3.8 12.2 L0.5 12.2" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 5.8 L14.2 5.8 L14.2 12.2 L17.5 12.2" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Secretaria">
+    <rect id="Nav_Secretaria_Alvo" x="195.1" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(238.8 782.0) scale(1.3) translate(-9 -9)"><path d="M2 17 L2 10" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 17 L8.5 2" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 17 L15 7" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Estudo">
+    <rect id="Nav_Estudo_Alvo" x="282.4" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(326.2 782.0) scale(1.3) translate(-9 -9)"><path d="M9 4 L9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4 C6.6 2.2 3.6 2 1.2 2.8 L1.2 14.2 C3.8 13.4 6.8 14.6 9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4 C11.4 2.2 14.4 2 16.8 2.8 L16.8 14.2 C14.2 13.4 11.2 14.6 9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+  </g>
+</svg>

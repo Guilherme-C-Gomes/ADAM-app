@@ -1,0 +1,104 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Jogo_DataHora" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Data e hora</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">ADAM × São Bento</text>
+  </g>
+  <g id="Roda">
+    <rect id="Roda_Fundo" x="20" y="172" width="350" height="260" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <rect id="Roda_Faixa" x="28" y="280.0" width="334" height="44" rx="12" fill="#1E1E2B"/>
+      <g id="Roda_Coluna_Dia">
+    <text id="Roda_Dia_1" x="150" y="228.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.22">qui 3 set</text>
+    <text id="Roda_Dia_2" x="150" y="268.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.5">sex 4 set</text>
+    <text id="Roda_Dia_3" x="150" y="308.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF" opacity="1.0">sáb 5 set</text>
+    <text id="Roda_Dia_4" x="150" y="348.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.5">dom 6 set</text>
+    <text id="Roda_Dia_5" x="150" y="388.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.22">seg 7 set</text>
+  </g>
+      <g id="Roda_Coluna_Hora">
+    <text id="Roda_Hora_1" x="270" y="228.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.22">13</text>
+    <text id="Roda_Hora_2" x="270" y="268.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.5">14</text>
+    <text id="Roda_Hora_3" x="270" y="308.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF" opacity="1.0">15</text>
+    <text id="Roda_Hora_4" x="270" y="348.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.5">16</text>
+    <text id="Roda_Hora_5" x="270" y="388.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.22">17</text>
+  </g>
+      <g id="Roda_Coluna_Minuto">
+    <text id="Roda_Minuto_1" x="330" y="228.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.22">20</text>
+    <text id="Roda_Minuto_2" x="330" y="268.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.5">25</text>
+    <text id="Roda_Minuto_3" x="330" y="308.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF" opacity="1.0">30</text>
+    <text id="Roda_Minuto_4" x="330" y="348.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.5">35</text>
+    <text id="Roda_Minuto_5" x="330" y="388.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#9A9AAD" opacity="0.22">40</text>
+  </g>
+    <text id="Roda_Separador" x="300" y="308.0" text-anchor="middle" font-family="Inter" font-size="16" font-weight="400" fill="#8A8AA0">h</text>
+  </g>
+  <g id="Card_Resumo_Data">
+    <rect id="Card_Resumo_Data_Fundo" x="20" y="456" width="350" height="76" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Resumo_Data" x="36" y="486" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Domingo, 6 de setembro</text>
+    <text id="Resumo_Hora" x="36" y="508" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">às 15h30  ·  Campo do Guarani</text>
+  </g>
+  <g id="Card_Aviso_Data">
+    <rect id="Card_Aviso_Data_Fundo" x="20" y="556" width="350" height="83" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <circle cx="45" cy="595" r="8.2" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M45 591 L45 596" fill="none" stroke="#8A8AA0" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="599" r="1.1" fill="#8A8AA0"/>
+    <text id="Aviso_Data_Titulo" x="70" y="594" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">O jogo entra na lista por este horário</text>
+    <text id="Aviso_Data_Texto" x="70" y="616" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">E a convocação sai com ele</text>
+  </g>
+  <g id="Botao_ConfirmarDataHora">
+    <rect id="Botao_ConfirmarDataHora_Fundo" x="20" y="724" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_ConfirmarDataHora_Rotulo" x="195.0" y="755.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Confirmar data e hora</text>
+  </g>
+</svg>

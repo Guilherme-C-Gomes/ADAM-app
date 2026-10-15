@@ -1,0 +1,145 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Jogo_Escalacao_Society" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">ADAM × Vila Nova</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">domingo, 17h  ·  Sub-17  ·  Society</text>
+  </g>
+  <g id="Botao_Menu">
+    <rect id="Botao_Menu_Alvo" x="338" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <circle cx="367.9" cy="42.4" r="2.1" fill="#FFFFFF"/><circle cx="367.9" cy="48" r="2.1" fill="#FFFFFF"/><circle cx="367.9" cy="53.6" r="2.1" fill="#FFFFFF"/>
+  </g>
+  <g id="Filtros_Formacao_1">
+      <g id="Form_231">
+    <rect id="Form_231_Fundo" x="20" y="172" width="64" height="44" rx="16" fill="#9E05D2"/><rect id="Form_231_Brilho" x="20" y="172" width="64" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Form_231_Rotulo" x="52.0" y="198.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">2-3-1</text>
+  </g>
+      <g id="Form_321">
+    <rect id="Form_321_Fundo" x="92" y="172" width="64" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Form_321_Rotulo" x="124.0" y="198.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">3-2-1</text>
+  </g>
+      <g id="Form_222">
+    <rect id="Form_222_Fundo" x="164" y="172" width="64" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Form_222_Rotulo" x="196.0" y="198.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">2-2-2</text>
+  </g>
+  </g>
+  <g id="Campo">
+    <rect id="Campo_Fundo" x="20" y="232" width="350" height="300" rx="22" fill="#0E2E22" stroke="#2E2E42" stroke-width="1"/>
+    <rect id="Campo_Limite" x="30" y="242" width="330" height="280" rx="6" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.22"/>
+    <line id="Campo_Meio" x1="30" y1="382.0" x2="360" y2="382.0" stroke="#FFFFFF" stroke-width="1.5" opacity="0.22"/>
+    <circle id="Campo_Circulo" cx="195.0" cy="382.0" r="33.2" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.22"/>
+    <path id="Campo_Area_Cima" d="M125.0 242.0 A70.0 70.0 0 0 0 265.0 242.0" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
+    <path id="Campo_Area_Baixo" d="M125.0 522.0 A70.0 70.0 0 0 1 265.0 522.0" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
+  </g>
+  <g id="Campo_Tatica">
+      <g id="Campo_Jogador_1">
+    <circle id="Campo_Jogador_1_Fundo" cx="195.0" cy="502.0" r="13" fill="#9E05D2" stroke="#FFFFFF" stroke-width="1.5"/>
+    <text id="Campo_Jogador_1_Numero" x="195.0" y="506.6" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">1</text>
+  </g>
+      <g id="Campo_Jogador_2">
+    <circle id="Campo_Jogador_2_Fundo" cx="125.0" cy="448.0" r="13" fill="#9E05D2" stroke="#FFFFFF" stroke-width="1.5"/>
+    <text id="Campo_Jogador_2_Numero" x="125.0" y="452.6" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">2</text>
+  </g>
+      <g id="Campo_Jogador_3">
+    <circle id="Campo_Jogador_3_Fundo" cx="265.0" cy="448.0" r="13" fill="#9E05D2" stroke="#FFFFFF" stroke-width="1.5"/>
+    <text id="Campo_Jogador_3_Numero" x="265.0" y="452.6" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">3</text>
+  </g>
+      <g id="Campo_Jogador_4">
+    <circle id="Campo_Jogador_4_Fundo" cx="83.0" cy="382.0" r="13" fill="#9E05D2" stroke="#FFFFFF" stroke-width="1.5"/>
+    <text id="Campo_Jogador_4_Numero" x="83.0" y="386.6" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">4</text>
+  </g>
+      <g id="Campo_Jogador_5">
+    <circle id="Campo_Jogador_5_Fundo" cx="195.0" cy="370.0" r="13" fill="#9E05D2" stroke="#FFFFFF" stroke-width="1.5"/>
+    <text id="Campo_Jogador_5_Numero" x="195.0" y="374.6" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">5</text>
+  </g>
+      <g id="Campo_Jogador_6">
+    <circle id="Campo_Jogador_6_Fundo" cx="307.0" cy="382.0" r="13" fill="#9E05D2" stroke="#FFFFFF" stroke-width="1.5"/>
+    <text id="Campo_Jogador_6_Numero" x="307.0" y="386.6" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">6</text>
+  </g>
+      <g id="Campo_Jogador_7">
+    <circle id="Campo_Jogador_7_Fundo" cx="195.0" cy="304.0" r="13" fill="#9E05D2" stroke="#FFFFFF" stroke-width="1.5"/>
+    <text id="Campo_Jogador_7_Numero" x="195.0" y="308.6" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">7</text>
+  </g>
+  </g>
+<text id="Campo_Dica" x="20" y="552" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Toque num jogador para mover</text>
+<text id="Link_Salvar_Tatica" x="370" y="552" text-anchor="end" font-family="Inter" font-size="14" font-weight="500" fill="#C24BEE">Salvar tática</text>
+  <g id="Card_Portas_Escalacao">
+    <rect id="Card_Portas_Escalacao_Fundo" x="20" y="572" width="350" height="140" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Convocados">
+    <rect id="Card_Convocados_Alvo" x="24" y="592" width="342" height="40" fill="#15151F" opacity="0"/>
+    <text id="Card_Convocados_Titulo" x="36" y="616" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Convocados</text>
+    <text id="Card_Convocados_Meta" x="36" y="636" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">7 em campo  ·  3 no banco</text>
+    <path d="M344 612 L349 617.5 L344 623" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <line id="Escalacao_Divisoria_Portas" x1="36" y1="647" x2="354" y2="647" stroke="#23233A" stroke-width="1"/>
+      <g id="Card_Comissao_Jogo">
+    <rect id="Card_Comissao_Jogo_Alvo" x="24" y="644" width="342" height="40" fill="#15151F" opacity="0"/>
+      <g id="Card_Comissao_Jogo_Selo">
+    <rect id="Card_Comissao_Jogo_Selo_Fundo" x="230" y="661.6" width="96" height="24" rx="12" fill="#3A0A52"/>
+    <text id="Card_Comissao_Jogo_Selo_Rotulo" x="242.0" y="677.9200000000001" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">3 escalados</text>
+  </g>
+    <text id="Card_Comissao_Jogo_Titulo" x="36" y="668" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Comissão técnica</text>
+    <text id="Card_Comissao_Jogo_Meta" x="36" y="688" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">Quem conduz o jogo</text>
+    <path d="M344 664 L349 669.5 L344 675" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+  <g id="Botao_SalvarEscalacao">
+    <rect id="Botao_SalvarEscalacao_Fundo" x="20" y="728" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_SalvarEscalacao_Rotulo" x="195.0" y="759.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Salvar escalação</text>
+  </g>
+</svg>

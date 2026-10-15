@@ -39,3 +39,19 @@ export function IconeEstudo({ size = 24, cor }: Props) {
     </Svg>
   )
 }
+
+/** Prancheta com check: a Chamada, primeira aba de todos os perfis. */
+export function IconeChamada({ size = 24, cor }: Props) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M8.5 4.5H6a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 6 20.5h12a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 18 4.5h-2.5"
+        stroke={cor}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+      />
+      <Rect x={8.5} y={2.8} width={7} height={3.6} rx={1.2} stroke={cor} strokeWidth={1.8} />
+      <Path d="M8.5 13l2.6 2.6 4.6-5" stroke={cor} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  )
+}

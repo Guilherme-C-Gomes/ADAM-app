@@ -1,0 +1,121 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Jogo_Novo" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Adicionar jogo</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Campeonato Regional  ·  3ª rodada</text>
+  </g>
+  <g id="Card_Campos_Jogo">
+    <rect id="Card_Campos_Jogo_Fundo" x="20" y="172" width="350" height="296" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Campo_Jogo_1">
+    <rect id="Campo_Jogo_1_Alvo" x="24" y="184" width="342" height="48" fill="#15151F" opacity="0"/>
+    <text id="Campo_Jogo_1_Etiqueta" x="36" y="208" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Campeonato</text>
+    <text id="Campo_Jogo_1_Valor" x="336" y="208" text-anchor="end" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Campeonato Regional</text>
+    <path d="M344 202 L349 207.5 L344 213" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <line id="Campo_Jogo_Divisoria_1" x1="36" y1="224" x2="354" y2="224" stroke="#23233A" stroke-width="1"/>
+      <g id="Campo_Jogo_2">
+    <rect id="Campo_Jogo_2_Alvo" x="24" y="240" width="342" height="48" fill="#15151F" opacity="0"/>
+    <text id="Campo_Jogo_2_Etiqueta" x="36" y="264" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Adversário</text>
+    <text id="Campo_Jogo_2_Valor" x="336" y="264" text-anchor="end" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">São Bento</text>
+    <path d="M344 258 L349 263.5 L344 269" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <line id="Campo_Jogo_Divisoria_2" x1="36" y1="280" x2="354" y2="280" stroke="#23233A" stroke-width="1"/>
+      <g id="Campo_Jogo_3">
+    <rect id="Campo_Jogo_3_Alvo" x="24" y="296" width="342" height="48" fill="#15151F" opacity="0"/>
+    <text id="Campo_Jogo_3_Etiqueta" x="36" y="320" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Categoria</text>
+    <text id="Campo_Jogo_3_Valor" x="336" y="320" text-anchor="end" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Sub-14</text>
+    <path d="M344 314 L349 319.5 L344 325" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <line id="Campo_Jogo_Divisoria_3" x1="36" y1="336" x2="354" y2="336" stroke="#23233A" stroke-width="1"/>
+      <g id="Campo_Jogo_4">
+    <rect id="Campo_Jogo_4_Alvo" x="24" y="352" width="342" height="48" fill="#15151F" opacity="0"/>
+    <text id="Campo_Jogo_4_Etiqueta" x="36" y="376" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Data e hora</text>
+    <text id="Campo_Jogo_4_Valor" x="336" y="376" text-anchor="end" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">domingo, 06/09  ·  15h</text>
+    <path d="M344 370 L349 375.5 L344 381" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <line id="Campo_Jogo_Divisoria_4" x1="36" y1="392" x2="354" y2="392" stroke="#23233A" stroke-width="1"/>
+      <g id="Campo_Jogo_5">
+    <rect id="Campo_Jogo_5_Alvo" x="24" y="408" width="342" height="48" fill="#15151F" opacity="0"/>
+    <text id="Campo_Jogo_5_Etiqueta" x="36" y="432" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Local</text>
+    <text id="Campo_Jogo_5_Valor" x="336" y="432" text-anchor="end" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Campo do Guarani</text>
+    <path d="M344 426 L349 431.5 L344 437" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+<text id="Overline_Modalidade" x="20" y="498" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">MODALIDADE</text>
+  <g id="Filtros_Modalidade">
+      <g id="Modo_Campo">
+    <rect id="Modo_Campo_Fundo" x="20" y="510" width="79" height="44" rx="16" fill="#9E05D2"/><rect id="Modo_Campo_Brilho" x="20" y="510" width="79" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Modo_Campo_Rotulo" x="59.5" y="536.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Campo</text>
+  </g>
+      <g id="Modo_Society">
+    <rect id="Modo_Society_Fundo" x="107" y="510" width="80" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Modo_Society_Rotulo" x="147.0" y="536.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Society</text>
+  </g>
+  </g>
+  <g id="Card_Aviso_Jogo">
+    <rect id="Card_Aviso_Jogo_Fundo" x="20" y="584" width="350" height="88" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <circle cx="45" cy="623" r="8.2" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M45 619 L45 624" fill="none" stroke="#8A8AA0" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="627" r="1.1" fill="#8A8AA0"/>
+    <text id="Aviso_Escalacao_Titulo" x="70" y="622" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">A escalação é montada depois</text>
+    <text id="Aviso_Escalacao_Texto" x="70" y="644" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Salve o jogo e abra a escalação pelo card</text>
+  </g>
+  <g id="Botao_SalvarJogo">
+    <rect id="Botao_SalvarJogo_Fundo" x="20" y="724" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_SalvarJogo_Rotulo" x="195.0" y="755.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Salvar jogo</text>
+  </g>
+</svg>

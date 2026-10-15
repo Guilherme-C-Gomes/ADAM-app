@@ -5,38 +5,81 @@ import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Overline } from '@/components/ui'
+import { Aviso } from '@/components/ui/form'
+import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
-import { treinos } from '@/data/jogo'
+import { rotuloCurto } from '@/data/calendario'
+import { NOME_TURMA } from '@/data/chamada'
+import { encerrarTreino, horaCurta, useJogo } from '@/data/jogo-dados'
+import { deISO } from '@/data/metricas'
+import { COR_FOCO, useFoco } from '@/hooks/use-foco'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
 /**
  * Tela 11m. Nada aqui e obrigatorio (R8): existe "Pular por agora", e
  * resposta arrancada a forca vira 3 em tudo e nao serve para nada.
  *
- * Cada escala leva a legenda das duas pontas porque dificuldade alta
- * nao e nota ruim, e informacao para calibrar o proximo treino (R9).
+ * Cada escala leva a legenda das duas pontas porque dificuldade alta nao e
+ * nota ruim, e informacao para calibrar o proximo treino (R9).
  */
 const ESCALA = [0, 1, 2, 3, 4, 5] as const
 
 export default function TreinoAvaliacao() {
   const { id } = useLocalSearchParams<{ id: string }>()
+  const { treinos } = useJogo()
   const treino = treinos.find((t) => t.id === id)
-
   const [notaTreino, setNotaTreino] = useState<number | null>(null)
   const [notaCompreensao, setNotaCompreensao] = useState<number | null>(null)
   const [notaDificuldade, setNotaDificuldade] = useState<number | null>(null)
+  const foco = useFoco()
   const [observacoes, setObservacoes] = useState('')
+  const [salvando, setSalvando] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
+
+  const terminar = async (comNotas: boolean) => {
+    if (!id) return
+    setErro(null)
+    setSalvando(true)
+    try {
+      await encerrarTreino(
+        id,
+        comNotas
+          ? {
+              treino: notaTreino,
+              entenderam: notaCompreensao,
+              dificuldade: notaDificuldade,
+              observacoes,
+            }
+          : null,
+      )
+      mostrarRecado(comNotas ? 'Treino encerrado e avaliado' : 'Treino encerrado')
+      router.dismissTo('/jogo')
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível encerrar.')
+      setSalvando(false)
+    }
+  }
+  const algumaNota =
+    notaTreino !== null ||
+    notaCompreensao !== null ||
+    notaDificuldade !== null ||
+    !!observacoes.trim()
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
       <HeroVoltar
         titulo="Como foi o treino?"
         subtitulo={
-          treino ? `${treino.turma} · ${treino.data} · ${treino.hora}` : 'Avaliação do treino'
+          treino
+            ? `${NOME_TURMA[treino.turma]} · ${rotuloCurto(deISO(treino.data))} · ${horaCurta(treino.hora)}`
+            : 'Avaliação do treino'
         }
+        voltarPara="/jogo"
       />
 
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
+        {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
+
         <Animated.View entering={FadeInDown.duration(motion.medium)} style={st.secao}>
           <Overline>Como foi o treino</Overline>
           <Escala valor={notaTreino} onChange={setNotaTreino} min="fraco" max="ótimo" />
@@ -55,7 +98,8 @@ export default function TreinoAvaliacao() {
         <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)} style={st.secao}>
           <Overline>Observações</Overline>
           <TextInput
-            style={st.campo}
+            style={[st.campo, foco.focado && st.focado]}
+            {...foco.eventos}
             value={observacoes}
             onChangeText={setObservacoes}
             placeholder="O que vale lembrar para o próximo treino"
@@ -67,17 +111,23 @@ export default function TreinoAvaliacao() {
 
         <Animated.View entering={FadeInDown.duration(motion.medium).delay(160)} style={st.fim}>
           <Pressable
-            onPress={() => router.dismissTo('/jogo')}
-            style={({ pressed }) => [st.botao, pressed && st.pressed]}
-            accessibilityRole="button">
-            <Text style={st.botaoRotulo}>Salvar avaliação</Text>
+            onPress={() => terminar(true)}
+            disabled={salvando || !algumaNota}
+            style={({ pressed }) => [
+              st.botao,
+              (salvando || !algumaNota) && { opacity: 0.5 },
+              pressed && st.pressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: salvando || !algumaNota }}>
+            <Text style={st.botaoRotulo}>{salvando ? 'Salvando…' : 'Salvar avaliação'}</Text>
           </Pressable>
-
           <Pressable
-            onPress={() => router.dismissTo('/jogo')}
+            onPress={() => terminar(false)}
+            disabled={salvando}
             hitSlop={space.sm}
             accessibilityRole="button">
-            <Text style={st.link}>Pular por agora</Text>
+            <Text style={st.link}>Encerrar sem avaliar</Text>
           </Pressable>
         </Animated.View>
       </ScrollView>
@@ -153,10 +203,13 @@ const st = StyleSheet.create({
     borderRadius: radius.campo,
     borderCurve: 'continuous',
     backgroundColor: color.surface2,
+    borderWidth: 1,
+    borderColor: 'transparent',
     color: color.text,
     ...type.body,
     fontFamily: 'Inter_400Regular',
   },
+  focado: { borderColor: COR_FOCO },
 
   botao: {
     minHeight: target.minimo + 8,

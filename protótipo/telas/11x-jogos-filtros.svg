@@ -1,0 +1,127 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Jogos_Filtros" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Filtros</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Valem para a lista de jogos</text>
+  </g>
+<text id="Overline_Cat" x="20" y="178" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">CATEGORIA</text>
+  <g id="Filtros_Categoria_1">
+      <g id="FiltroCat_Todas">
+    <rect id="FiltroCat_Todas_Fundo" x="20" y="190" width="70" height="44" rx="16" fill="#9E05D2"/><rect id="FiltroCat_Todas_Brilho" x="20" y="190" width="70" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FiltroCat_Todas_Rotulo" x="55.0" y="216.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Todas</text>
+  </g>
+      <g id="FiltroCat_11">
+    <rect id="FiltroCat_11_Fundo" x="98" y="190" width="78" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FiltroCat_11_Rotulo" x="137.0" y="216.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Sub-11</text>
+  </g>
+      <g id="FiltroCat_12">
+    <rect id="FiltroCat_12_Fundo" x="184" y="190" width="78" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FiltroCat_12_Rotulo" x="223.0" y="216.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Sub-12</text>
+  </g>
+      <g id="FiltroCat_13">
+    <rect id="FiltroCat_13_Fundo" x="270" y="190" width="78" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FiltroCat_13_Rotulo" x="309.0" y="216.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Sub-13</text>
+  </g>
+  </g>
+  <g id="Filtros_Categoria_2">
+      <g id="FiltroCat_14">
+    <rect id="FiltroCat_14_Fundo" x="20" y="242" width="78" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FiltroCat_14_Rotulo" x="59.0" y="268.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Sub-14</text>
+  </g>
+      <g id="FiltroCat_15">
+    <rect id="FiltroCat_15_Fundo" x="106" y="242" width="78" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FiltroCat_15_Rotulo" x="145.0" y="268.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Sub-15</text>
+  </g>
+      <g id="FiltroCat_16">
+    <rect id="FiltroCat_16_Fundo" x="192" y="242" width="78" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FiltroCat_16_Rotulo" x="231.0" y="268.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Sub-16</text>
+  </g>
+      <g id="FiltroCat_17">
+    <rect id="FiltroCat_17_Fundo" x="278" y="242" width="78" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="FiltroCat_17_Rotulo" x="317.0" y="268.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Sub-17</text>
+  </g>
+  </g>
+<text id="Overline_Per" x="20" y="314" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">PERÍODO</text>
+  <g id="Atalhos_Periodo_Jogo">
+      <g id="AtalhoJ_Semana">
+    <rect id="AtalhoJ_Semana_Fundo" x="20" y="326" width="87" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="AtalhoJ_Semana_Rotulo" x="63.5" y="352.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Semana</text>
+  </g>
+      <g id="AtalhoJ_Mes">
+    <rect id="AtalhoJ_Mes_Fundo" x="115" y="326" width="55" height="44" rx="16" fill="#9E05D2"/><rect id="AtalhoJ_Mes_Brilho" x="115" y="326" width="55" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="AtalhoJ_Mes_Rotulo" x="142.5" y="352.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Mês</text>
+  </g>
+      <g id="AtalhoJ_Ano">
+    <rect id="AtalhoJ_Ano_Fundo" x="178" y="326" width="55" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="AtalhoJ_Ano_Rotulo" x="205.5" y="352.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Ano</text>
+  </g>
+  </g>
+  <g id="Card_Intervalo_Jogo">
+    <rect id="Card_Intervalo_Jogo_Fundo" x="20" y="398" width="350" height="84" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <text id="CampoJ_De_Etiqueta" x="36" y="426" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">DE</text>
+    <text id="CampoJ_De_Valor" x="36" y="456" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">01/09/2026</text>
+    <line id="CampoJ_Divisoria" x1="195.0" y1="414" x2="195.0" y2="466" stroke="#23233A" stroke-width="1"/>
+    <text id="CampoJ_Ate_Etiqueta" x="211.0" y="426" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">ATÉ</text>
+    <text id="CampoJ_Ate_Valor" x="211.0" y="456" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">30/09/2026</text>
+  </g>
+  <g id="Botao_AplicarJogos">
+    <rect id="Botao_AplicarJogos_Fundo" x="20" y="744" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_AplicarJogos_Rotulo" x="195.0" y="775.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Aplicar filtros</text>
+  </g>
+</svg>

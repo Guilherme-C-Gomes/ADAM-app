@@ -1,58 +1,69 @@
-import { router } from 'expo-router'
-import { useMemo, useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { router, useFocusEffect } from 'expo-router'
+import { useCallback, useState } from 'react'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { Avatar, Barra, Card, Chip, Contador, Hero, Overline } from '@/components/ui'
-import { Esqueleto, SkeletonCard } from '@/components/ui/skeleton'
-import { useCarregamento } from '@/hooks/use-carregamento'
-import {
-  LIMITE_BAIXA_FREQUENCIA,
-  PERIODOS_RELATORIO,
-  chamadasFeitas,
-  frequenciaPorPeriodo,
-  participantes,
-  presencaPorDia,
-  qualidadeTreinos,
-  retencao,
-  type PeriodoRelatorio,
-} from '@/data/mock'
+import { Barra, Card, Chip, Contador } from '@/components/ui'
+import { Aviso, Grupo, Linha, SeletorPeriodo } from '@/components/ui/form'
+import { CardQueda, NaoRegistrado, Variacao } from '@/components/ui/metricas'
+import { HeroVoltar } from '@/components/ui/setor'
+import { Esqueleto, SkeletonCard, SkeletonFaixa } from '@/components/ui/skeleton'
+import { emQueda, useParticipantes } from '@/data/fichas'
+import { useFiltroSecretaria } from '@/data/filtro-secretaria'
+import { useMetricas } from '@/data/metricas'
 import { color, motion, onDark, radius, space, type } from '@/theme/tokens'
 
-const ABAS = ['Participação', 'Retenção', 'Qualidade'] as const
+/**
+ * Telas 07, 07b, 07d, 07p e 07q. Quatro recortes do mesmo periodo:
+ * quem veio, como foram os jogos, quem entra, e se o treino prestou. O
+ * periodo e o mesmo da Secretaria (R12), e cada numero sai do banco
+ * (data/metricas.ts). O que o app ainda nao registra aparece escrito,
+ * nunca como um zero que parece medido.
+ */
+const ABAS = ['Presença', 'Jogos', 'Pessoas', 'Qualidade'] as const
 type Aba = (typeof ABAS)[number]
-const ALTURA_GRAFICO = 96
+const ALTURA = 72
+
+/** "05/09/2026" */
+const brasileira = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`
 
 export default function Relatorio() {
-  const [periodo, setPeriodo] = useState<PeriodoRelatorio>('Trimestre')
-  const [aba, setAba] = useState<Aba>('Participação')
-  const carregando = useCarregamento()
+  const { filtro, todasAsUnidades, nomeUnidade, rotulo, anterior, proximo } = useFiltroSecretaria()
+  const [aba, setAba] = useState<Aba>('Presença')
+  const metricas = useMetricas(filtro)
+  const fichas = useParticipantes()
+  const recarregarMetricas = metricas.recarregar
+  const recarregarFichas = fichas.recarregar
 
-  const dados = frequenciaPorPeriodo[periodo]
-  const maiorBucket = Math.max(...dados.buckets.map((b) => b.valor))
-
-  const emRisco = useMemo(
-    () =>
-      participantes
-        .filter((p) => p.frequencia < LIMITE_BAIXA_FREQUENCIA)
-        .sort((a, b) => a.frequencia - b.frequencia)
-        .slice(0, 3),
-    [],
+  useFocusEffect(
+    useCallback(() => {
+      recarregarMetricas()
+      recarregarFichas()
+    }, [recarregarMetricas, recarregarFichas]),
   )
+
+  const quedas = fichas.lista
+    .filter((p) => !filtro.unidadeId || p.unidadeId === filtro.unidadeId)
+    .filter(emQueda).length
+  const m = metricas.dados
+  const carregando = metricas.carregando || fichas.carregando
+  const maior = m ? Math.max(...m.recortes.map((r) => r.valor ?? 0), 1) : 1
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
-      <Hero titulo="Relatório" subtitulo="Secretaria · Atibaia e São José de Caiana" />
+      <HeroVoltar
+        titulo="Relatório"
+        subtitulo={todasAsUnidades ? `Secretaria · ${todasAsUnidades}` : 'Secretaria'}
+      />
 
-      <ScrollView
-        contentContainerStyle={st.conteudo}
-        showsVerticalScrollIndicator={false}>
-        <View style={st.filtros}>
-          {PERIODOS_RELATORIO.map((p) => (
-            <Chip key={p} rotulo={p} ativo={periodo === p} onPress={() => setPeriodo(p)} />
-          ))}
-        </View>
+      <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
+        <SeletorPeriodo
+          rotulo={rotulo}
+          onAnterior={anterior}
+          onProximo={proximo}
+          onPress={() => router.push('/secretaria/filtros')}
+        />
 
         <View style={st.abas}>
           {ABAS.map((a) => (
@@ -62,206 +73,303 @@ export default function Relatorio() {
 
         {carregando ? (
           <Esqueleto>
-            <SkeletonCard altura={256} />
-            <SkeletonCard altura={104} />
+            <SkeletonFaixa />
+            <SkeletonCard altura={210} />
             <SkeletonCard altura={104} />
           </Esqueleto>
-        ) : aba === 'Participação' ? (
+        ) : !m ? (
+          <Aviso
+            tom="ambar"
+            titulo={metricas.erro ?? 'Não foi possível calcular os números.'}
+            texto="Toque para tentar de novo"
+            onPress={recarregarMetricas}
+          />
+        ) : aba === 'Presença' ? (
           <>
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
-        <Card>
-          <Text style={st.cardTitulo}>Frequência média</Text>
-          <View style={st.valorLinha}>
-            <Contador valor={dados.valor} sufixo="%" style={st.valor} />
-            <View style={st.selo}>
-              <Text style={st.seloRotulo}>+{dados.deltaPp}pp</Text>
-            </View>
-          </View>
-          <Text style={st.legenda}>
-            Comparado ao {periodo.toLowerCase()} anterior · meta de {dados.meta}%
-          </Text>
-
-          <View style={st.grafico}>
-            {dados.buckets.map((b) => (
-              <View key={b.rotulo} style={st.coluna}>
-                <Text style={st.colunaValor}>{b.valor}%</Text>
-                <View
-                  style={[
-                    st.barraVertical,
-                    {
-                      height: (b.valor / maiorBucket) * ALTURA_GRAFICO,
-                      backgroundColor: b.valor >= dados.meta ? color.success : onDark.fill,
-                    },
-                  ]}
-                />
-                <Text style={st.colunaMes}>{b.rotulo}</Text>
-              </View>
-            ))}
-          </View>
-        </Card>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
-        <Card>
-          <Text style={st.cardTitulo}>Presença por dia</Text>
-          {presencaPorDia.map((d) => (
-            <View key={d.rotulo} style={st.diaLinha}>
-              <Text style={st.diaRotulo}>{d.rotulo}</Text>
-              <View style={st.diaBarra}>
-                <Barra pct={d.valor} />
-              </View>
-              <Text style={st.diaValor}>{d.valor}%</Text>
-            </View>
-          ))}
-        </Card>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-        <Card>
-          <View style={st.linhaTopo}>
-            <Text style={st.cardTitulo}>Chamadas feitas</Text>
-            <Text style={st.valorInline}>
-              {chamadasFeitas.feitas} de {chamadasFeitas.esperadas}
-            </Text>
-          </View>
-          <Barra pct={(chamadasFeitas.feitas / chamadasFeitas.esperadas) * 100} />
-          <Text style={st.legendaAlerta}>
-            {chamadasFeitas.semRegistro} treinos passaram sem registro
-          </Text>
-        </Card>
-        </Animated.View>
-          </>
-        ) : aba === 'Retenção' ? (
-          <>
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
-        <Card>
-          <Text style={st.cardTitulo}>Entradas e saídas</Text>
-          <View style={st.entradasLinha}>
-            <View style={st.entradasItem}>
-              <Text style={[st.valor, st.corOk]}>{retencao.entradas}</Text>
-              <Text style={st.legenda}>entraram</Text>
-            </View>
-            <View style={st.entradasItem}>
-              <Text style={[st.valor, st.corBaixa]}>{retencao.saidas}</Text>
-              <Text style={st.legenda}>saíram</Text>
-            </View>
-            <View style={st.entradasItem}>
-              <Text style={st.valor}>
-                +{retencao.entradas - retencao.saidas}
-              </Text>
-              <Text style={st.legenda}>saldo</Text>
-            </View>
-          </View>
-        </Card>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
-        <Card>
-          <View style={st.linhaTopo}>
-            <Text style={st.cardTitulo}>Consistência de presença</Text>
-            <Text style={st.valorInline}>{retencao.consistenciaPct}%</Text>
-          </View>
-          <Barra pct={retencao.consistenciaPct} cor={color.success} />
-          <Text style={st.legenda}>Nas últimas 3 semanas</Text>
-        </Card>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-        <Overline>Atenção</Overline>
-        <Card>
-          <Text style={st.cardTitulo}>{emRisco.length} participantes sumiram</Text>
-          <Text style={st.legenda}>Contato recomendado</Text>
-          {emRisco.map((p) => (
-            <Pressable
-              key={p.id}
-              onPress={() =>
-                router.push({ pathname: '/secretaria/participantes/[id]', params: { id: p.id } })
-              }
-              style={({ pressed }) => [st.riscoLinha, pressed && st.pressed]}
-              accessibilityRole="button">
-              <Avatar iniciais={p.iniciais} size={34} />
-              <View style={st.riscoTexto}>
-                <Text style={st.riscoNome}>{p.nome}</Text>
-                <Text style={st.legenda}>
-                  {p.unidade} · {p.frequencia}% de presença
+            <Animated.View entering={FadeInDown.duration(motion.medium)}>
+              <Card>
+                <View style={st.linhaTopo}>
+                  <Text style={st.cardTitulo}>Crianças que foram</Text>
+                  <Variacao atual={m.foram} antes={m.foramAntes} />
+                </View>
+                <View style={st.valorLinha}>
+                  <Contador valor={m.foram} style={st.valor} />
+                  <Text style={st.valorMeta}>
+                    de {m.ativas} {m.ativas === 1 ? 'cadastrada' : 'cadastradas'}
+                  </Text>
+                </View>
+                <Text style={st.meta}>
+                  {m.foramAntes} no período anterior ({m.anterior.rotulo})
                 </Text>
-              </View>
-              <Text style={st.chevron}>›</Text>
-            </Pressable>
-          ))}
-        </Card>
-        </Animated.View>
+                <View style={st.grafico}>
+                  {m.recortes.map((r, i) => {
+                    // o recorte de agora em destaque; o que ainda nao chegou fica vazio
+                    const atual = r.valor !== null && m.recortes[i + 1]?.valor == null
+                    return (
+                      <View
+                        key={r.rotulo}
+                        style={st.coluna}
+                        accessibilityLabel={
+                          r.valor === null
+                            ? `${r.rotulo}: ainda não chegou`
+                            : `${r.rotulo}: ${r.valor} crianças`
+                        }>
+                        <View
+                          style={[
+                            st.barraVertical,
+                            r.valor === null
+                              ? st.barraFutura
+                              : {
+                                  height: Math.max(24, (r.valor / maior) * ALTURA),
+                                  backgroundColor: atual ? color.primaryLt : color.primaryDk,
+                                },
+                          ]}>
+                          <Text style={st.colunaValor}>{r.valor ?? '—'}</Text>
+                        </View>
+                        <Text style={st.colunaRotulo}>{r.rotulo}</Text>
+                      </View>
+                    )
+                  })}
+                </View>
+                <Text style={st.legenda}>
+                  Cada barra conta quem foi ao menos uma vez naquele recorte
+                  {m.semFicha
+                    ? ` · ${m.semFicha} sem ficha ${m.semFicha === 1 ? 'veio' : 'vieram'} no período`
+                    : ''}
+                </Text>
+              </Card>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+              <Card>
+                <View style={st.linhaTopo}>
+                  <Text style={st.cardTitulo}>Chamadas encerradas</Text>
+                  <Text style={st.legendaValor}>{m.chamadas.total}</Text>
+                </View>
+                {m.chamadas.total ? (
+                  <Barra pct={(m.chamadas.pequenos / m.chamadas.total) * 100} />
+                ) : null}
+                <Text style={st.legenda}>
+                  {m.chamadas.pequenos} dos Pequenos · {m.chamadas.maiores} dos Maiores · em{' '}
+                  {m.chamadas.dias} {m.chamadas.dias === 1 ? 'dia' : 'dias'}
+                </Text>
+              </Card>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+              <CardQueda quedas={quedas} unidade={filtro.unidadeId ? nomeUnidade : null} />
+            </Animated.View>
+          </>
+        ) : aba === 'Jogos' ? (
+          !m.jogos ? (
+            <Animated.View entering={FadeInDown.duration(motion.medium)}>
+              <NaoRegistrado
+                titulo="Os jogos ainda não estão no banco"
+                texto="Falta rodar o SQL do Jogo no Supabase. Até lá, nenhum número desta aba seria verdadeiro."
+              />
+            </Animated.View>
+          ) : (
+            <>
+              <Animated.View entering={FadeInDown.duration(motion.medium)}>
+                <Card>
+                  <Text style={st.cardTitulo}>Jogos no período</Text>
+                  <View style={st.valorLinha}>
+                    <Contador valor={m.jogos.total} style={st.valor} />
+                    <Text style={st.valorMeta}>
+                      {m.jogos.total === 1 ? 'jogo' : 'jogos'} · todas as unidades
+                    </Text>
+                  </View>
+                  <View style={st.placar}>
+                    <Placar valor={m.jogos.ganhos} rotulo="vitórias" cor={color.success} />
+                    <Placar valor={m.jogos.empates} rotulo="empates" cor={color.muted} />
+                    <Placar valor={m.jogos.perdidos} rotulo="derrotas" cor={color.danger} />
+                  </View>
+                  <Text style={m.jogos.semResultado ? st.legendaAviso : st.legenda}>
+                    {!m.jogos.total
+                      ? 'Nenhum jogo no período'
+                      : m.jogos.semResultado
+                        ? `${m.jogos.semResultado} ${m.jogos.semResultado === 1 ? 'jogo ainda sem resultado' : 'jogos ainda sem resultado'} registrado`
+                        : 'Todos com resultado registrado'}
+                  </Text>
+                </Card>
+              </Animated.View>
+
+              {m.jogos.campeonatos.length ? (
+                <Animated.View
+                  entering={FadeInDown.duration(motion.medium).delay(40)}
+                  style={st.secao}>
+                  <Text style={st.overline}>CAMPEONATOS NO PERÍODO</Text>
+                  <Grupo>
+                    {m.jogos.campeonatos.map((c) => (
+                      <Linha
+                        key={c.nome}
+                        titulo={c.nome}
+                        legenda={`${c.jogos} ${c.jogos === 1 ? 'jogo' : 'jogos'} · ${c.pontos} ${c.pontos === 1 ? 'ponto' : 'pontos'}${c.comResultado < c.jogos ? ` (${c.jogos - c.comResultado} sem resultado)` : ''}`}
+                        semSeta
+                      />
+                    ))}
+                  </Grupo>
+                </Animated.View>
+              ) : null}
+            </>
+          )
+        ) : aba === 'Pessoas' ? (
+          <>
+            <Animated.View entering={FadeInDown.duration(motion.medium)}>
+              <Card>
+                <Text style={st.cardTitulo}>Fichas no período</Text>
+                <View style={st.placar}>
+                  <Placar valor={m.entraram} rotulo="entraram" cor={color.success} />
+                  <Placar valor={m.semFicha} rotulo="vieram sem ficha" cor={color.warn} />
+                  <Placar valor={m.ativas} rotulo="ativas hoje" cor={color.text} />
+                </View>
+                <Text style={st.legenda}>
+                  {m.semFicha
+                    ? 'Quem veio sem ficha foi digitado na chamada — falta cadastrar.'
+                    : 'A saída de crianças ainda não é registrada no app.'}
+                </Text>
+              </Card>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+              <Card>
+                <View style={st.linhaTopo}>
+                  <Text style={st.cardTitulo}>Equipe que fez chamada</Text>
+                  <Text style={st.legendaValor}>
+                    {m.equipe.marcaram} de {m.equipe.comAcesso}
+                  </Text>
+                </View>
+                <Barra
+                  pct={m.equipe.comAcesso ? (m.equipe.marcaram / m.equipe.comAcesso) * 100 : 0}
+                  cor={color.success}
+                />
+                <Text style={st.legenda}>
+                  Pessoas com acesso ao app que marcaram ao menos uma chamada no período
+                </Text>
+              </Card>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+              <Card>
+                <View style={st.linhaTopo}>
+                  <Text style={st.cardTitulo}>Continuam vindo</Text>
+                  {m.continuidade.base ? (
+                    <Text style={st.legendaVerde}>
+                      {Math.round((m.continuidade.continuam / m.continuidade.base) * 100)}%
+                    </Text>
+                  ) : null}
+                </View>
+                {m.continuidade.base ? (
+                  <Barra
+                    pct={(m.continuidade.continuam / m.continuidade.base) * 100}
+                    cor={color.success}
+                  />
+                ) : null}
+                <Text style={st.legenda}>
+                  {m.continuidade.base
+                    ? `De ${m.continuidade.base} com ficha desde ${brasileira(m.continuidade.ate)} ou antes, ${m.continuidade.continuam} ${m.continuidade.continuam === 1 ? 'veio' : 'vieram'} nos últimos 30 dias do período`
+                    : `Ninguém tem ficha desde ${brasileira(m.continuidade.ate)} ou antes: a conta começa quando houver crianças com 3 meses de ADAM`}
+                </Text>
+              </Card>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
+              <CardQueda quedas={quedas} unidade={filtro.unidadeId ? nomeUnidade : null} />
+            </Animated.View>
           </>
         ) : (
           <>
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
-        <Card>
-          <View style={st.linhaTopo}>
-            <Text style={st.cardTitulo}>Avaliação dos treinos</Text>
-            <Text style={st.legenda}>{qualidadeTreinos.avaliados} avaliados</Text>
-          </View>
-          <View style={st.avaliacaoLinha}>
-            <Text style={st.avaliacaoRotulo}>Como foi</Text>
-            <View style={st.avaliacaoBarra}>
-              <Barra pct={(qualidadeTreinos.comoFoi / 5) * 100} cor={color.success} />
-            </View>
-            <Text style={st.diaValor}>{qualidadeTreinos.comoFoi.toFixed(1)}</Text>
-          </View>
-          <View style={st.avaliacaoLinha}>
-            <Text style={st.avaliacaoRotulo}>Entenderam</Text>
-            <View style={st.avaliacaoBarra}>
-              <Barra pct={(qualidadeTreinos.entenderam / 5) * 100} />
-            </View>
-            <Text style={st.diaValor}>{qualidadeTreinos.entenderam.toFixed(1)}</Text>
-          </View>
-          <View style={st.avaliacaoLinha}>
-            <Text style={st.avaliacaoRotulo}>Dificuldade</Text>
-            <View style={st.avaliacaoBarra}>
-              <Barra pct={(qualidadeTreinos.dificuldade / 5) * 100} cor={color.warn} />
-            </View>
-            <Text style={st.diaValor}>{qualidadeTreinos.dificuldade.toFixed(1)}</Text>
-          </View>
-        </Card>
-        </Animated.View>
+            <Animated.View entering={FadeInDown.duration(motion.medium)}>
+              <Card>
+                <View style={st.linhaTopo}>
+                  <Text style={st.cardTitulo}>Escala com técnico definido</Text>
+                  <Text style={st.legendaValor}>
+                    {m.treinos.comResponsavel} de {m.treinos.planejados}
+                  </Text>
+                </View>
+                {m.treinos.planejados ? (
+                  <Barra pct={(m.treinos.comResponsavel / m.treinos.planejados) * 100} />
+                ) : null}
+                <Text
+                  style={
+                    m.treinos.planejados > m.treinos.comResponsavel ? st.legendaAviso : st.legenda
+                  }>
+                  {!m.treinos.planejados
+                    ? 'Nenhum treino planejado no app para o período'
+                    : m.treinos.planejados > m.treinos.comResponsavel
+                      ? `${m.treinos.planejados - m.treinos.comResponsavel} ${m.treinos.planejados - m.treinos.comResponsavel === 1 ? 'treino ficou' : 'treinos ficaram'} sem técnico definido`
+                      : 'Todos os treinos tiveram técnico definido'}
+                </Text>
+              </Card>
+            </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
-        <Card>
-          <View style={st.linhaTopo}>
-            <Text style={st.cardTitulo}>Escala cumprida</Text>
-            <Text style={st.valorInline}>
-              {qualidadeTreinos.escalaCumprida.feitas} de {qualidadeTreinos.escalaCumprida.total}
-            </Text>
-          </View>
-          <Barra
-            pct={
-              (qualidadeTreinos.escalaCumprida.feitas / qualidadeTreinos.escalaCumprida.total) *
-              100
-            }
-          />
-          <Text style={st.legendaAlerta}>{qualidadeTreinos.escalaCumprida.nota}</Text>
-        </Card>
-        </Animated.View>
+            {!m.qualidade ? (
+              <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+                <NaoRegistrado
+                  titulo="Avaliação e conteúdo dos treinos"
+                  texto="Falta rodar o SQL do Jogo no Supabase. Até lá, nenhum número daqui seria verdadeiro."
+                />
+              </Animated.View>
+            ) : (
+              <>
+                <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+                  <Card>
+                    <View style={st.linhaTopo}>
+                      <Text style={st.cardTitulo}>Avaliação dos treinos</Text>
+                      <Text style={st.legenda}>
+                        {m.qualidade.avaliados}{' '}
+                        {m.qualidade.avaliados === 1 ? 'avaliado' : 'avaliados'}
+                      </Text>
+                    </View>
+                    {m.qualidade.avaliados ? (
+                      <>
+                        <NotaBarra
+                          rotulo="Como foi"
+                          valor={m.qualidade.treino}
+                          cor={color.success}
+                        />
+                        <NotaBarra
+                          rotulo="Entenderam"
+                          valor={m.qualidade.entenderam}
+                          cor={onDark.fill}
+                        />
+                        <NotaBarra
+                          rotulo="Dificuldade"
+                          valor={m.qualidade.dificuldade}
+                          cor={color.warn}
+                        />
+                      </>
+                    ) : (
+                      <Text style={st.legenda}>Nenhum treino avaliado no período</Text>
+                    )}
+                  </Card>
+                </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-        <Card>
-          <View style={st.linhaTopo}>
-            <Text style={st.cardTitulo}>Conteúdo aplicado</Text>
-            <Text style={[st.valorInline, st.corOk]}>
-              {qualidadeTreinos.conteudoAplicado.feitas} de{' '}
-              {qualidadeTreinos.conteudoAplicado.total}
-            </Text>
-          </View>
-          <Barra
-            pct={
-              (qualidadeTreinos.conteudoAplicado.feitas /
-                qualidadeTreinos.conteudoAplicado.total) *
-              100
-            }
-            cor={color.success}
-          />
-          <Text style={st.legenda}>{qualidadeTreinos.conteudoAplicado.nota}</Text>
-        </Card>
-        </Animated.View>
+                <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+                  <Card>
+                    <View style={st.linhaTopo}>
+                      <Text style={st.cardTitulo}>Exercícios feitos</Text>
+                      <Text style={st.legendaValor}>
+                        {m.qualidade.exerciciosFeitos} de {m.qualidade.exerciciosPlanejados}
+                      </Text>
+                    </View>
+                    {m.qualidade.exerciciosPlanejados ? (
+                      <Barra
+                        pct={
+                          (m.qualidade.exerciciosFeitos / m.qualidade.exerciciosPlanejados) * 100
+                        }
+                        cor={color.success}
+                      />
+                    ) : null}
+                    <Text style={st.legenda}>
+                      {m.treinos.planejados
+                        ? `${m.qualidade.comExercicios} de ${m.treinos.planejados} ${m.treinos.planejados === 1 ? 'treino' : 'treinos'} com exercícios planejados`
+                        : 'Nenhum treino planejado no período'}
+                    </Text>
+                  </Card>
+                </Animated.View>
+              </>
+            )}
           </>
         )}
       </ScrollView>
@@ -269,63 +377,120 @@ export default function Relatorio() {
   )
 }
 
-const st = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: space.xxxl },
-  filtros: { flexDirection: 'row', gap: space.sm },
-  abas: { flexDirection: 'row', gap: space.sm },
-  cardTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
-  linhaTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  valorLinha: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  valor: { ...type.display, fontFamily: 'Inter_700Bold', color: color.text },
-  valorInline: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
-  legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
-  legendaAlerta: { ...type.small, fontFamily: 'Inter_400Regular', color: color.warn },
-  corOk: { color: color.success },
-  corBaixa: { color: color.danger },
+function NotaBarra({ rotulo, valor, cor }: { rotulo: string; valor: number | null; cor: string }) {
+  return (
+    <View style={st.notaLinha}>
+      <Text style={st.notaRotulo}>{rotulo}</Text>
+      <View style={st.notaBarra}>
+        <Barra pct={valor === null ? 0 : (valor / 5) * 100} cor={cor} />
+      </View>
+      <Text style={st.notaValor}>{valor === null ? '—' : valor.toFixed(1).replace('.', ',')}</Text>
+    </View>
+  )
+}
 
-  selo: {
+function Placar({ valor, rotulo, cor }: { valor: number; rotulo: string; cor: string }) {
+  return (
+    <View style={st.placarItem}>
+      <Text style={[st.placarValor, { color: cor }]}>{valor}</Text>
+      <Text style={st.legenda}>{rotulo}</Text>
+    </View>
+  )
+}
+
+const st = StyleSheet.create({
+  tituloComSeta: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  screen: { flex: 1, backgroundColor: color.bg },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  secao: { gap: space.md },
+  abas: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
+
+  cardTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  overline: {
+    ...type.caption,
+    fontFamily: 'Inter_600SemiBold',
+    color: color.faint,
+    letterSpacing: 0.8,
+  },
+  legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
+  legendaAviso: { ...type.small, fontFamily: 'Inter_400Regular', color: color.warn },
+  legendaValor: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
+  legendaVerde: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.success },
+  linhaTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  linhaTexto: { flex: 1, gap: 2 },
+  valorLinha: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm },
+  valor: { ...type.display, fontFamily: 'Inter_700Bold', color: color.text },
+  valorMeta: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
+  meta: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.faint, textAlign: 'right' },
+  pressed: { opacity: 0.85 },
+
+  grafico: { flexDirection: 'row', gap: space.sm, alignItems: 'flex-end' },
+  coluna: { flex: 1, alignItems: 'center', gap: space.xs },
+  barraVertical: {
+    width: '100%',
+    borderRadius: radius.campo,
+    borderCurve: 'continuous',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  colunaValor: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
+  barraFutura: {
+    height: 24,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: color.border,
+    backgroundColor: 'transparent',
+  },
+  colunaRotulo: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
+
+  placar: { flexDirection: 'row' },
+  placarItem: { flex: 1, alignItems: 'center', gap: 2 },
+  placarValor: { ...type.h1, fontFamily: 'Inter_700Bold' },
+
+  notaLinha: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  notaRotulo: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted, width: 92 },
+  notaBarra: { flex: 1 },
+  notaValor: {
+    ...type.small,
+    fontFamily: 'Inter_600SemiBold',
+    color: color.text,
+    width: 28,
+    textAlign: 'right',
+  },
+
+  seloVerde: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
     paddingHorizontal: space.md,
     paddingVertical: space.xs,
     borderRadius: radius.chip,
     borderCurve: 'continuous',
-    backgroundColor: 'rgba(61, 214, 140, 0.12)',
+    backgroundColor: 'rgba(61, 214, 140, 0.14)',
   },
-  seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.success },
+  seloVerdeRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.success },
 
-  grafico: {
+  cardAlerta: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: space.sm,
-    marginTop: space.sm,
+    alignItems: 'center',
+    gap: space.md,
+    paddingLeft: space.lg,
+    overflow: 'hidden',
   },
-  coluna: { flex: 1, alignItems: 'center', gap: space.xs },
-  colunaValor: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
-  barraVertical: { width: '100%', borderRadius: 8, borderCurve: 'continuous' },
-  colunaMes: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.faint },
-
-  diaLinha: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  diaRotulo: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted, width: 56 },
-  diaBarra: { flex: 1 },
-  diaValor: {
-    ...type.small,
-    fontFamily: 'Inter_600SemiBold',
-    color: color.text,
-    width: 40,
-    textAlign: 'right',
+  acentoAviso: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    backgroundColor: color.warn,
   },
-
-  entradasLinha: { flexDirection: 'row', justifyContent: 'space-around' },
-  entradasItem: { alignItems: 'center', gap: space.xs },
-
-  avaliacaoLinha: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  avaliacaoRotulo: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted, width: 84 },
-  avaliacaoBarra: { flex: 1 },
-
-  riscoLinha: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.sm },
-  riscoTexto: { flex: 1, gap: 2 },
-  pressed: { opacity: 0.7 },
-  chevron: { ...type.body, color: color.faint },
-  riscoNome: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
+  acentoPerigo: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    backgroundColor: color.danger,
+  },
 })

@@ -1,202 +1,130 @@
-import { router } from 'expo-router'
 import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { StyleSheet, View } from 'react-native'
 
-import { Card, Chip, Overline } from '@/components/ui'
-import { HeroVoltar } from '@/components/ui/setor'
-import { turmas } from '@/data/mock'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import { Chip } from '@/components/ui'
+import { Aviso, Bloco, Botao, Calendario, Entrada, Rotulo, TelaForm } from '@/components/ui/form'
+import { DIAS_CURTOS, rotuloLongo } from '@/data/calendario'
+import { HORARIO, NOME_TURMA, TURMAS, type Turma } from '@/data/chamada'
+import { horaCurta, rascunhoTreino, useJogo } from '@/data/jogo-dados'
+import { deISO, paraISO } from '@/data/metricas'
+import { voltar } from '@/lib/navegacao'
+import { space } from '@/theme/tokens'
 
 /**
- * Tela 11i. O calendario e do mes; os horarios oferecidos sao os da
- * turma (R16: o horario da turma e o padrao de quem nasce agora, e
- * mudar la nao mexe em sessao ja marcada).
+ * Tela 11i. Dia, turma e horario do treino. Os horarios da escala da semana
+ * naquele dia aparecem prontos para tocar; o horario padrao da turma vem
+ * junto. Mudar a escala depois nao move treino ja marcado (R16).
  */
-const DIAS_CABECALHO = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
-const MESES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-]
+const horaDaTurma = (t: Turma) => `${HORARIO[t].slice(0, 2)}:00`
 
-export default function DataDoTreino() {
-  const hoje = new Date()
-  const [mes, setMes] = useState(hoje.getMonth())
-  const [ano, setAno] = useState(hoje.getFullYear())
-  const [dia, setDia] = useState<number | null>(hoje.getDate())
+function mascaraHora(texto: string) {
+  const d = texto.replace(/\D/g, '').slice(0, 4)
+  return d.length <= 2 ? d : `${d.slice(0, 2)}:${d.slice(2)}`
+}
+const horaValida = (h: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(h)
 
-  const horarios = turmas[0].horarios
-  const [hora, setHora] = useState(horarios[0])
+export default function DataTreino() {
+  const plano = rascunhoTreino.useValor()
+  const { escala } = useJogo()
+  const inicial = plano.data ? deISO(plano.data) : new Date()
+  const [mes, setMes] = useState({ ano: inicial.getFullYear(), mes: inicial.getMonth() })
+  const [data, setData] = useState(plano.data)
+  const [turma, setTurma] = useState<Turma>(plano.turma)
+  const [hora, setHora] = useState(plano.hora)
 
-  const primeiroDiaSemana = new Date(ano, mes, 1).getDay()
-  const diasNoMes = new Date(ano, mes + 1, 0).getDate()
-  const celulas: (number | null)[] = [
-    ...Array<null>(primeiroDiaSemana).fill(null),
-    ...Array.from({ length: diasNoMes }, (_, i) => i + 1),
-  ]
-
-  const andarMes = (passo: number) => {
-    const d = new Date(ano, mes + passo, 1)
-    setMes(d.getMonth())
-    setAno(d.getFullYear())
-    setDia(null)
-  }
+  const d = data ? deISO(data) : null
+  // os horarios da escala naquele dia da semana (na unidade do plano)
+  const doDia = d
+    ? escala.filter(
+        (l) => l.diaSemana === d.getDay() && (!plano.unidadeId || l.unidadeId === plano.unidadeId),
+      )
+    : []
 
   return (
-    <SafeAreaView style={st.screen} edges={['top']}>
-      <HeroVoltar titulo="Data do treino" subtitulo="Escolha o dia e o horário" />
+    <TelaForm
+      titulo="Data do treino"
+      subtitulo={d ? rotuloLongo(d) : 'Escolha um dia'}
+      voltarPara="/jogo/planejar"
+      rodape={
+        <Botao
+          rotulo="Confirmar"
+          desabilitado={!data || !horaValida(hora)}
+          onPress={() => {
+            rascunhoTreino.definir({ data, hora, turma })
+            voltar()
+          }}
+        />
+      }>
+      <Bloco>
+        <Calendario
+          ano={mes.ano}
+          mes={mes.mes}
+          selecionado={
+            d && d.getFullYear() === mes.ano && d.getMonth() === mes.mes ? d.getDate() : undefined
+          }
+          onEscolher={(dia) => setData(paraISO(new Date(mes.ano, mes.mes, dia)))}
+          onMudarMes={(delta) => {
+            const novo = new Date(mes.ano, mes.mes + delta, 1)
+            setMes({ ano: novo.getFullYear(), mes: novo.getMonth() })
+          }}
+        />
+      </Bloco>
 
-      <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
-          <Card style={st.calendario}>
-            <View style={st.barraMes}>
-              <Pressable
-                onPress={() => andarMes(-1)}
-                hitSlop={space.sm}
-                style={({ pressed }) => [st.seta, pressed && st.pressed]}
-                accessibilityRole="button"
-                accessibilityLabel="Mês anterior">
-                <Text style={st.setaIcone}>‹</Text>
-              </Pressable>
-              <Text style={st.mesRotulo}>
-                {MESES[mes]} de {ano}
-              </Text>
-              <Pressable
-                onPress={() => andarMes(1)}
-                hitSlop={space.sm}
-                style={({ pressed }) => [st.seta, pressed && st.pressed]}
-                accessibilityRole="button"
-                accessibilityLabel="Próximo mês">
-                <Text style={st.setaIcone}>›</Text>
-              </Pressable>
-            </View>
-
-            <View style={st.semana}>
-              {DIAS_CABECALHO.map((d, i) => (
-                <Text key={`${d}${i}`} style={st.diaCabecalho}>
-                  {d}
-                </Text>
-              ))}
-            </View>
-
-            <View style={st.grade}>
-              {celulas.map((n, i) =>
-                n === null ? (
-                  <View key={`vazio${i}`} style={st.celula} />
-                ) : (
-                  <Pressable
-                    key={n}
-                    onPress={() => setDia(n)}
-                    style={({ pressed }) => [
-                      st.celula,
-                      dia === n && st.celulaAtiva,
-                      pressed && st.pressed,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: dia === n }}
-                    accessibilityLabel={`${n} de ${MESES[mes]}`}>
-                    <Text style={[st.celulaRotulo, dia === n && st.celulaRotuloAtivo]}>{n}</Text>
-                  </Pressable>
-                ),
-              )}
-            </View>
-          </Card>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)} style={st.secao}>
-          <Overline>Horário da turma</Overline>
+      {doDia.length ? (
+        <Bloco ordem={1}>
+          <Rotulo>{`Na escala de ${d ? DIAS_CURTOS[d.getDay()] : ''}`}</Rotulo>
           <View style={st.chips}>
-            {horarios.map((h) => (
-              <Chip key={h} rotulo={h} ativo={hora === h} onPress={() => setHora(h)} />
+            {doDia.map((l) => (
+              <Chip
+                key={l.id}
+                rotulo={`${horaCurta(l.hora)} · ${NOME_TURMA[l.turma]}`}
+                ativo={hora === l.hora && turma === l.turma}
+                onPress={() => {
+                  setHora(l.hora)
+                  setTurma(l.turma)
+                }}
+              />
             ))}
           </View>
-          <Text style={st.legenda}>
-            Mudar o horário aqui vale só para este treino. Os já marcados continuam como estão.
-          </Text>
-        </Animated.View>
+        </Bloco>
+      ) : null}
 
-        <Pressable
-          onPress={() => router.back()}
-          disabled={dia === null}
-          style={({ pressed }) => [
-            st.botao,
-            pressed && st.pressed,
-            dia === null && st.botaoDesabilitado,
-          ]}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: dia === null }}>
-          <Text style={st.botaoRotulo}>
-            {dia === null ? 'Escolha um dia' : `Usar ${dia} de ${MESES[mes]} · ${hora}`}
-          </Text>
-        </Pressable>
-      </ScrollView>
-    </SafeAreaView>
+      <Bloco ordem={2}>
+        <Rotulo>Turma</Rotulo>
+        <View style={st.chips}>
+          {TURMAS.map((t) => (
+            <Chip
+              key={t}
+              rotulo={NOME_TURMA[t]}
+              ativo={turma === t}
+              onPress={() => {
+                if (hora === horaDaTurma(turma)) setHora(horaDaTurma(t))
+                setTurma(t)
+              }}
+            />
+          ))}
+        </View>
+        <Entrada
+          rotulo="Horário"
+          value={hora}
+          onChangeText={(t) => setHora(mascaraHora(t))}
+          placeholder="08:00"
+          keyboardType="number-pad"
+          maxLength={5}
+        />
+      </Bloco>
+
+      <Bloco ordem={3}>
+        <Aviso
+          tom="roxo"
+          titulo={`${NOME_TURMA[turma]} às ${horaValida(hora) ? horaCurta(hora) : '…'}`}
+          texto="A turma sai da idade: a chamada deste treino lista só quem é dela."
+        />
+      </Bloco>
+    </TelaForm>
   )
 }
 
 const st = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
-  secao: { gap: space.md },
-
-  calendario: { gap: space.md },
-  barraMes: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  mesRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
-  seta: {
-    width: target.minimo,
-    height: target.minimo,
-    borderRadius: target.minimo / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: color.surface2,
-  },
-  setaIcone: { fontSize: 22, lineHeight: 26, color: color.text },
-
-  semana: { flexDirection: 'row' },
-  diaCabecalho: {
-    flex: 1,
-    textAlign: 'center',
-    ...type.caption,
-    fontFamily: 'Inter_600SemiBold',
-    color: color.faint,
-  },
-  grade: { flexDirection: 'row', flexWrap: 'wrap' },
-  celula: {
-    width: `${100 / 7}%`,
-    height: target.minimo,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  celulaAtiva: {},
-  celulaRotulo: {
-    ...type.small,
-    fontFamily: 'Inter_400Regular',
-    color: color.text,
-    width: 32,
-    height: 32,
-    lineHeight: 32,
-    textAlign: 'center',
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  celulaRotuloAtivo: {
-    fontFamily: 'Inter_600SemiBold',
-    backgroundColor: onDark.fill,
-  },
-
   chips: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
-  legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
-  pressed: { opacity: 0.7 },
-
-  botao: {
-    minHeight: target.minimo + 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.botao,
-    borderCurve: 'continuous',
-    backgroundColor: onDark.fill,
-  },
-  botaoDesabilitado: { opacity: 0.4 },
-  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
 })

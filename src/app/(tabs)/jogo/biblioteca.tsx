@@ -1,202 +1,278 @@
-import { router } from 'expo-router'
-import { useMemo, useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { router, useLocalSearchParams } from 'expo-router'
+import { useState } from 'react'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 
-import { Card, Chip } from '@/components/ui'
-import { HeroVoltar, Segmentado } from '@/components/ui/setor'
-import { exercicios, treinos, type CategoriaExercicio } from '@/data/jogo'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import { Chip } from '@/components/ui'
+import {
+  Aviso,
+  Bloco,
+  Botao,
+  Busca,
+  Entrada,
+  Grupo,
+  Linha,
+  Marca,
+  TelaForm,
+} from '@/components/ui/form'
+import { mostrarRecado } from '@/components/ui/recado'
+import { Segmentado } from '@/components/ui/setor'
+import { CATEGORIAS_EXERCICIO, type CategoriaExercicio } from '@/data/jogo'
+import {
+  rascunhoExercicio,
+  rascunhoTreino,
+  salvarExercicio,
+  useJogo,
+  type Exercicio,
+} from '@/data/jogo-dados'
+import { voltar } from '@/lib/navegacao'
+import { color, space, type } from '@/theme/tokens'
 
 /**
- * Tela 11h. A biblioteca e da ADAM, nao do treinador que cadastrou
- * (R18): o que entra aqui fica disponivel para todos os treinos.
+ * Telas 11h e 11j. A biblioteca e da ADAM, nao do treinador que cadastrou
+ * (R18): o que entra aqui fica disponivel para todos.
+ *
+ * A bolinha poe e tira do treino; o nome abre o "como fazer" (11k). Com
+ * `?editar=<id>` a mesma tela edita um exercicio da biblioteca.
  */
 const MODOS = ['Do banco', 'Novo exercício'] as const
-const CATEGORIAS: (CategoriaExercicio | 'Todos')[] = ['Todos', 'Aquecimento', 'Técnica', 'Tático', 'Jogo']
+const FILTROS = ['Todos', ...CATEGORIAS_EXERCICIO] as const
 
 export default function Biblioteca() {
-  const [modo, setModo] = useState<(typeof MODOS)[number]>('Do banco')
-  const [busca, setBusca] = useState('')
-  const [categoria, setCategoria] = useState<CategoriaExercicio | 'Todos'>('Todos')
-  const [noTreino, setNoTreino] = useState<string[]>(() =>
-    treinos[2].exercicios.map((e) => e.exercicioId),
-  )
+  const { editar } = useLocalSearchParams<{ editar?: string }>()
+  const { exercicios } = useJogo()
+  const emEdicao = exercicios.find((e) => e.id === editar)
+  // a edicao nasce quando o exercicio chega do banco
+  return <Tela key={emEdicao?.id ?? 'lista'} emEdicao={emEdicao} />
+}
 
-  const lista = useMemo(() => {
-    const termo = busca.trim().toLowerCase()
-    return exercicios
-      .filter((e) => (categoria === 'Todos' ? true : e.categoria === categoria))
-      .filter((e) => (termo ? e.nome.toLowerCase().includes(termo) : true))
-  }, [busca, categoria])
+function Tela({ emEdicao }: { emEdicao?: Exercicio }) {
+  const plano = rascunhoTreino.useValor()
+  const { exercicios } = useJogo()
+  const { categoria: categoriaNova } = rascunhoExercicio.useValor()
+  const [modo, setModo] = useState<(typeof MODOS)[number]>(emEdicao ? 'Novo exercício' : 'Do banco')
+  const [busca, setBusca] = useState('')
+  const [filtro, setFiltro] = useState<CategoriaExercicio | 'Todos'>('Todos')
+  const [noTreino, setNoTreino] = useState(plano.exercicios)
+
+  const [nome, setNome] = useState(emEdicao?.nome ?? '')
+  const [tempo, setTempo] = useState(emEdicao ? String(emEdicao.duracaoMin) : '')
+  const [material, setMaterial] = useState(emEdicao?.material ?? '')
+  const [descricao, setDescricao] = useState(emEdicao?.descricao ?? '')
+  const [video, setVideo] = useState(emEdicao?.video ?? '')
+  const [salvando, setSalvando] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
+  // a categoria vem da tela 11z (na edicao, ja chega com a do exercicio)
+  const categoria = categoriaNova
+
+  const termo = busca.trim().toLowerCase()
+  const lista = exercicios
+    .filter((e) => (filtro === 'Todos' ? true : e.categoria === filtro))
+    .filter((e) => (termo ? e.nome.toLowerCase().includes(termo) : true))
+  const marcado = (id: string) => noTreino.some((x) => x.exercicioId === id)
+
+  const alternar = (e: Exercicio) =>
+    setNoTreino((atual) =>
+      marcado(e.id)
+        ? atual.filter((x) => x.exercicioId !== e.id)
+        : [...atual, { exercicioId: e.id, duracaoMin: e.duracaoMin }],
+    )
+
+  const salvar = async () => {
+    setErro(null)
+    setSalvando(true)
+    try {
+      const minutos = Number(tempo.replace(/\D/g, '')) || 10
+      const id = await salvarExercicio({
+        id: emEdicao?.id,
+        nome,
+        categoria,
+        duracaoMin: minutos,
+        material,
+        descricao,
+        video,
+      })
+      if (emEdicao) {
+        mostrarRecado('Exercício salvo')
+        voltar('/jogo/biblioteca')
+        return
+      }
+      setNoTreino((atual) => [...atual, { exercicioId: id, duracaoMin: minutos }])
+      mostrarRecado('Exercício cadastrado e posto no treino')
+      setNome('')
+      setTempo('')
+      setMaterial('')
+      setDescricao('')
+      setVideo('')
+      setFiltro('Todos')
+      setModo('Do banco')
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível salvar.')
+    } finally {
+      setSalvando(false)
+    }
+  }
 
   return (
-    <SafeAreaView style={st.screen} edges={['top']}>
-      <HeroVoltar titulo="Exercícios" subtitulo="Toque para pôr ou tirar do treino" />
+    <TelaForm
+      titulo={emEdicao ? 'Editar exercício' : 'Exercícios'}
+      subtitulo={
+        emEdicao
+          ? 'Muda na biblioteca para todos'
+          : modo === 'Do banco'
+            ? 'Toque para pôr ou tirar do treino'
+            : 'Cadastrar na biblioteca da ADAM'
+      }
+      voltarPara="/jogo/planejar"
+      rodape={
+        modo === 'Do banco' ? (
+          <Botao
+            rotulo={`Concluir · ${noTreino.length} no treino`}
+            onPress={() => {
+              rascunhoTreino.definir({ exercicios: noTreino })
+              voltar('/jogo/planejar')
+            }}
+          />
+        ) : (
+          <Botao
+            rotulo={salvando ? 'Salvando…' : emEdicao ? 'Salvar exercício' : 'Salvar na biblioteca'}
+            desabilitado={nome.trim().length < 2 || salvando}
+            onPress={salvar}
+          />
+        )
+      }>
+      {emEdicao ? null : <Segmentado opcoes={MODOS} valor={modo} onChange={setModo} />}
 
-      <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
-        <Segmentado opcoes={MODOS} valor={modo} onChange={setModo} />
+      {erro ? (
+        <Bloco>
+          <Aviso tom="ambar" titulo={erro} />
+        </Bloco>
+      ) : null}
 
-        {modo === 'Do banco' ? (
-          <>
-            <TextInput
-              style={st.busca}
-              value={busca}
-              onChangeText={setBusca}
-              placeholder="Buscar exercício"
-              placeholderTextColor={color.faint}
-              autoCorrect={false}
-              clearButtonMode="while-editing"
-            />
+      {modo === 'Do banco' ? (
+        <>
+          <Busca valor={busca} onChange={setBusca} placeholder="Buscar exercício" />
+          <View style={st.filtros}>
+            {FILTROS.map((c) => (
+              <Chip key={c} rotulo={c} ativo={filtro === c} onPress={() => setFiltro(c)} />
+            ))}
+          </View>
 
-            <View style={st.filtros}>
-              {CATEGORIAS.map((c) => (
-                <Chip key={c} rotulo={c} ativo={categoria === c} onPress={() => setCategoria(c)} />
-              ))}
-            </View>
-
-            <Animated.View entering={FadeInDown.duration(motion.medium)}>
-              <Card style={st.cardLista}>
-                {lista.map((e, i) => {
-                  const dentro = noTreino.includes(e.id)
+          <Bloco>
+            {lista.length ? (
+              <Grupo>
+                {lista.map((e) => {
+                  const ativo = marcado(e.id)
                   return (
-                    <Pressable
-                      key={e.id}
-                      onPress={() =>
-                        setNoTreino((atual) =>
-                          dentro ? atual.filter((x) => x !== e.id) : [...atual, e.id],
-                        )
-                      }
-                      style={({ pressed }) => [
-                        st.linha,
-                        i < lista.length - 1 && st.divisoria,
-                        pressed && st.pressed,
-                      ]}
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked: dentro }}
-                      accessibilityLabel={e.nome}>
-                      <View style={[st.marca, dentro && st.marcaDentro]}>
-                        <Text style={[st.marcaIcone, dentro && st.marcaIconeDentro]}>
-                          {dentro ? '✓' : '+'}
-                        </Text>
-                      </View>
-                      <View style={st.linhaTexto}>
-                        <Text style={st.linhaNome}>{e.nome}</Text>
+                    <View key={e.id} style={st.linha}>
+                      <Pressable
+                        onPress={() => alternar(e)}
+                        hitSlop={space.md}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: ativo }}
+                        accessibilityLabel={`${ativo ? 'Tirar' : 'Pôr'} ${e.nome} no treino`}>
+                        <Marca ativa={ativo} />
+                      </Pressable>
+                      <Pressable
+                        onPress={() =>
+                          router.push({ pathname: '/jogo/exercicio/[id]', params: { id: e.id } })
+                        }
+                        style={({ pressed }) => [st.texto, pressed && st.pressed]}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${e.nome}, ver como fazer`}>
+                        <Text style={st.nome}>{e.nome}</Text>
                         <Text style={st.legenda}>{e.categoria}</Text>
-                      </View>
+                      </Pressable>
                       <Text style={st.legenda}>{e.duracaoMin} min</Text>
-                    </Pressable>
+                    </View>
                   )
                 })}
-              </Card>
-            </Animated.View>
-          </>
-        ) : (
-          <Animated.View entering={FadeInDown.duration(motion.medium)} style={st.form}>
-            <Text style={st.legenda}>
-              O exercício salvo aqui fica disponível para todos os treinos da ADAM.
-            </Text>
-            <TextInput
-              style={st.campo}
-              placeholder="Nome do exercício"
-              placeholderTextColor={color.faint}
+              </Grupo>
+            ) : (
+              <Text style={st.vazio}>
+                {exercicios.length
+                  ? 'Nenhum exercício com esse nome. Cadastre em “Novo exercício”.'
+                  : 'A biblioteca ainda está vazia. Cadastre o primeiro em “Novo exercício”.'}
+              </Text>
+            )}
+          </Bloco>
+        </>
+      ) : (
+        <>
+          <Bloco>
+            <Entrada
+              rotulo="Nome do exercício"
+              value={nome}
+              onChangeText={setNome}
+              placeholder="Ex.: Arrancadas de 10 metros"
             />
-            <TextInput
-              style={st.campo}
-              placeholder="Duração em minutos"
-              placeholderTextColor={color.faint}
-              keyboardType="number-pad"
-            />
-            <TextInput
-              style={st.campo}
-              placeholder="Material (opcional)"
-              placeholderTextColor={color.faint}
-            />
-            <View style={st.filtros}>
-              {CATEGORIAS.filter((c) => c !== 'Todos').map((c) => (
-                <Chip key={c} rotulo={c} ativo={categoria === c} onPress={() => setCategoria(c)} />
-              ))}
-            </View>
-          </Animated.View>
-        )}
+          </Bloco>
 
-        <Pressable
-          onPress={() => router.back()}
-          style={({ pressed }) => [st.botao, pressed && st.pressed]}
-          accessibilityRole="button">
-          <Text style={st.botaoRotulo}>
-            {modo === 'Do banco' ? `Concluir · ${noTreino.length} no treino` : 'Salvar exercício'}
-          </Text>
-        </Pressable>
-      </ScrollView>
-    </SafeAreaView>
+          <Bloco ordem={1} style={st.dupla}>
+            <View style={st.metade}>
+              <Entrada
+                rotulo="Tempo (min)"
+                value={tempo}
+                onChangeText={setTempo}
+                placeholder="10"
+                keyboardType="number-pad"
+              />
+            </View>
+            <View style={st.metade}>
+              <Entrada
+                rotulo="Material"
+                value={material}
+                onChangeText={setMaterial}
+                placeholder="6 cones"
+              />
+            </View>
+          </Bloco>
+
+          <Bloco ordem={2}>
+            <Grupo>
+              <Linha
+                titulo="Categoria"
+                legenda="Onde ele fica na biblioteca"
+                selo={{ rotulo: categoria }}
+                onPress={() => router.push('/jogo/exercicio-categoria')}
+              />
+            </Grupo>
+          </Bloco>
+
+          <Bloco ordem={3}>
+            <Entrada
+              rotulo="Descrição"
+              value={descricao}
+              onChangeText={setDescricao}
+              placeholder="Como montar e o que cobrar deles"
+              multiline
+            />
+          </Bloco>
+
+          <Bloco ordem={4}>
+            <Entrada
+              rotulo="Link do vídeo"
+              icone="video"
+              value={video}
+              onChangeText={setVideo}
+              placeholder="youtu.be/..."
+              autoCapitalize="none"
+              keyboardType="url"
+            />
+          </Bloco>
+        </>
+      )}
+    </TelaForm>
   )
 }
 
 const st = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
-
-  busca: {
-    height: 48,
-    paddingHorizontal: space.base,
-    borderRadius: radius.campo,
-    borderCurve: 'continuous',
-    backgroundColor: color.surface2,
-    color: color.text,
-    ...type.body,
-    fontFamily: 'Inter_400Regular',
-  },
   filtros: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
-
-  cardLista: { paddingVertical: space.xs, gap: 0 },
-  linha: {
-    minHeight: target.minimo,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    paddingVertical: space.md,
-  },
-  divisoria: { borderBottomWidth: 1, borderBottomColor: color.divider },
-  linhaTexto: { flex: 1, gap: 2 },
-  linhaNome: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
-  legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56 },
+  texto: { flex: 1, gap: 2, paddingVertical: space.sm },
+  nome: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
+  legenda: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
+  vazio: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted, textAlign: 'center' },
   pressed: { opacity: 0.7 },
-
-  marca: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: color.surface2,
-    borderWidth: 1,
-    borderColor: color.border,
-  },
-  marcaDentro: { backgroundColor: color.success, borderColor: color.success },
-  marcaIcone: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.faint },
-  marcaIconeDentro: { color: color.bg },
-
-  form: { gap: space.md },
-  campo: {
-    height: 48,
-    paddingHorizontal: space.base,
-    borderRadius: radius.campo,
-    borderCurve: 'continuous',
-    backgroundColor: color.surface2,
-    color: color.text,
-    ...type.body,
-    fontFamily: 'Inter_400Regular',
-  },
-
-  botao: {
-    minHeight: target.minimo + 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.botao,
-    borderCurve: 'continuous',
-    backgroundColor: onDark.fill,
-  },
-  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  dupla: { flexDirection: 'row', gap: space.md },
+  metade: { flex: 1 },
 })

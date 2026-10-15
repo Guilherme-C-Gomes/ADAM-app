@@ -1,0 +1,122 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Erro_Sincronizacao" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Hero_Titulo" x="20" y="96" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Início</text>
+    <text id="Hero_Subtitulo" x="20" y="122" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Bom dia, Chico</text>
+  </g>
+  <g id="Card_Erro">
+    <rect id="Card_Erro_Fundo" x="20" y="176" width="350" height="172" rx="16" fill="#15151F" stroke="#FF7A85" stroke-width="1"/>
+    <rect id="Card_Erro_Acento" x="20" y="176" width="4" height="172" rx="2" fill="#FF7A85"/>
+    <circle cx="49" cy="211" r="8.2" fill="none" stroke="#FF7A85" stroke-width="1.9"/><path d="M49 207 L49 212" fill="none" stroke="#FF7A85" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="49" cy="215" r="1.1" fill="#FF7A85"/>
+    <text id="Card_Erro_Titulo" x="72" y="216" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Sem conexão</text>
+    <text id="Card_Erro_L1" x="72" y="240" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">O que você registrar fica salvo no</text>
+    <text id="Card_Erro_L2" x="72" y="260" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">aparelho e sobe quando a internet voltar.</text>
+      <g id="Botao_Tentar">
+    <rect id="Botao_Tentar_Fundo" x="40" y="288" width="177" height="44" rx="16" fill="#1E1E2B" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Botao_Tentar_Rotulo" x="128.5" y="315.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Tentar de novo</text>
+  </g>
+    <text id="Link_Detalhes" x="233" y="316" font-family="Inter" font-size="14" font-weight="500" fill="#C24BEE">Ver detalhes</text>
+  </g>
+  <g id="Card_Antigo">
+    <rect id="Card_Antigo_Fundo" x="20" y="364" width="350" height="128" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Card_Antigo_Selo">
+    <rect id="Card_Antigo_Selo_Fundo" x="36" y="384" width="141" height="28" rx="12" fill="#33240A"/>
+    <text id="Card_Antigo_Selo_Rotulo" x="48.0" y="402.32" font-family="Inter" font-size="12" font-weight="500" fill="#F5A524">3 chamadas na fila</text>
+  </g>
+    <text id="Card_Antigo_Valor" x="36" y="452" font-family="Inter" font-size="32" font-weight="700" fill="#9A9AAD">3</text>
+    <text id="Card_Antigo_Unidade" x="66" y="452" font-family="Inter" font-size="16" font-weight="400" fill="#8A8AA0">registros esperando</text>
+    <text id="Card_Antigo_Meta" x="36" y="476" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">Nada se perde: eles sobem sozinhos</text>
+  </g>
+  <g id="Card_Verificar">
+    <rect id="Card_Verificar_Fundo" x="20" y="508" width="350" height="132" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Card_Verificar_Titulo" x="36" y="538" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">O que costuma ser</text>
+    <circle id="Card_Verificar_Ponto_1" cx="42" cy="569" r="3" fill="#8A8AA0"/>
+    <text id="Card_Verificar_Item_1" x="58" y="574" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">O celular está sem internet</text>
+    <circle id="Card_Verificar_Ponto_2" cx="42" cy="597" r="3" fill="#8A8AA0"/>
+    <text id="Card_Verificar_Item_2" x="58" y="602" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">O Wi-Fi da praça caiu de novo</text>
+    <circle id="Card_Verificar_Ponto_3" cx="42" cy="625" r="3" fill="#8A8AA0"/>
+    <text id="Card_Verificar_Item_3" x="58" y="630" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">O app precisa ser atualizado</text>
+  </g>
+  <g id="Botao_Reconectar">
+    <rect id="Botao_Reconectar_Fundo" x="20" y="660" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_Reconectar_Rotulo" x="195.0" y="691.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Tentar enviar agora</text>
+  </g>
+  <g id="Scrim_Nav">
+    <rect id="Scrim_Fundo" x="0" y="712" width="390" height="132" fill="url(#grad_scrim)"/>
+    <rect id="Scrim_Brilho" x="-4" y="726" width="398" height="112" fill="url(#grad_brilho_nav)"/>
+  </g>
+  <g id="Nav_Bottom">
+    <rect id="Nav_Fundo" x="20" y="752" width="350" height="60" rx="24" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <rect id="Nav_Lente_Halo" x="109.2" y="746" width="84" height="72" fill="url(#grad_lente_halo)"/>
+    <rect id="Nav_Lente" x="123.2" y="762.0" width="56" height="40" rx="16" fill="#9E05D2"/>
+    <rect id="Nav_Lente_Brilho" x="123.2" y="762.0" width="56" height="40" rx="16" fill="url(#grad_lente)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+      <g id="Nav_Chamada">
+    <rect id="Nav_Chamada_Alvo" x="20.0" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(63.8 782.0) scale(1.3) translate(-9 -9)"><path d="M5.5 2.5 h-3 a1.5 1.5 0 0 0 -1.5 1.5 v12 a1.5 1.5 0 0 0 1.5 1.5 h13 a1.5 1.5 0 0 0 1.5 -1.5 v-12 a1.5 1.5 0 0 0 -1.5 -1.5 h-3" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="5.5" y="0.8" width="7" height="3.6" rx="1.2" fill="none" stroke="#9A9AAD" stroke-width="1.8"/><path d="M5 10.5 L8 13.5 L13.2 8" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Jogo">
+    <rect id="Nav_Jogo_Alvo" x="107.4" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(151.2 782.0) scale(1.3) translate(-9 -9)"><rect x="0.5" y="1.5" width="17" height="15" rx="2" fill="none" stroke="#FFFFFF" stroke-width="1.8"/><path d="M9 1.5 L9 16.5" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="9" r="3.1" fill="none" stroke="#FFFFFF" stroke-width="1.8"/><path d="M0.5 5.8 L3.8 5.8 L3.8 12.2 L0.5 12.2" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 5.8 L14.2 5.8 L14.2 12.2 L17.5 12.2" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Secretaria">
+    <rect id="Nav_Secretaria_Alvo" x="195.1" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(238.8 782.0) scale(1.3) translate(-9 -9)"><path d="M2 17 L2 10" fill="none" stroke="#9A9AAD" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 17 L8.5 2" fill="none" stroke="#9A9AAD" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 17 L15 7" fill="none" stroke="#9A9AAD" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+      <g id="Nav_Estudo">
+    <rect id="Nav_Estudo_Alvo" x="282.4" y="756" width="87.5" height="52" rx="16" fill="#0A0A12" opacity="0"/>
+    <g transform="translate(326.2 782.0) scale(1.3) translate(-9 -9)"><path d="M9 4 L9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4 C6.6 2.2 3.6 2 1.2 2.8 L1.2 14.2 C3.8 13.4 6.8 14.6 9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4 C11.4 2.2 14.4 2 16.8 2.8 L16.8 14.2 C14.2 13.4 11.2 14.6 9 16.4" fill="none" stroke="#9A9AAD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </g>
+  </g>
+</svg>

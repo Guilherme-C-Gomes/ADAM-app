@@ -47,3 +47,6 @@ example
 
 # saida do expo export
 /dist
+
+.vercel
+.env*

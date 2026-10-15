@@ -1,100 +1,162 @@
-import { router } from 'expo-router'
-import { useState } from 'react'
+import { router, useFocusEffect } from 'expo-router'
+import { useCallback, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Barra, Card, Contador, Overline } from '@/components/ui'
+import { Aviso, Grupo, Linha, SeletorPeriodo } from '@/components/ui/form'
+import { Icone } from '@/components/ui/icone'
+import { CardQueda, Variacao } from '@/components/ui/metricas'
 import { HeroSetor, Segmentado } from '@/components/ui/setor'
-import { Esqueleto, SkeletonCard, SkeletonLista } from '@/components/ui/skeleton'
-import { useCarregamento } from '@/hooks/use-carregamento'
-import { participantes, resumo, unidadesInfo } from '@/data/mock'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import { Esqueleto, SkeletonCard, SkeletonFaixa, SkeletonLista } from '@/components/ui/skeleton'
+import { DOCUMENTOS, emQueda, useParticipantes } from '@/data/fichas'
+import { useFiltroSecretaria } from '@/data/filtro-secretaria'
+import { useMetricas } from '@/data/metricas'
+import { color, motion, onDark, radius, space, type } from '@/theme/tokens'
 
 /**
  * Tela 12. A Secretaria e quem responde "quanto no conjunto": toda
  * metrica mora aqui, e o periodo escolhido vale para o painel e para o
- * relatorio ao mesmo tempo (R12).
+ * relatorio ao mesmo tempo (R12). Tudo e contado no banco — ver
+ * data/metricas.ts para o que cada numero quer dizer.
  */
 const ABAS = ['Números', 'Cadastros'] as const
 
-const PENDENTES = participantes.filter((p) => p.responsavel === 'Cadastro pendente').length
-
 export default function Secretaria() {
   const [aba, setAba] = useState<(typeof ABAS)[number]>('Números')
-  const carregando = useCarregamento()
+  const { filtro, todasAsUnidades, nomeUnidade, rotulo, anterior, proximo } = useFiltroSecretaria()
+  const metricas = useMetricas(filtro)
+  const fichas = useParticipantes()
+  const recarregarMetricas = metricas.recarregar
+  const recarregarFichas = fichas.recarregar
+
+  // voltar de uma chamada encerrada ou de uma ficha salva traz tudo novo
+  useFocusEffect(
+    useCallback(() => {
+      recarregarMetricas()
+      recarregarFichas()
+    }, [recarregarMetricas, recarregarFichas]),
+  )
+
+  // as fichas seguem a unidade do filtro, como os numeros
+  const daUnidade = fichas.lista.filter(
+    (p) => !filtro.unidadeId || p.unidadeId === filtro.unidadeId,
+  )
+  const pendentes = daUnidade.filter(
+    (p) => p.documentosEntregues < DOCUMENTOS.length || !p.temResponsavel,
+  ).length
+  const completas = daUnidade.length - pendentes
+  const quedas = daUnidade.filter(emQueda).length
+
+  const carregando =
+    aba === 'Números' ? metricas.carregando || fichas.carregando : fichas.carregando
+  const m = metricas.dados
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
-      <HeroSetor titulo="Secretaria" subtitulo="Atibaia e São José de Caiana" />
+      <HeroSetor titulo="Secretaria" subtitulo={todasAsUnidades || 'Painel da Secretaria'} />
 
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
         <Segmentado opcoes={ABAS} valor={aba} onChange={setAba} />
 
+        <SeletorPeriodo
+          rotulo={rotulo}
+          onAnterior={anterior}
+          onProximo={proximo}
+          onPress={() => router.push('/secretaria/filtros')}
+        />
+
         {carregando ? (
           <Esqueleto>
+            <SkeletonFaixa />
             <SkeletonCard altura={150} />
-            <SkeletonLista linhas={1} />
             <SkeletonLista linhas={1} />
           </Esqueleto>
         ) : aba === 'Números' ? (
-          <>
-            <Animated.View entering={FadeInDown.duration(motion.medium)}>
-              <Card>
-                <Text style={st.cardTitulo}>Participantes ativos</Text>
-                <View style={st.valorLinha}>
-                  <Contador valor={resumo.ativos} style={st.valor} />
-                  <Text style={st.valorMeta}>crianças e adolescentes</Text>
-                </View>
-                <View style={st.barraDupla}>
-                  {unidadesInfo.map((u) => (
-                    <View
-                      key={u.nome}
-                      style={[
-                        st.barraSegmento,
-                        {
-                          flex: resumo.porUnidade[u.nome],
-                          backgroundColor:
-                            u.nome === 'Atibaia' ? color.primary : color.primaryLt,
-                        },
-                      ]}
-                    />
-                  ))}
-                </View>
-                {unidadesInfo.map((u) => (
-                  <View key={u.nome} style={st.legendaLinha}>
-                    <View
-                      style={[
-                        st.ponto,
-                        {
-                          backgroundColor:
-                            u.nome === 'Atibaia' ? color.primary : color.primaryLt,
-                        },
-                      ]}
-                    />
-                    <Text style={st.legenda}>{u.nomeCompleto}</Text>
-                    <Text style={st.legendaValor}>{resumo.porUnidade[u.nome]}</Text>
+          !m ? (
+            <Aviso
+              tom="ambar"
+              titulo={metricas.erro ?? 'Não foi possível calcular os números.'}
+              texto="Toque para tentar de novo"
+              onPress={recarregarMetricas}
+            />
+          ) : (
+            <>
+              <Animated.View entering={FadeInDown.duration(motion.medium)}>
+                <Card>
+                  <View style={st.linhaTopo}>
+                    <Text style={st.cardTitulo}>Crianças que foram</Text>
+                    <Variacao atual={m.foram} antes={m.foramAntes} />
                   </View>
-                ))}
-              </Card>
-            </Animated.View>
+                  <View style={st.valorLinha}>
+                    <Contador valor={m.foram} style={st.valor} />
+                    <Text style={st.valorMeta}>
+                      de {m.ativas} {m.ativas === 1 ? 'cadastrada' : 'cadastradas'}
+                    </Text>
+                    <Pressable
+                      onPress={() => router.push('/secretaria/relatorio')}
+                      hitSlop={space.sm}
+                      accessibilityRole="button">
+                      <Text style={st.link}>ver relatório</Text>
+                    </Pressable>
+                  </View>
+                  <Text style={st.legendaFraca}>
+                    {m.foramAntes} no período anterior ({m.anterior.rotulo})
+                    {m.semFicha
+                      ? ` · e ${m.semFicha} sem ficha ${m.semFicha === 1 ? 'veio' : 'vieram'}`
+                      : ''}
+                  </Text>
 
-            <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
-              <LinhaNav
-                titulo="Participantes"
-                legenda={`${participantes.length} fichas · frequência por criança`}
-                onPress={() => router.push('/secretaria/participantes')}
-              />
-            </Animated.View>
+                  <View style={st.mini}>
+                    <Mini valor={m.chamadas.total} rotulo="chamadas" />
+                    <Mini valor={m.equipe.marcaram} rotulo="na equipe" />
+                    <Mini valor={m.entraram} rotulo="fichas novas" destaque />
+                  </View>
+                </Card>
+              </Animated.View>
 
-            <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-              <LinhaNav
-                titulo="Relatório"
-                legenda="Participação, retenção e qualidade"
-                onPress={() => router.push('/secretaria/relatorio')}
-              />
-            </Animated.View>
-          </>
+              <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+                <Pressable
+                  onPress={() => router.push('/secretaria/relatorio')}
+                  style={({ pressed }) => pressed && st.pressed}
+                  accessibilityRole="button">
+                  <Card>
+                    <View style={st.linhaTopo}>
+                      <Text style={st.cardTitulo}>Chamadas encerradas</Text>
+                      <Icone nome="seta" cor={color.faint} />
+                    </View>
+                    <View style={st.valorLinha}>
+                      <Contador valor={m.chamadas.total} style={st.valor} />
+                      <Text style={st.valorMeta}>
+                        em {m.chamadas.dias} {m.chamadas.dias === 1 ? 'dia' : 'dias'} de treino
+                      </Text>
+                    </View>
+                    {m.chamadas.total ? (
+                      <Barra pct={(m.chamadas.pequenos / m.chamadas.total) * 100} />
+                    ) : null}
+                    <View style={st.legendaLinha}>
+                      <View style={[st.ponto, { backgroundColor: color.primaryLt }]} />
+                      <Text style={st.legenda}>Pequenos</Text>
+                      <Text style={st.legendaValor}>{m.chamadas.pequenos}</Text>
+                      <View
+                        style={[
+                          st.ponto,
+                          { backgroundColor: color.primary, marginLeft: space.base },
+                        ]}
+                      />
+                      <Text style={st.legenda}>Maiores</Text>
+                      <Text style={st.legendaValor}>{m.chamadas.maiores}</Text>
+                    </View>
+                  </Card>
+                </Pressable>
+              </Animated.View>
+
+              <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+                <CardQueda quedas={quedas} unidade={filtro.unidadeId ? nomeUnidade : null} />
+              </Animated.View>
+            </>
+          )
         ) : (
           <>
             <Animated.View entering={FadeInDown.duration(motion.medium)}>
@@ -106,42 +168,50 @@ export default function Secretaria() {
                   <View style={st.acento} />
                   <View style={st.linhaTexto}>
                     <Text style={st.cardTitulo}>Cadastrar criança</Text>
-                    <Text style={st.legenda}>Formulário no app, ou link para a família</Text>
-                    {PENDENTES ? (
-                      <View style={st.selo}>
-                        <Text style={st.seloRotulo}>{PENDENTES} pendentes</Text>
-                      </View>
-                    ) : null}
+                    <Text style={st.legenda}>Formulário no app</Text>
+                    <Text style={st.legendaFraca}>A ficha leva 2 minutos</Text>
                   </View>
-                  <Text style={st.chevron}>›</Text>
+                  <Icone nome="seta" cor={color.faint} />
                 </Card>
               </Pressable>
             </Animated.View>
 
-            <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)} style={st.secao}>
+            <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+              <Grupo>
+                <Linha
+                  titulo="Crianças cadastradas"
+                  legenda={`${daUnidade.length} ${daUnidade.length === 1 ? 'ficha' : 'fichas'} · abre os dados de cada uma`}
+                  selo={
+                    pendentes ? { rotulo: `${pendentes} com pendência`, tom: 'ambar' } : undefined
+                  }
+                  onPress={() => router.push('/secretaria/criancas')}
+                />
+              </Grupo>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)} style={st.secao}>
               <Overline>Fichas</Overline>
               <Card>
                 <View style={st.linhaTopo}>
-                  <Text style={st.cardTitulo}>Fichas e consentimentos</Text>
+                  <Text style={st.cardTitulo}>Fichas completas</Text>
                   <Text style={st.legendaValor}>
-                    {participantes.length - PENDENTES} de {participantes.length}
+                    {completas} de {daUnidade.length}
                   </Text>
                 </View>
                 <Barra
-                  pct={((participantes.length - PENDENTES) / participantes.length) * 100}
+                  pct={daUnidade.length ? (completas / daUnidade.length) * 100 : 0}
                   cor={color.success}
                 />
-                <Text style={st.legendaAviso}>
-                  {PENDENTES} fichas esperando consentimento assinado
+                <Text style={pendentes || fichas.erro ? st.legendaAviso : st.legenda}>
+                  {fichas.erro
+                    ? fichas.erro
+                    : pendentes
+                      ? `${pendentes} ${pendentes === 1 ? 'ficha esperando' : 'fichas esperando'} documento ou responsável`
+                      : daUnidade.length
+                        ? 'Todas as fichas completas'
+                        : 'Nenhuma ficha cadastrada ainda'}
                 </Text>
               </Card>
-            </Animated.View>
-
-            <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-              <LinhaNav
-                titulo="Registros e exportação"
-                legenda={`${participantes.length} participantes · PDF e CSV`}
-              />
             </Animated.View>
           </>
         )}
@@ -150,70 +220,64 @@ export default function Secretaria() {
   )
 }
 
-function LinhaNav({
-  titulo,
-  legenda,
-  onPress,
-}: {
-  titulo: string
-  legenda: string
-  onPress?: () => void
-}) {
-  const conteudo = (
-    <Card style={st.linhaNav}>
-      <View style={st.linhaTexto}>
-        <Text style={st.cardTitulo}>{titulo}</Text>
-        <Text style={st.legenda}>{legenda}</Text>
-      </View>
-      {onPress ? <Text style={st.chevron}>›</Text> : null}
-    </Card>
-  )
-
-  // R24: card com seta e porta. Sem destino, sem seta e sem toque.
-  if (!onPress) return conteudo
-
+function Mini({ valor, rotulo, destaque }: { valor: number; rotulo: string; destaque?: boolean }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => pressed && st.pressed}
-      accessibilityRole="button">
-      {conteudo}
-    </Pressable>
+    <View style={st.miniItem}>
+      <Text style={[st.miniValor, destaque && valor > 0 && st.miniDestaque]}>
+        {destaque && valor > 0 ? '+' : ''}
+        {valor}
+      </Text>
+      <Text style={st.legenda}>{rotulo}</Text>
+    </View>
   )
 }
 
 const st = StyleSheet.create({
+  tituloComSeta: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   screen: { flex: 1, backgroundColor: color.bg },
   conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
   secao: { gap: space.md },
 
   cardTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
+  legendaFraca: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.faint },
   legendaAviso: { ...type.small, fontFamily: 'Inter_400Regular', color: color.warn },
   legendaValor: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
   linhaTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   valorLinha: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm },
   valor: { ...type.display, fontFamily: 'Inter_700Bold', color: color.text },
-  valorMeta: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
+  valorMeta: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted, flex: 1 },
+  link: { ...type.small, fontFamily: 'Inter_600SemiBold', color: onDark.text },
   legendaLinha: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   ponto: { width: 8, height: 8, borderRadius: 4 },
   pressed: { opacity: 0.85 },
-  chevron: { ...type.body, color: color.faint },
-
-  barraDupla: {
-    flexDirection: 'row',
-    height: 8,
-    borderRadius: 4,
-    borderCurve: 'continuous',
-    overflow: 'hidden',
-    backgroundColor: color.surface2,
-    gap: 2,
-  },
-  barraSegmento: { height: '100%' },
-
-  linhaNav: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   linhaTexto: { flex: 1, gap: space.xs },
+
+  mini: { flexDirection: 'row', justifyContent: 'space-between' },
+  miniItem: { flex: 1, alignItems: 'center', gap: 2 },
+  miniValor: { ...type.h2, fontFamily: 'Inter_700Bold', color: color.text },
+  miniDestaque: { color: color.success },
+
+  seloVerde: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
+    borderRadius: radius.chip,
+    borderCurve: 'continuous',
+    backgroundColor: 'rgba(61, 214, 140, 0.14)',
+  },
+  seloVerdeRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.success },
+
   cardDestaque: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingLeft: space.lg,
+    overflow: 'hidden',
+  },
+  cardAlerta: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
@@ -228,14 +292,12 @@ const st = StyleSheet.create({
     width: 3,
     backgroundColor: onDark.fill,
   },
-  selo: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: space.md,
-    paddingVertical: space.xs,
-    borderRadius: radius.chip,
-    borderCurve: 'continuous',
-    backgroundColor: 'rgba(245, 165, 36, 0.14)',
+  acentoAviso: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    backgroundColor: color.warn,
   },
-  seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.warn },
-  minimo: { minHeight: target.minimo },
 })

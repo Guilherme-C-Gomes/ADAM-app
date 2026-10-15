@@ -1,5 +1,5 @@
 import { FlashList } from '@shopify/flash-list'
-import { router, useLocalSearchParams } from 'expo-router'
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { memo, useCallback, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -7,21 +7,18 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Avatar, Chip, Hero } from '@/components/ui'
 import { EstadoVazio } from '@/components/ui/estados'
 import { Esqueleto, SkeletonLinha } from '@/components/ui/skeleton'
-import { useCarregamento } from '@/hooks/use-carregamento'
-import {
-  LIMITE_BAIXA_FREQUENCIA,
-  participantes,
-  type Participante,
-  type Unidade,
-} from '@/data/mock'
+import { Icone } from '@/components/ui/icone'
+import { useUnidades } from '@/data/chamada'
+import { emQueda, useParticipantes, type Participante } from '@/data/fichas'
 import { color, radius, space, type } from '@/theme/tokens'
+import { COR_FOCO, useFoco } from '@/hooks/use-foco'
 
-type Filtro = 'Todos' | Unidade | 'Baixa freq.'
-const FILTROS: Filtro[] = ['Todos', 'Atibaia', 'Caiana', 'Baixa freq.']
+const TODOS = 'Todos'
+const BAIXA = 'Baixa freq.'
 
-type Linha =
-  | { tipo: 'cabecalho'; rotulo: string }
-  | { tipo: 'item'; participante: Participante }
+type Linha = { tipo: 'cabecalho'; rotulo: string } | { tipo: 'item'; participante: Participante }
+
+/** Abaixo do limite. Quem ainda nao teve chamada nao entra na conta. */
 
 /**
  * Item memoizado: sem isso, cada digito na busca re-renderiza a lista
@@ -34,35 +31,58 @@ const ItemParticipante = memo(function ItemParticipante({
   item: Participante
   onPress: (id: string) => void
 }) {
-  const baixa = item.frequencia < LIMITE_BAIXA_FREQUENCIA
+  const semChamada = item.frequencia === null
+  const baixa = emQueda(item)
   return (
     <Pressable
       onPress={() => onPress(item.id)}
       style={({ pressed }) => [st.item, pressed && st.itemPressed]}
       accessibilityRole="button"
-      accessibilityLabel={`${item.nome}, ${item.frequencia}% de presença`}>
-      <Avatar iniciais={item.iniciais} />
+      accessibilityLabel={
+        semChamada
+          ? `${item.nome}, ainda sem chamada`
+          : `${item.nome}, ${item.frequencia}% de presença`
+      }>
+      <Avatar iniciais={item.iniciais} foto={item.fotoUrl} />
       <View style={st.itemTexto}>
         <Text style={st.itemNome}>{item.nome}</Text>
         <Text style={st.itemMeta}>
           {item.idade} anos · {item.unidade}
         </Text>
       </View>
-      <View style={[st.chipFreq, baixa ? st.chipFreqBaixa : st.chipFreqOk]}>
-        <Text style={[st.chipFreqValor, baixa ? st.corBaixa : st.corOk]}>
-          {baixa ? '↓' : '↑'} {item.frequencia}%
-        </Text>
-      </View>
-      <Text style={st.chevron}>›</Text>
+      {semChamada ? (
+        <View style={[st.chipFreq, st.chipFreqNeutro]}>
+          <Text style={[st.chipFreqValor, st.corNeutra]}>sem chamada</Text>
+        </View>
+      ) : (
+        <View style={[st.chipFreq, baixa ? st.chipFreqBaixa : st.chipFreqOk]}>
+          <Icone
+            nome={baixa ? 'desce' : 'sobe'}
+            cor={baixa ? color.warn : color.success}
+            tamanho={12}
+          />
+          <Text style={[st.chipFreqValor, baixa ? st.corBaixa : st.corOk]}>{item.frequencia}%</Text>
+        </View>
+      )}
+      <Icone nome="seta" cor={color.faint} />
     </Pressable>
   )
 })
 
 export default function Participantes() {
-  const carregando = useCarregamento()
-  const { filtro: filtroParam } = useLocalSearchParams<{ filtro?: string }>()
-  const [filtro, setFiltro] = useState<Filtro>(
-    filtroParam === 'baixa' ? 'Baixa freq.' : 'Todos',
+  const { lista: todos, carregando, erro, atualizadoEm, recarregar } = useParticipantes()
+  const unidades = useUnidades()
+  const params = useLocalSearchParams<{ filtro?: string; unidade?: string }>()
+  // a unidade e a baixa frequencia se somam: "Baixa freq." em Atibaia e
+  // exatamente quem o card "em queda" de Atibaia contou
+  const [unidade, setUnidade] = useState<string>(params.unidade ?? TODOS)
+  const [soBaixa, setSoBaixa] = useState(params.filtro === 'baixa')
+
+  // voltar de uma ficha salva traz a lista atualizada
+  useFocusEffect(
+    useCallback(() => {
+      recarregar()
+    }, [recarregar]),
   )
 
   /**
@@ -74,55 +94,49 @@ export default function Participantes() {
    * anterior, e nao num efeito: setState dentro de efeito dispara um
    * segundo render em cascata e o React desaconselha.
    */
-  const [paramAnterior, setParamAnterior] = useState(filtroParam)
-  if (filtroParam !== paramAnterior) {
-    setParamAnterior(filtroParam)
-    if (filtroParam === 'baixa') setFiltro('Baixa freq.')
+  const pedido = `${params.filtro ?? ''}|${params.unidade ?? ''}`
+  const [pedidoAnterior, setPedidoAnterior] = useState(pedido)
+  if (pedido !== pedidoAnterior) {
+    setPedidoAnterior(pedido)
+    setSoBaixa(params.filtro === 'baixa')
+    setUnidade(params.unidade ?? TODOS)
   }
   const [busca, setBusca] = useState('')
-  // Sem toLocaleTimeString: depende de dados de localizacao que o
-  // Hermes do Expo Go nem sempre traz completos.
-  const horaAtual = useMemo(() => {
-    const agora = new Date()
-    const hh = String(agora.getHours()).padStart(2, '0')
-    const mm = String(agora.getMinutes()).padStart(2, '0')
-    return `${hh}:${mm}`
-  }, [])
+  const foco = useFoco()
+  const unidadesFiltro = [TODOS, ...unidades.dados.map((u) => u.nome)]
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
-    return participantes
-      .filter((p) => {
-        if (filtro === 'Baixa freq.') return p.frequencia < LIMITE_BAIXA_FREQUENCIA
-        if (filtro !== 'Todos') return p.unidade === filtro
-        return true
-      })
+    return todos
+      .filter((p) => (unidade === TODOS ? true : p.unidade === unidade))
+      .filter((p) => (soBaixa ? emQueda(p) : true))
       .filter((p) => (termo ? p.nome.toLowerCase().includes(termo) : true))
-      .sort((a, b) => a.frequencia - b.frequencia)
-  }, [filtro, busca])
+      .sort((a, b) => (a.frequencia ?? 101) - (b.frequencia ?? 101))
+  }, [todos, unidade, soBaixa, busca])
 
   /**
    * Fora do filtro "Baixa freq." (onde todo mundo ja esta em queda), a
    * lista se agrupa como nas telas 05b/05c do Figma: quem precisa de
-   * atencao primeiro, depois quem esta com frequencia saudavel.
+   * atencao primeiro, depois quem esta com frequencia saudavel. Quem
+   * ainda nao teve chamada encerrada fica por ultimo, a parte.
    */
   const lista = useMemo(() => {
-    if (filtro === 'Baixa freq.') {
+    if (soBaixa) {
       return filtrados.map((p) => ({ tipo: 'item' as const, participante: p }))
     }
-    const emQueda = filtrados.filter((p) => p.frequencia < LIMITE_BAIXA_FREQUENCIA)
-    const saudaveis = filtrados.filter((p) => p.frequencia >= LIMITE_BAIXA_FREQUENCIA)
+    const grupos: [string, Participante[]][] = [
+      ['Precisam de atenção', filtrados.filter(emQueda)],
+      ['Frequência saudável', filtrados.filter((p) => p.frequencia !== null && !emQueda(p))],
+      ['Ainda sem chamada', filtrados.filter((p) => p.frequencia === null)],
+    ]
     const linhas: Linha[] = []
-    if (emQueda.length) {
-      linhas.push({ tipo: 'cabecalho', rotulo: `Precisam de atenção · ${emQueda.length}` })
-      linhas.push(...emQueda.map((p) => ({ tipo: 'item' as const, participante: p })))
-    }
-    if (saudaveis.length) {
-      linhas.push({ tipo: 'cabecalho', rotulo: 'Frequência saudável' })
-      linhas.push(...saudaveis.map((p) => ({ tipo: 'item' as const, participante: p })))
+    for (const [rotulo, grupo] of grupos) {
+      if (!grupo.length) continue
+      linhas.push({ tipo: 'cabecalho', rotulo: `${rotulo} · ${grupo.length}` })
+      linhas.push(...grupo.map((p) => ({ tipo: 'item' as const, participante: p })))
     }
     return linhas
-  }, [filtrados, filtro])
+  }, [filtrados, soBaixa])
 
   // Referencia estavel: uma funcao nova a cada render invalidaria a
   // memoizacao de todos os itens.
@@ -145,24 +159,31 @@ export default function Participantes() {
   )
   const getItemType = useCallback((item: Linha) => item.tipo, [])
 
+  const subtitulo = carregando
+    ? 'Carregando as fichas…'
+    : `${todos.length} ${todos.length === 1 ? 'ativo' : 'ativos'} · atualizado hoje, ${atualizadoEm}`
+
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
       <Hero
         titulo="Participantes"
-        subtitulo={`${participantes.length} ativos · atualizado hoje, ${horaAtual}`}
+        subtitulo={subtitulo}
         acao={{
-          icone: '⟲',
-          rotulo: 'Limpar filtros',
+          icone: 'sync',
+          rotulo: 'Atualizar e limpar filtros',
           onPress: () => {
-            setFiltro('Todos')
+            setUnidade(TODOS)
+            setSoBaixa(false)
             setBusca('')
+            recarregar()
           },
         }}
       />
 
       <View style={st.controles}>
         <TextInput
-          style={st.busca}
+          style={[st.busca, foco.focado && st.focado]}
+          {...foco.eventos}
           value={busca}
           onChangeText={setBusca}
           placeholder="Buscar por nome"
@@ -171,9 +192,10 @@ export default function Participantes() {
           clearButtonMode="while-editing"
         />
         <View style={st.filtros}>
-          {FILTROS.map((f) => (
-            <Chip key={f} rotulo={f} ativo={filtro === f} onPress={() => setFiltro(f)} />
+          {unidadesFiltro.map((f) => (
+            <Chip key={f} rotulo={f} ativo={unidade === f} onPress={() => setUnidade(f)} />
           ))}
+          <Chip rotulo={BAIXA} ativo={soBaixa} onPress={() => setSoBaixa((v) => !v)} />
         </View>
       </View>
 
@@ -185,17 +207,23 @@ export default function Participantes() {
             ))}
           </Esqueleto>
         </View>
+      ) : erro ? (
+        <EstadoVazio
+          titulo="Sem conexão com as fichas"
+          linhas={[erro, 'Confira a internet e tente de novo.']}
+          acao={{ rotulo: 'Tentar de novo', onPress: recarregar }}
+        />
       ) : (
-      <FlashList
-        data={lista}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        getItemType={getItemType}
-        contentContainerStyle={st.lista}
-        ItemSeparatorComponent={Separador}
-        ListEmptyComponent={Vazio}
-        showsVerticalScrollIndicator={false}
-      />
+        <FlashList
+          data={lista}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          getItemType={getItemType}
+          contentContainerStyle={st.lista}
+          ItemSeparatorComponent={Separador}
+          ListEmptyComponent={todos.length ? SemResultado : SemFichas}
+          showsVerticalScrollIndicator={false}
+        />
       )}
     </SafeAreaView>
   )
@@ -205,7 +233,7 @@ function Separador() {
   return <View style={st.separador} />
 }
 
-function Vazio() {
+function SemResultado() {
   return (
     <EstadoVazio
       titulo="Nenhum participante"
@@ -213,7 +241,19 @@ function Vazio() {
         'Nada corresponde à busca e ao filtro atuais.',
         'Limpe o campo ou volte para "Todos" para ver a lista completa.',
       ]}
-      acao={{ rotulo: 'Cadastrar criança', onPress: () => router.push('/secretaria/participantes/cadastrar') }}
+    />
+  )
+}
+
+function SemFichas() {
+  return (
+    <EstadoVazio
+      titulo="Nenhuma criança cadastrada"
+      linhas={['As fichas que a Secretaria cadastrar aparecem aqui, com a frequência de cada uma.']}
+      acao={{
+        rotulo: 'Cadastrar criança',
+        onPress: () => router.push('/secretaria/participantes/cadastrar'),
+      }}
       dica="A ficha leva 2 minutos"
     />
   )
@@ -228,10 +268,13 @@ const st = StyleSheet.create({
     borderRadius: radius.campo,
     borderCurve: 'continuous',
     backgroundColor: color.surface2,
+    borderWidth: 1,
+    borderColor: 'transparent',
     color: color.text,
     ...type.body,
     fontFamily: 'Inter_400Regular',
   },
+  focado: { borderColor: COR_FOCO },
   filtros: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
   lista: { padding: space.lg },
   separador: { height: space.md },
@@ -256,11 +299,13 @@ const st = StyleSheet.create({
     borderColor: color.border,
   },
   itemPressed: { opacity: 0.7 },
-  chevron: { ...type.body, color: color.faint, marginLeft: -space.xs },
   itemTexto: { flex: 1, gap: 2 },
   itemNome: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   itemMeta: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
   chipFreq: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
     paddingHorizontal: space.md,
     paddingVertical: space.sm,
     borderRadius: radius.chip,
@@ -268,8 +313,9 @@ const st = StyleSheet.create({
   },
   chipFreqOk: { backgroundColor: 'rgba(61, 214, 140, 0.12)' },
   chipFreqBaixa: { backgroundColor: 'rgba(245, 165, 36, 0.14)' },
+  chipFreqNeutro: { backgroundColor: color.surface2 },
   chipFreqValor: { ...type.small, fontFamily: 'Inter_600SemiBold' },
   corOk: { color: color.success },
   corBaixa: { color: color.warn },
-
+  corNeutra: { color: color.muted },
 })

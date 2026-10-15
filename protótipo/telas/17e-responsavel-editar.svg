@@ -1,0 +1,126 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Responsavel_Editar" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Mãe</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Ana Beatriz L.</text>
+  </g>
+  <g id="Contato_Campo_Nome">
+    <text id="Contato_Campo_Nome_Etiqueta" x="20" y="172" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">NOME</text>
+    <rect id="Contato_Campo_Nome_Fundo" x="20" y="180" width="350" height="52" rx="12" fill="#1E1E2B" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Contato_Campo_Nome_Valor" x="36" y="211.0" font-family="Inter" font-size="16" font-weight="400" fill="#FFFFFF">Cláudia Ribeiro</text>
+  </g>
+<text id="Overline_Relacao" x="20" y="264" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">RELAÇÃO COM A CRIANÇA</text>
+  <g id="Filtros_Relacao">
+      <g id="Rel_Mae">
+    <rect id="Rel_Mae_Fundo" x="20" y="276" width="57" height="44" rx="16" fill="#9E05D2"/><rect id="Rel_Mae_Brilho" x="20" y="276" width="57" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Rel_Mae_Rotulo" x="48.5" y="302.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Mãe</text>
+  </g>
+      <g id="Rel_Pai">
+    <rect id="Rel_Pai_Fundo" x="85" y="276" width="48" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Rel_Pai_Rotulo" x="109.0" y="302.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Pai</text>
+  </g>
+      <g id="Rel_Avo">
+    <rect id="Rel_Avo_Fundo" x="141" y="276" width="54" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Rel_Avo_Rotulo" x="168.0" y="302.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Avó</text>
+  </g>
+      <g id="Rel_Outro">
+    <rect id="Rel_Outro_Fundo" x="203" y="276" width="67" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Rel_Outro_Rotulo" x="236.5" y="302.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Outro</text>
+  </g>
+  </g>
+  <g id="Contato_Campo_Telefone">
+    <text id="Contato_Campo_Telefone_Etiqueta" x="20" y="350" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">TELEFONE</text>
+    <rect id="Contato_Campo_Telefone_Fundo" x="20" y="358" width="350" height="52" rx="12" fill="#1E1E2B" stroke="#2E2E42" stroke-width="1"/>
+    <path d="M37 377.0 h3.5 l1.5 4 -2 1.5 a10 10 0 0 0 4.5 4.5 l1.5 -2 4 1.5 v3.5 a1.5 1.5 0 0 1 -1.8 1.5 C41 391.0 36 386.0 35.5 378.8 A1.5 1.5 0 0 1 37 377.0 z" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Contato_Campo_Telefone_Valor" x="64" y="389.0" font-family="Inter" font-size="16" font-weight="400" fill="#FFFFFF">(11) 9 8765-4321</text>
+  </g>
+  <g id="Card_Chaves">
+    <rect id="Card_Chaves_Fundo" x="20" y="442" width="350" height="138" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Chave_Whats">
+    <rect id="Chave_Whats_Alvo" x="24" y="452" width="342" height="52" fill="#15151F" opacity="0"/>
+    <text id="Chave_Whats_Titulo" x="36" y="472" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">É WhatsApp</text>
+    <text id="Chave_Whats_Texto" x="36" y="490" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Dá para mandar mensagem</text>
+      <g id="Chave_Whats_Chave">
+    <rect id="Chave_Whats_Chave_Trilho" x="308" y="456" width="46" height="28" rx="14" fill="#9E05D2"/>
+    <circle id="Chave_Whats_Chave_Botao" cx="340" cy="470" r="11" fill="#FFFFFF"/>
+  </g>
+  </g>
+    <line id="Contato_Divisoria_Chaves" x1="36" y1="492" x2="354" y2="492" stroke="#23233A" stroke-width="1"/>
+      <g id="Chave_Principal">
+    <rect id="Chave_Principal_Alvo" x="24" y="508" width="342" height="52" fill="#15151F" opacity="0"/>
+    <text id="Chave_Principal_Titulo" x="36" y="528" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Número principal</text>
+    <text id="Chave_Principal_Texto" x="36" y="546" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Convocação e cobrança saem por aqui</text>
+      <g id="Chave_Principal_Chave">
+    <rect id="Chave_Principal_Chave_Trilho" x="308" y="512" width="46" height="28" rx="14" fill="#9E05D2"/>
+    <circle id="Chave_Principal_Chave_Botao" cx="340" cy="526" r="11" fill="#FFFFFF"/>
+  </g>
+  </g>
+  </g>
+  <g id="Card_Remover">
+    <rect id="Card_Remover_Fundo" x="20" y="610" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <rect id="Card_Remover_Acento" x="20" y="610" width="4" height="72" rx="2" fill="#FF7A85"/>
+    <text id="Remover_Titulo" x="40" y="640" font-family="Inter" font-size="16" font-weight="500" fill="#FF7A85">Remover este contato</text>
+    <text id="Remover_Texto" x="40" y="662" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">A ficha fica com um responsável só</text>
+    <path d="M344 642 L349 647.5 L344 653" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g id="Botao_SalvarContato">
+    <rect id="Botao_SalvarContato_Fundo" x="20" y="724" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_SalvarContato_Rotulo" x="195.0" y="755.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Salvar contato</text>
+  </g>
+</svg>

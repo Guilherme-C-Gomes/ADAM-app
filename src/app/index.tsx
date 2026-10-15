@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated'
 
 import { AdamSymbol, AdamWordmark } from '@/components/brand/adam-mark'
+import { retomarSessao } from '@/lib/auth'
 import { color, motion, space, type } from '@/theme/tokens'
 
 /**
@@ -51,8 +52,19 @@ export default function Splash() {
       }),
     )
 
-    const id = setTimeout(() => router.replace('/login'), EXIT_DELAY)
-    return () => clearTimeout(id)
+    // Enquanto a marca anima, procura a sessao lembrada no aparelho. Se ela
+    // vale, o app vai direto para a Chamada: e o que faz nao pedir senha a
+    // cada vez que abre.
+    const lembrado = retomarSessao()
+    let montado = true
+    const id = setTimeout(async () => {
+      const entra = await lembrado
+      if (montado) router.replace(entra ? '/chamada' : '/login')
+    }, EXIT_DELAY)
+    return () => {
+      montado = false
+      clearTimeout(id)
+    }
   }, [symbol, wordmark, tagline, progress])
 
   const symbolStyle = useAnimatedStyle(() => ({

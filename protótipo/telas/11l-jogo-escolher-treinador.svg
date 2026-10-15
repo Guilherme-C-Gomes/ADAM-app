@@ -1,0 +1,122 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Jogo_EscolherTreinador" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Treinador responsável</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Só quem tem função de treinador</text>
+  </g>
+  <g id="Campo_Busca">
+    <rect id="Campo_Busca_Fundo" x="20" y="172" width="350" height="48" rx="12" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <circle cx="43.5" cy="194.5" r="5.8" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M47.8 198.8 L52 203" fill="none" stroke="#8A8AA0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Campo_Busca_Placeholder" x="66" y="202" font-family="Inter" font-size="16" font-weight="400" fill="#8A8AA0">Buscar treinador</text>
+  </g>
+  <g id="Card_Treinadores">
+    <rect id="Card_Treinadores_Fundo" x="20" y="236" width="350" height="228" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Treinador_1">
+    <rect id="Treinador_1_Alvo" x="24" y="254" width="342" height="60" fill="#15151F" opacity="0"/>
+      <g id="Treinador_1_Radio">
+    <circle id="Treinador_1_Radio_Anel" cx="52" cy="276" r="11" fill="none" stroke="#9E05D2" stroke-width="1.8"/>
+    <circle id="Treinador_1_Radio_Ponto" cx="52" cy="276" r="5.5" fill="#9E05D2" opacity="1"/>
+  </g>
+      <g id="Treinador_1_Avatar">
+    <circle id="Treinador_1_Avatar_Fundo" cx="94" cy="276" r="15" fill="#3A0A52"/>
+    <text id="Treinador_1_Avatar_Iniciais" x="94" y="279.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">MA</text>
+  </g>
+    <text id="Treinador_1_Nome" x="120" y="278" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Marina Alves</text>
+    <text id="Treinador_1_Email" x="120" y="295" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">marina@adam.org.br</text>
+  </g>
+    <line id="Treinador_Divisoria_1" x1="120" y1="312" x2="354" y2="312" stroke="#23233A" stroke-width="1"/>
+      <g id="Treinador_2">
+    <rect id="Treinador_2_Alvo" x="24" y="322" width="342" height="60" fill="#15151F" opacity="0"/>
+      <g id="Treinador_2_Radio">
+    <circle id="Treinador_2_Radio_Anel" cx="52" cy="344" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="Treinador_2_Radio_Ponto" cx="52" cy="344" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+      <g id="Treinador_2_Avatar">
+    <circle id="Treinador_2_Avatar_Fundo" cx="94" cy="344" r="15" fill="#2E3A5D"/>
+    <text id="Treinador_2_Avatar_Iniciais" x="94" y="347.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">CB</text>
+  </g>
+    <text id="Treinador_2_Nome" x="120" y="346" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Chico Barbosa</text>
+    <text id="Treinador_2_Email" x="120" y="363" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">chico@adam.org.br</text>
+  </g>
+    <line id="Treinador_Divisoria_2" x1="120" y1="380" x2="354" y2="380" stroke="#23233A" stroke-width="1"/>
+      <g id="Treinador_3">
+    <rect id="Treinador_3_Alvo" x="24" y="390" width="342" height="60" fill="#15151F" opacity="0"/>
+      <g id="Treinador_3_Radio">
+    <circle id="Treinador_3_Radio_Anel" cx="52" cy="412" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="Treinador_3_Radio_Ponto" cx="52" cy="412" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+      <g id="Treinador_3_Avatar">
+    <circle id="Treinador_3_Avatar_Fundo" cx="94" cy="412" r="15" fill="#5D2E43"/>
+    <text id="Treinador_3_Avatar_Iniciais" x="94" y="415.9" text-anchor="middle" font-family="Inter" font-size="11" font-weight="500" fill="#FFFFFF">RN</text>
+  </g>
+    <text id="Treinador_3_Nome" x="120" y="414" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Rafael Nunes</text>
+    <text id="Treinador_3_Email" x="120" y="431" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">rafael@adam.org.br</text>
+  </g>
+  </g>
+  <g id="Card_Aviso_Treinador">
+    <rect id="Card_Aviso_Treinador_Fundo" x="20" y="496" width="350" height="84" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <circle cx="45" cy="535" r="8.2" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M45 531 L45 536" fill="none" stroke="#8A8AA0" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="539" r="1.1" fill="#8A8AA0"/>
+    <text id="Aviso_Treinador_Titulo" x="70" y="534" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Não achou a pessoa?</text>
+    <text id="Link_Cadastrar_Usuario" x="70" y="556" font-family="Inter" font-size="12" font-weight="500" fill="#C24BEE">Cadastre em Ajustes › Usuários</text>
+  </g>
+  <g id="Botao_ConfirmarTreinador">
+    <rect id="Botao_ConfirmarTreinador_Fundo" x="20" y="612" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_ConfirmarTreinador_Rotulo" x="195.0" y="643.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Confirmar treinador</text>
+  </g>
+</svg>

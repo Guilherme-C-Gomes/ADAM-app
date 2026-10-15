@@ -1,0 +1,196 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Jogo_Convocar" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Convocar</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Sub-14  ·  só crianças de 13 e 14 anos</text>
+  </g>
+  <g id="Filtros_Funcao_Conv">
+      <g id="Conv_Todos">
+    <rect id="Conv_Todos_Fundo" x="20" y="172" width="70" height="44" rx="16" fill="#9E05D2"/><rect id="Conv_Todos_Brilho" x="20" y="172" width="70" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Conv_Todos_Rotulo" x="55.0" y="198.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Todos</text>
+  </g>
+      <g id="Conv_Goleiro">
+    <rect id="Conv_Goleiro_Fundo" x="98" y="172" width="51" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Conv_Goleiro_Rotulo" x="123.5" y="198.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Gol</text>
+  </g>
+      <g id="Conv_Defesa">
+    <rect id="Conv_Defesa_Fundo" x="157" y="172" width="52" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Conv_Defesa_Rotulo" x="183.0" y="198.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Def</text>
+  </g>
+      <g id="Conv_Meio">
+    <rect id="Conv_Meio_Fundo" x="217" y="172" width="61" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Conv_Meio_Rotulo" x="247.5" y="198.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Meio</text>
+  </g>
+      <g id="Conv_Ataque">
+    <rect id="Conv_Ataque_Fundo" x="286" y="172" width="51" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Conv_Ataque_Rotulo" x="311.5" y="198.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Ata</text>
+  </g>
+  </g>
+  <g id="Card_Elegiveis">
+    <rect id="Card_Elegiveis_Fundo" x="20" y="232" width="350" height="404" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Eleg_1">
+    <rect id="Eleg_1_Alvo" x="24" y="244" width="342" height="52" fill="#15151F" opacity="0"/>
+    <circle id="Eleg_1_Caixa" cx="52" cy="263" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>
+      <g id="Eleg_1_Marca">
+    <circle id="Eleg_1_Marca_Fundo" cx="52" cy="263" r="11" fill="#3DD68C"/>
+    <path d="M46 264 L50 268 L58 259.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Eleg_1_Nome" x="76" y="266" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Davi N.</text>
+    <text id="Eleg_1_Idade" x="76" y="282" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">14 anos</text>
+      <g id="Eleg_1_Funcao">
+    <rect id="Eleg_1_Funcao_Fundo" x="288" y="258.2" width="66" height="24" rx="12" fill="#3A0A52"/>
+    <text id="Eleg_1_Funcao_Rotulo" x="300.0" y="274.52" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">Goleiro</text>
+  </g>
+  </g>
+    <line id="Eleg_Divisoria_1" x1="76" y1="296" x2="354" y2="296" stroke="#23233A" stroke-width="1"/>
+      <g id="Eleg_2">
+    <rect id="Eleg_2_Alvo" x="24" y="300" width="342" height="52" fill="#15151F" opacity="0"/>
+    <circle id="Eleg_2_Caixa" cx="52" cy="319" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>
+      <g id="Eleg_2_Marca">
+    <circle id="Eleg_2_Marca_Fundo" cx="52" cy="319" r="11" fill="#3DD68C"/>
+    <path d="M46 320 L50 324 L58 315.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Eleg_2_Nome" x="76" y="322" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Enzo G.</text>
+    <text id="Eleg_2_Idade" x="76" y="338" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">13 anos</text>
+      <g id="Eleg_2_Funcao">
+    <rect id="Eleg_2_Funcao_Fundo" x="289" y="314.2" width="65" height="24" rx="12" fill="#3A0A52"/>
+    <text id="Eleg_2_Funcao_Rotulo" x="301.0" y="330.52" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">Defesa</text>
+  </g>
+  </g>
+    <line id="Eleg_Divisoria_2" x1="76" y1="352" x2="354" y2="352" stroke="#23233A" stroke-width="1"/>
+      <g id="Eleg_3">
+    <rect id="Eleg_3_Alvo" x="24" y="356" width="342" height="52" fill="#15151F" opacity="0"/>
+    <circle id="Eleg_3_Caixa" cx="52" cy="375" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>
+      <g id="Eleg_3_Marca">
+    <circle id="Eleg_3_Marca_Fundo" cx="52" cy="375" r="11" fill="#3DD68C"/>
+    <path d="M46 376 L50 380 L58 371.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Eleg_3_Nome" x="76" y="378" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Miguel T.</text>
+    <text id="Eleg_3_Idade" x="76" y="394" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">14 anos</text>
+      <g id="Eleg_3_Funcao">
+    <rect id="Eleg_3_Funcao_Fundo" x="289" y="370.2" width="65" height="24" rx="12" fill="#3A0A52"/>
+    <text id="Eleg_3_Funcao_Rotulo" x="301.0" y="386.52" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">Defesa</text>
+  </g>
+  </g>
+    <line id="Eleg_Divisoria_3" x1="76" y1="408" x2="354" y2="408" stroke="#23233A" stroke-width="1"/>
+      <g id="Eleg_4">
+    <rect id="Eleg_4_Alvo" x="24" y="412" width="342" height="52" fill="#15151F" opacity="0"/>
+    <circle id="Eleg_4_Caixa" cx="52" cy="431" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="1"/>
+      <g id="Eleg_4_Marca" opacity="0">
+    <circle id="Eleg_4_Marca_Fundo" cx="52" cy="431" r="11" fill="#3DD68C"/>
+    <path d="M46 432 L50 436 L58 427.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Eleg_4_Nome" x="76" y="434" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Arthur L.</text>
+    <text id="Eleg_4_Idade" x="76" y="450" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">13 anos</text>
+      <g id="Eleg_4_Funcao">
+    <rect id="Eleg_4_Funcao_Fundo" x="289" y="426.2" width="65" height="24" rx="12" fill="#3A0A52"/>
+    <text id="Eleg_4_Funcao_Rotulo" x="301.0" y="442.52" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">Defesa</text>
+  </g>
+  </g>
+    <line id="Eleg_Divisoria_4" x1="76" y1="464" x2="354" y2="464" stroke="#23233A" stroke-width="1"/>
+      <g id="Eleg_5">
+    <rect id="Eleg_5_Alvo" x="24" y="468" width="342" height="52" fill="#15151F" opacity="0"/>
+    <circle id="Eleg_5_Caixa" cx="52" cy="487" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>
+      <g id="Eleg_5_Marca">
+    <circle id="Eleg_5_Marca_Fundo" cx="52" cy="487" r="11" fill="#3DD68C"/>
+    <path d="M46 488 L50 492 L58 483.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Eleg_5_Nome" x="76" y="490" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Helena R.</text>
+    <text id="Eleg_5_Idade" x="76" y="506" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">14 anos</text>
+      <g id="Eleg_5_Funcao">
+    <rect id="Eleg_5_Funcao_Fundo" x="302" y="482.2" width="52" height="24" rx="12" fill="#3A0A52"/>
+    <text id="Eleg_5_Funcao_Rotulo" x="314.0" y="498.52" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">Meio</text>
+  </g>
+  </g>
+    <line id="Eleg_Divisoria_5" x1="76" y1="520" x2="354" y2="520" stroke="#23233A" stroke-width="1"/>
+      <g id="Eleg_6">
+    <rect id="Eleg_6_Alvo" x="24" y="524" width="342" height="52" fill="#15151F" opacity="0"/>
+    <circle id="Eleg_6_Caixa" cx="52" cy="543" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>
+      <g id="Eleg_6_Marca">
+    <circle id="Eleg_6_Marca_Fundo" cx="52" cy="543" r="11" fill="#3DD68C"/>
+    <path d="M46 544 L50 548 L58 539.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Eleg_6_Nome" x="76" y="546" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Sophia A.</text>
+    <text id="Eleg_6_Idade" x="76" y="562" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">13 anos</text>
+      <g id="Eleg_6_Funcao">
+    <rect id="Eleg_6_Funcao_Fundo" x="302" y="538.2" width="52" height="24" rx="12" fill="#3A0A52"/>
+    <text id="Eleg_6_Funcao_Rotulo" x="314.0" y="554.5200000000001" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">Meio</text>
+  </g>
+  </g>
+    <line id="Eleg_Divisoria_6" x1="76" y1="576" x2="354" y2="576" stroke="#23233A" stroke-width="1"/>
+      <g id="Eleg_7">
+    <rect id="Eleg_7_Alvo" x="24" y="580" width="342" height="52" fill="#15151F" opacity="0"/>
+    <circle id="Eleg_7_Caixa" cx="52" cy="599" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="1"/>
+      <g id="Eleg_7_Marca" opacity="0">
+    <circle id="Eleg_7_Marca_Fundo" cx="52" cy="599" r="11" fill="#3DD68C"/>
+    <path d="M46 600 L50 604 L58 595.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Eleg_7_Nome" x="76" y="602" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Lucas P.</text>
+    <text id="Eleg_7_Idade" x="76" y="618" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">14 anos</text>
+      <g id="Eleg_7_Funcao">
+    <rect id="Eleg_7_Funcao_Fundo" x="286" y="594.2" width="68" height="24" rx="12" fill="#3A0A52"/>
+    <text id="Eleg_7_Funcao_Rotulo" x="298.0" y="610.5200000000001" font-family="Inter" font-size="12" font-weight="500" fill="#D06CF5">Ataque</text>
+  </g>
+  </g>
+  </g>
+  <g id="Botao_Convocar">
+    <rect id="Botao_Convocar_Fundo" x="20" y="656" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_Convocar_Rotulo" x="195.0" y="687.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Convocar  ·  5 marcados</text>
+  </g>
+</svg>

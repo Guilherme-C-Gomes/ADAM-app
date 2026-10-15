@@ -1,0 +1,215 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Jogo_Biblioteca" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Exercícios</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">Toque para pôr ou tirar do treino</text>
+  </g>
+  <g id="Segmentado">
+    <rect id="Segmentado_Fundo" x="20" y="172" width="350" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <rect id="Seg_Lente" x="23.0" y="175" width="169.0" height="38" rx="13" fill="#9E05D2"/>
+    <rect id="Seg_Lente_Brilho" x="23.0" y="175" width="169.0" height="38" rx="13" fill="url(#grad_lente)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <rect id="Seg_Banco_Alvo" x="20.0" y="172" width="175.0" height="44" fill="#0A0A12" opacity="0"/>
+    <text id="Seg_Banco_Rotulo" x="107.5" y="198.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Do banco</text>
+    <rect id="Seg_NovoEx_Alvo" x="195.0" y="172" width="175.0" height="44" fill="#0A0A12" opacity="0"/>
+    <text id="Seg_NovoEx_Rotulo" x="282.5" y="198.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#9A9AAD">Novo exercício</text>
+  </g>
+  <g id="Campo_Busca">
+    <rect id="Campo_Busca_Fundo" x="20" y="228" width="350" height="48" rx="12" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <circle cx="43.5" cy="250.5" r="5.8" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M47.8 254.8 L52 259" fill="none" stroke="#8A8AA0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Campo_Busca_Placeholder" x="66" y="258" font-family="Inter" font-size="16" font-weight="400" fill="#8A8AA0">Buscar exercício</text>
+  </g>
+  <g id="Filtros_Categoria_1">
+      <g id="Cat_Todos">
+    <rect id="Cat_Todos_Fundo" x="20" y="292" width="70" height="44" rx="16" fill="#9E05D2"/><rect id="Cat_Todos_Brilho" x="20" y="292" width="70" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Cat_Todos_Rotulo" x="55.0" y="318.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Todos</text>
+  </g>
+      <g id="Cat_Aquecimento">
+    <rect id="Cat_Aquecimento_Fundo" x="98" y="292" width="124" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Cat_Aquecimento_Rotulo" x="160.0" y="318.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Aquecimento</text>
+  </g>
+      <g id="Cat_Fundamentos">
+    <rect id="Cat_Fundamentos_Fundo" x="230" y="292" width="126" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Cat_Fundamentos_Rotulo" x="293.0" y="318.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Fundamentos</text>
+  </g>
+  </g>
+  <g id="Filtros_Categoria_2">
+      <g id="Cat_Fisico">
+    <rect id="Cat_Fisico_Fundo" x="20" y="344" width="67" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Cat_Fisico_Rotulo" x="53.5" y="370.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Físico</text>
+  </g>
+      <g id="Cat_Tatico">
+    <rect id="Cat_Tatico_Fundo" x="95" y="344" width="71" height="44" rx="16" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <text id="Cat_Tatico_Rotulo" x="130.5" y="370.8" text-anchor="middle" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Tático</text>
+  </g>
+  </g>
+  <g id="Card_Biblioteca">
+    <rect id="Card_Biblioteca_Fundo" x="20" y="400" width="350" height="302" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Bib_1">
+      <g id="Bib_1_Toggle">
+    <rect id="Bib_1_Alvo" x="30" y="418" width="44" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Bib_1_Caixa" cx="52" cy="435" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>
+    <text id="Bib_1_Mais" x="52" y="439" text-anchor="middle" font-family="Inter" font-size="16" font-weight="500" fill="#8A8AA0" opacity="0">+</text>
+      <g id="Bib_1_Marca">
+    <circle id="Bib_1_Marca_Fundo" cx="52" cy="435" r="11" fill="#3DD68C"/>
+    <path d="M46 436 L50 440 L58 431.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+      <g id="Bib_1_Info">
+    <rect id="Bib_1_Info_Alvo" x="74" y="418" width="292" height="44" fill="#15151F" opacity="0"/>
+    <text id="Bib_1_Nome" x="76" y="438" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Aquecimento e mobilidade</text>
+    <text id="Bib_1_Categoria" x="76" y="454" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Aquecimento</text>
+    <text id="Bib_1_Duracao" x="354" y="440" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">10 min</text>
+  </g>
+  </g>
+    <line id="Bib_Divisoria_1" x1="76" y1="462" x2="354" y2="462" stroke="#23233A" stroke-width="1"/>
+      <g id="Bib_2">
+      <g id="Bib_2_Toggle">
+    <rect id="Bib_2_Alvo" x="30" y="462" width="44" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Bib_2_Caixa" cx="52" cy="479" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>
+    <text id="Bib_2_Mais" x="52" y="483" text-anchor="middle" font-family="Inter" font-size="16" font-weight="500" fill="#8A8AA0" opacity="0">+</text>
+      <g id="Bib_2_Marca">
+    <circle id="Bib_2_Marca_Fundo" cx="52" cy="479" r="11" fill="#3DD68C"/>
+    <path d="M46 480 L50 484 L58 475.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+      <g id="Bib_2_Info">
+    <rect id="Bib_2_Info_Alvo" x="74" y="462" width="292" height="44" fill="#15151F" opacity="0"/>
+    <text id="Bib_2_Nome" x="76" y="482" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Passe curto em duplas</text>
+    <text id="Bib_2_Categoria" x="76" y="498" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Fundamentos</text>
+    <text id="Bib_2_Duracao" x="354" y="484" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">15 min</text>
+  </g>
+  </g>
+    <line id="Bib_Divisoria_2" x1="76" y1="506" x2="354" y2="506" stroke="#23233A" stroke-width="1"/>
+      <g id="Bib_3">
+      <g id="Bib_3_Toggle">
+    <rect id="Bib_3_Alvo" x="30" y="506" width="44" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Bib_3_Caixa" cx="52" cy="523" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>
+    <text id="Bib_3_Mais" x="52" y="527" text-anchor="middle" font-family="Inter" font-size="16" font-weight="500" fill="#8A8AA0" opacity="0">+</text>
+      <g id="Bib_3_Marca">
+    <circle id="Bib_3_Marca_Fundo" cx="52" cy="523" r="11" fill="#3DD68C"/>
+    <path d="M46 524 L50 528 L58 519.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+      <g id="Bib_3_Info">
+    <rect id="Bib_3_Info_Alvo" x="74" y="506" width="292" height="44" fill="#15151F" opacity="0"/>
+    <text id="Bib_3_Nome" x="76" y="526" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Domínio orientado</text>
+    <text id="Bib_3_Categoria" x="76" y="542" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Fundamentos</text>
+    <text id="Bib_3_Duracao" x="354" y="528" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">12 min</text>
+  </g>
+  </g>
+    <line id="Bib_Divisoria_3" x1="76" y1="550" x2="354" y2="550" stroke="#23233A" stroke-width="1"/>
+      <g id="Bib_4">
+      <g id="Bib_4_Toggle">
+    <rect id="Bib_4_Alvo" x="30" y="550" width="44" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Bib_4_Caixa" cx="52" cy="567" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="0"/>
+    <text id="Bib_4_Mais" x="52" y="571" text-anchor="middle" font-family="Inter" font-size="16" font-weight="500" fill="#8A8AA0" opacity="0">+</text>
+      <g id="Bib_4_Marca">
+    <circle id="Bib_4_Marca_Fundo" cx="52" cy="567" r="11" fill="#3DD68C"/>
+    <path d="M46 568 L50 572 L58 563.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+      <g id="Bib_4_Info">
+    <rect id="Bib_4_Info_Alvo" x="74" y="550" width="292" height="44" fill="#15151F" opacity="0"/>
+    <text id="Bib_4_Nome" x="76" y="570" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Recepção com bola rasteira</text>
+    <text id="Bib_4_Categoria" x="76" y="586" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Fundamentos</text>
+    <text id="Bib_4_Duracao" x="354" y="572" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">15 min</text>
+  </g>
+  </g>
+    <line id="Bib_Divisoria_4" x1="76" y1="594" x2="354" y2="594" stroke="#23233A" stroke-width="1"/>
+      <g id="Bib_5">
+      <g id="Bib_5_Toggle">
+    <rect id="Bib_5_Alvo" x="30" y="594" width="44" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Bib_5_Caixa" cx="52" cy="611" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="1"/>
+    <text id="Bib_5_Mais" x="52" y="615" text-anchor="middle" font-family="Inter" font-size="16" font-weight="500" fill="#8A8AA0" opacity="1">+</text>
+      <g id="Bib_5_Marca" opacity="0">
+    <circle id="Bib_5_Marca_Fundo" cx="52" cy="611" r="11" fill="#3DD68C"/>
+    <path d="M46 612 L50 616 L58 607.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+      <g id="Bib_5_Info">
+    <rect id="Bib_5_Info_Alvo" x="74" y="594" width="292" height="44" fill="#15151F" opacity="0"/>
+    <text id="Bib_5_Nome" x="76" y="614" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Arrancadas de 10 metros</text>
+    <text id="Bib_5_Categoria" x="76" y="630" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Físico</text>
+    <text id="Bib_5_Duracao" x="354" y="616" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">8 min</text>
+  </g>
+  </g>
+    <line id="Bib_Divisoria_5" x1="76" y1="638" x2="354" y2="638" stroke="#23233A" stroke-width="1"/>
+      <g id="Bib_6">
+      <g id="Bib_6_Toggle">
+    <rect id="Bib_6_Alvo" x="30" y="638" width="44" height="44" fill="#15151F" opacity="0"/>
+    <circle id="Bib_6_Caixa" cx="52" cy="655" r="11" fill="none" stroke="#2E2E42" stroke-width="1.6" opacity="1"/>
+    <text id="Bib_6_Mais" x="52" y="659" text-anchor="middle" font-family="Inter" font-size="16" font-weight="500" fill="#8A8AA0" opacity="1">+</text>
+      <g id="Bib_6_Marca" opacity="0">
+    <circle id="Bib_6_Marca_Fundo" cx="52" cy="655" r="11" fill="#3DD68C"/>
+    <path d="M46 656 L50 660 L58 651.5" fill="none" stroke="#0E2E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  </g>
+      <g id="Bib_6_Info">
+    <rect id="Bib_6_Info_Alvo" x="74" y="638" width="292" height="44" fill="#15151F" opacity="0"/>
+    <text id="Bib_6_Nome" x="76" y="658" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Jogo reduzido 3 × 3</text>
+    <text id="Bib_6_Categoria" x="76" y="674" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">Tático</text>
+    <text id="Bib_6_Duracao" x="354" y="660" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">20 min</text>
+  </g>
+  </g>
+  </g>
+  <g id="Botao_ConcluirBib">
+    <rect id="Botao_ConcluirBib_Fundo" x="20" y="726" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_ConcluirBib_Rotulo" x="195.0" y="757.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Concluir  ·  4 no treino</text>
+  </g>
+</svg>

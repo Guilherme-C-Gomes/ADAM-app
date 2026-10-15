@@ -1,72 +1,105 @@
-import { router, useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Card, Chip } from '@/components/ui'
 import { EstadoVazio } from '@/components/ui/estados'
+import { Aviso } from '@/components/ui/form'
+import { Icone } from '@/components/ui/icone'
+import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
-import { convocacoes, idadesDaCategoria, partidas } from '@/data/jogo'
-import { POSICOES, participantes, type FuncaoCampo } from '@/data/mock'
+import { idadesDaCategoria } from '@/data/jogo'
+import { convocar, NOME_POSICAO, useAtletas, useDetalheJogo, type Atleta } from '@/data/jogo-dados'
+import { voltar } from '@/lib/navegacao'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
 /**
- * Tela 11q. A lista de elegiveis sai da idade da categoria (R2) — nao
- * existe lista mantida a mao.
+ * Tela 11q. A lista de elegiveis sai da idade da categoria (R2) — nao existe
+ * lista mantida a mao.
  *
- * R4: quem nao tem funcao cadastrada aparece em "Todos" e desaparece
- * nos outros filtros. Isso e o empurrao para completar a ficha, nao um
- * bug: o filtro precisa filtrar de verdade (R10).
+ * R4: quem nao tem posicao cadastrada aparece em "Todos" e desaparece nos
+ * outros filtros. Isso e o empurrao para completar a ficha, nao um bug: o
+ * filtro precisa filtrar de verdade (R10).
  */
-const FILTROS: readonly (FuncaoCampo | 'Todos')[] = ['Todos', ...POSICOES]
+type Filtro = NonNullable<Atleta['posicao']> | 'todos'
+const FILTROS: Filtro[] = ['todos', 'goleiro', 'defesa', 'meio', 'ataque']
+const CURTO: Record<Filtro, string> = {
+  todos: 'Todos',
+  goleiro: 'Gol',
+  defesa: 'Def',
+  meio: 'Meio',
+  ataque: 'Ata',
+}
 
 export default function Convocar() {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const partida = partidas.find((p) => p.id === id)
-
-  const [filtro, setFiltro] = useState<FuncaoCampo | 'Todos'>('Todos')
+  const detalhe = useDetalheJogo(id)
+  const atletas = useAtletas()
+  const [filtro, setFiltro] = useState<Filtro>('todos')
   const [escolhidos, setEscolhidos] = useState<string[]>([])
+  const [salvando, setSalvando] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
 
+  const jogo = detalhe.dados?.jogo
+  const faixa = idadesDaCategoria(jogo?.categoria ?? '')
   const jaConvocados = useMemo(
-    () => new Set((convocacoes[id ?? ''] ?? []).map((c) => c.participanteId)),
-    [id],
+    () => new Set((detalhe.dados?.convocados ?? []).map((c) => c.criancaId)),
+    [detalhe.dados],
   )
+  const elegiveis = atletas.lista
+    .filter((p) => p.idade >= faixa.min && p.idade <= faixa.max)
+    .filter((p) => !jaConvocados.has(p.id))
+    .filter((p) => (filtro === 'todos' ? true : p.posicao === filtro))
 
-  const faixa = idadesDaCategoria(partida?.categoria ?? '')
-
-  const elegiveis = useMemo(
-    () =>
-      participantes
-        .filter((p) => p.idade >= faixa.min && p.idade <= faixa.max)
-        .filter((p) => !jaConvocados.has(p.id))
-        .filter((p) => (filtro === 'Todos' ? true : p.funcaoCampo === filtro)),
-    [faixa.min, faixa.max, jaConvocados, filtro],
-  )
-
-  if (!partida) {
+  if (!jogo) {
     return (
       <SafeAreaView style={st.screen} edges={['top']}>
-        <HeroVoltar titulo="Jogo não encontrado" subtitulo="Volte para a lista de jogos" />
+        <HeroVoltar
+          titulo={detalhe.carregando ? 'Abrindo…' : 'Jogo não encontrado'}
+          subtitulo="Volte para a lista de jogos"
+          voltarPara="/jogo"
+        />
+        {detalhe.carregando ? <ActivityIndicator color={color.primaryCh} /> : null}
       </SafeAreaView>
     )
+  }
+
+  const confirmar = async () => {
+    setErro(null)
+    setSalvando(true)
+    try {
+      await convocar(jogo.id, escolhidos)
+      mostrarRecado(
+        `${escolhidos.length} ${escolhidos.length === 1 ? 'criança convocada' : 'crianças convocadas'}`,
+      )
+      voltar()
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível convocar.')
+      setSalvando(false)
+    }
   }
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
       <HeroVoltar
         titulo="Convocar"
-        subtitulo={`${partida.categoria} pega ${faixa.min} e ${faixa.max} anos`}
+        subtitulo={`${jogo.categoria} · só crianças de ${faixa.min} e ${faixa.max} anos`}
       />
 
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
+        {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
+
         <View style={st.filtros}>
           {FILTROS.map((f) => (
-            <Chip key={f} rotulo={f} ativo={filtro === f} onPress={() => setFiltro(f)} />
+            <Chip key={f} rotulo={CURTO[f]} ativo={filtro === f} onPress={() => setFiltro(f)} />
           ))}
         </View>
 
-        {elegiveis.length ? (
+        {atletas.carregando ? (
+          <ActivityIndicator color={color.primaryCh} />
+        ) : elegiveis.length ? (
           <Animated.View entering={FadeInDown.duration(motion.medium)}>
             <Card style={st.cardLista}>
               {elegiveis.map((p, i) => {
@@ -88,19 +121,21 @@ export default function Convocar() {
                     accessibilityState={{ checked: marcado }}
                     accessibilityLabel={p.nome}>
                     <View style={[st.marca, marcado && st.marcaAtiva]}>
-                      <Text style={[st.marcaIcone, marcado && st.marcaIconeAtiva]}>
-                        {marcado ? '✓' : '+'}
-                      </Text>
+                      <Icone
+                        nome={marcado ? 'check' : 'mais'}
+                        cor={marcado ? color.bg : color.muted}
+                        tamanho={14}
+                      />
                     </View>
                     <Avatar iniciais={p.iniciais} size={36} />
                     <View style={st.linhaTexto}>
                       <Text style={st.linhaNome}>{p.nome}</Text>
-                      <Text style={st.legenda}>
-                        {p.idade} anos · {p.unidade}
-                      </Text>
+                      <Text style={st.legenda}>{p.idade} anos</Text>
                     </View>
                     <View style={st.selo}>
-                      <Text style={st.seloRotulo}>{p.funcaoCampo ?? 'sem posição'}</Text>
+                      <Text style={st.seloRotulo}>
+                        {p.posicao ? NOME_POSICAO[p.posicao] : 'sem posição'}
+                      </Text>
                     </View>
                   </Pressable>
                 )
@@ -111,28 +146,34 @@ export default function Convocar() {
           <EstadoVazio
             titulo="Ninguém elegível aqui"
             linhas={
-              filtro === 'Todos'
-                ? [`Nenhuma criança de ${faixa.min} ou ${faixa.max} anos está livre para este jogo.`]
+              filtro === 'todos'
+                ? [
+                    `Nenhuma criança de ${faixa.min} ou ${faixa.max} anos está livre para este jogo.`,
+                  ]
                 : [
-                    `Nenhum elegível com a função ${filtro}.`,
-                    'Quem ainda não tem função cadastrada só aparece em "Todos".',
+                    `Nenhum elegível com a posição ${NOME_POSICAO[filtro]}.`,
+                    'Quem ainda não tem posição cadastrada só aparece em "Todos".',
                   ]
             }
           />
         )}
 
         <Pressable
-          onPress={() => router.back()}
-          disabled={!escolhidos.length}
+          onPress={confirmar}
+          disabled={!escolhidos.length || salvando}
           style={({ pressed }) => [
             st.botao,
+            (!escolhidos.length || salvando) && st.botaoDesabilitado,
             pressed && st.pressed,
-            !escolhidos.length && st.botaoDesabilitado,
           ]}
           accessibilityRole="button"
-          accessibilityState={{ disabled: !escolhidos.length }}>
+          accessibilityState={{ disabled: !escolhidos.length || salvando }}>
           <Text style={st.botaoRotulo}>
-            {escolhidos.length ? `Convocar ${escolhidos.length}` : 'Selecione quem convocar'}
+            {salvando
+              ? 'Convocando…'
+              : escolhidos.length
+                ? `Convocar ${escolhidos.length}`
+                : 'Escolha quem convocar'}
           </Text>
         </Pressable>
       </ScrollView>
@@ -170,8 +211,6 @@ const st = StyleSheet.create({
     borderColor: color.border,
   },
   marcaAtiva: { backgroundColor: color.success, borderColor: color.success },
-  marcaIcone: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.faint },
-  marcaIconeAtiva: { color: color.bg },
 
   selo: {
     paddingHorizontal: space.md,

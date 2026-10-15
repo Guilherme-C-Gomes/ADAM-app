@@ -5,10 +5,14 @@ import {
   useFonts,
 } from '@expo-google-fonts/inter'
 import { Stack } from 'expo-router'
+import Head from 'expo-router/head'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
+import { Platform } from 'react-native'
 
+import { Confirmacao } from '@/components/ui/confirmacao'
+import { Recado } from '@/components/ui/recado'
 import { color } from '@/theme/tokens'
 
 SplashScreen.preventAutoHideAsync()
@@ -24,12 +28,25 @@ export default function RootLayout() {
     if (fontsLoaded) SplashScreen.hideAsync()
   }, [fontsLoaded])
 
+  // Titulo da aba do navegador e do app instalado pela versao web. Vem
+  // antes da espera da fonte: no build da web a fonte nunca carrega, e o
+  // titulo sairia vazio.
+  const titulo = (
+    <Head>
+      <title>ADAM</title>
+    </Head>
+  )
+
   // Segurar a splash nativa ate a fonte carregar evita o flash de
-  // texto com a fonte do sistema antes da Inter entrar.
-  if (!fontsLoaded) return null
+  // texto com a fonte do sistema antes da Inter entrar. No web nao ha
+  // splash nativa: esperar a fonte so deixava a pagina em branco com
+  // internet lenta (ou em aba de fundo). La o app desenha ja e a Inter
+  // entra quando chegar.
+  if (!fontsLoaded && Platform.OS !== 'web') return titulo
 
   return (
     <>
+      {titulo}
       <StatusBar style="light" />
       <Stack
         screenOptions={{
@@ -39,6 +56,9 @@ export default function RootLayout() {
           animation: 'fade',
         }}
       />
+      {/* pop-ups por cima de qualquer tela: o recado e o "tem certeza?" */}
+      <Recado />
+      <Confirmacao />
     </>
   )
 }

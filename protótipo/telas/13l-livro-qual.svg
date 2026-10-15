@@ -1,0 +1,121 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Livro_Qual" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Qual livro</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">12 títulos no acervo</text>
+  </g>
+  <g id="Campo_Busca">
+    <rect id="Campo_Busca_Fundo" x="20" y="172" width="350" height="48" rx="12" fill="url(#grad_vidro)" stroke="url(#grad_borda_vidro)" stroke-width="1"/>
+    <circle cx="43.5" cy="194.5" r="5.8" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M47.8 198.8 L52 203" fill="none" stroke="#8A8AA0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <text id="Campo_Busca_Placeholder" x="66" y="202" font-family="Inter" font-size="16" font-weight="400" fill="#8A8AA0">Buscar livro</text>
+  </g>
+  <g id="Card_QualLivro">
+    <rect id="Card_QualLivro_Fundo" x="20" y="242" width="350" height="240" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="QualLivro_1">
+    <rect id="QualLivro_1_Alvo" x="24" y="262" width="342" height="44" fill="#15151F" opacity="0"/>
+      <g id="QualLivro_1_Radio">
+    <circle id="QualLivro_1_Radio_Anel" cx="52" cy="280" r="11" fill="none" stroke="#9E05D2" stroke-width="1.8"/>
+    <circle id="QualLivro_1_Radio_Ponto" cx="52" cy="280" r="5.5" fill="#9E05D2" opacity="1"/>
+  </g>
+    <text id="QualLivro_1_Titulo" x="82" y="289" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">A Bíblia em histórias</text>
+    <text id="QualLivro_1_Estante" x="354" y="289" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">4 livres</text>
+  </g>
+    <line id="QualLivro_Divisoria_1" x1="82" y1="306" x2="354" y2="306" stroke="#23233A" stroke-width="1"/>
+      <g id="QualLivro_2">
+    <rect id="QualLivro_2_Alvo" x="24" y="314" width="342" height="44" fill="#15151F" opacity="0"/>
+      <g id="QualLivro_2_Radio">
+    <circle id="QualLivro_2_Radio_Anel" cx="52" cy="332" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="QualLivro_2_Radio_Ponto" cx="52" cy="332" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+    <text id="QualLivro_2_Titulo" x="82" y="341" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Meu primeiro devocional</text>
+    <text id="QualLivro_2_Estante" x="354" y="341" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">3 livres</text>
+  </g>
+    <line id="QualLivro_Divisoria_2" x1="82" y1="358" x2="354" y2="358" stroke="#23233A" stroke-width="1"/>
+      <g id="QualLivro_3">
+    <rect id="QualLivro_3_Alvo" x="24" y="366" width="342" height="44" fill="#15151F" opacity="0"/>
+      <g id="QualLivro_3_Radio">
+    <circle id="QualLivro_3_Radio_Anel" cx="52" cy="384" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="QualLivro_3_Radio_Ponto" cx="52" cy="384" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+    <text id="QualLivro_3_Titulo" x="82" y="393" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Histórias de coragem</text>
+    <text id="QualLivro_3_Estante" x="354" y="393" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">2 livres</text>
+  </g>
+    <line id="QualLivro_Divisoria_3" x1="82" y1="410" x2="354" y2="410" stroke="#23233A" stroke-width="1"/>
+      <g id="QualLivro_4">
+    <rect id="QualLivro_4_Alvo" x="24" y="418" width="342" height="44" fill="#15151F" opacity="0"/>
+      <g id="QualLivro_4_Radio">
+    <circle id="QualLivro_4_Radio_Anel" cx="52" cy="436" r="11" fill="none" stroke="#2E2E42" stroke-width="1.8"/>
+    <circle id="QualLivro_4_Radio_Ponto" cx="52" cy="436" r="5.5" fill="#9E05D2" opacity="0"/>
+  </g>
+    <text id="QualLivro_4_Titulo" x="82" y="445" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">O bom pastor</text>
+    <text id="QualLivro_4_Estante" x="354" y="445" text-anchor="end" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">1 livre</text>
+  </g>
+  </g>
+  <g id="Card_Aviso_Qual">
+    <rect id="Card_Aviso_Qual_Fundo" x="20" y="494" width="350" height="101" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <circle cx="45" cy="533" r="8.2" fill="none" stroke="#8A8AA0" stroke-width="1.9"/><path d="M45 529 L45 534" fill="none" stroke="#8A8AA0" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="537" r="1.1" fill="#8A8AA0"/>
+    <text id="Aviso_Qual_Titulo" x="70" y="532" font-family="Inter" font-size="14" font-weight="500" fill="#FFFFFF">Sem exemplar não dá para emprestar</text>
+    <text id="Aviso_Qual_L1" x="70" y="554" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">O título continua na lista para não</text>
+    <text id="Aviso_Qual_L2" x="70" y="572" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">parecer que a ONG não o tem.</text>
+  </g>
+  <g id="Botao_ConfirmarQualLivro">
+    <rect id="Botao_ConfirmarQualLivro_Fundo" x="20" y="724" width="350" height="52" rx="16" fill="#9E05D2"/>
+    <text id="Botao_ConfirmarQualLivro_Rotulo" x="195.0" y="755.6" text-anchor="middle" font-family="Inter" font-size="16" font-weight="600" fill="#FFFFFF">Confirmar</text>
+  </g>
+</svg>

@@ -1,0 +1,95 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none">
+  <defs>
+  <linearGradient id="grad_hero" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#101030"/>
+    <stop offset="1" stop-color="#0C0C1C"/>
+  </linearGradient>
+  <radialGradient id="grad_glow" cx="0.88" cy="0.05" r="0.62">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="grad_glow_c" cx="0.5" cy="0.42" r="0.6">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.34"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_scrim" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A0A12" stop-opacity="0"/>
+    <stop offset="0.5" stop-color="#0A0A12" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#0A0A12" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="grad_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.056"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.091"/>
+  </linearGradient>
+  <linearGradient id="grad_borda_vidro" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.08"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+  </linearGradient>
+  <linearGradient id="grad_lente" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    <stop offset="0.30" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_lente_halo" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#C24BEE" stop-opacity="0.30"/>
+    <stop offset="1" stop-color="#C24BEE" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="grad_reflexo" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+    <stop offset="0.42" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="0.5" stop-color="#D06CF5" stop-opacity="0.24"/>
+    <stop offset="0.58" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="grad_brilho_nav" cx="0.5" cy="1" r="0.7">
+    <stop offset="0" stop-color="#5B0E86" stop-opacity="0.26"/>
+    <stop offset="1" stop-color="#5B0E86" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+  <rect id="Frame_Ajustes_Conta" x="0" y="0" width="390" height="844" fill="#0A0A12"/>
+  <g id="Hero">
+    <rect id="Hero_Fundo" x="0" y="0" width="390" height="156" fill="url(#grad_hero)"/>
+    <rect id="Hero_Brilho" x="0" y="0" width="390" height="156" fill="url(#grad_glow)"/>
+    <line id="Hero_Linha" x1="0" y1="156" x2="390" y2="156" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Botao_Voltar">
+    <rect id="Botao_Voltar_Alvo" x="8" y="26.0" width="44" height="44" fill="#1E1E2B" opacity="0"/>
+    <path d="M30 39.0 L20 48.0 L30 57.0" fill="none" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text id="Hero_Titulo" x="20" y="108" font-family="Inter" font-size="24" font-weight="700" fill="#FFFFFF">Minha conta</text>
+    <text id="Hero_Subtitulo" x="20" y="132" font-family="Inter" font-size="14" font-weight="400" fill="#9A9AAD">coordenacao@adam.org.br</text>
+  </g>
+  <g id="Card_Conta_Foto">
+    <rect id="Card_Conta_Foto_Fundo" x="20" y="172" width="350" height="126" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+      <g id="Conta_Avatar">
+    <circle id="Conta_Avatar_Fundo" cx="195.0" cy="222" r="30" fill="#3A0A52"/>
+    <text id="Conta_Avatar_Iniciais" x="195.0" y="229.0" text-anchor="middle" font-family="Inter" font-size="20" font-weight="500" fill="#FFFFFF">CA</text>
+  </g>
+    <text id="Conta_Nome" x="195.0" y="274" text-anchor="middle" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Coordenação ADAM</text>
+  </g>
+  <g id="Conta_Campo_Nome">
+    <text id="Conta_Campo_Nome_Etiqueta" x="20" y="316" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">NOME</text>
+    <rect id="Conta_Campo_Nome_Fundo" x="20" y="324" width="350" height="52" rx="12" fill="#1E1E2B" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Conta_Campo_Nome_Valor" x="36" y="355.0" font-family="Inter" font-size="16" font-weight="400" fill="#FFFFFF">Coordenação ADAM</text>
+  </g>
+  <g id="Conta_Campo_Email">
+    <text id="Conta_Campo_Email_Etiqueta" x="20" y="410" font-family="Inter" font-size="12" font-weight="600" fill="#8A8AA0" letter-spacing="1.2">E-MAIL</text>
+    <rect id="Conta_Campo_Email_Fundo" x="20" y="418" width="350" height="52" rx="12" fill="#1E1E2B" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Conta_Campo_Email_Valor" x="36" y="449.0" font-family="Inter" font-size="16" font-weight="400" fill="#FFFFFF">coordenacao@adam.org.br</text>
+  </g>
+  <g id="Card_Trocar_Senha">
+    <rect id="Card_Trocar_Senha_Fundo" x="20" y="504" width="350" height="84" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <text id="Conta_Senha_Titulo" x="40" y="534" font-family="Inter" font-size="16" font-weight="500" fill="#FFFFFF">Trocar senha</text>
+    <text id="Conta_Senha_Texto" x="40" y="556" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">Você recebe um link por e-mail</text>
+    <path d="M344 536 L349 541.5 L344 547" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g id="Card_Sair">
+    <rect id="Card_Sair_Fundo" x="20" y="604" width="350" height="72" rx="16" fill="#15151F" stroke="#2E2E42" stroke-width="1"/>
+    <rect id="Card_Sair_Acento" x="20" y="604" width="4" height="72" rx="2" fill="#FF7A85"/>
+    <text id="Conta_Sair_Titulo" x="40" y="634" font-family="Inter" font-size="16" font-weight="500" fill="#FF7A85">Sair da conta</text>
+    <text id="Conta_Sair_Texto" x="40" y="656" font-family="Inter" font-size="14" font-weight="400" fill="#8A8AA0">Neste aparelho</text>
+    <path d="M344 636 L349 641.5 L344 647" fill="none" stroke="#8A8AA0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+<text id="Conta_Versao" x="195.0" y="720" text-anchor="middle" font-family="Inter" font-size="12" font-weight="500" fill="#8A8AA0">ADAM Admin  ·  versão 2026.09</text>
+</svg>

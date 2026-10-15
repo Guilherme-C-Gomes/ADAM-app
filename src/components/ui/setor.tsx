@@ -1,22 +1,31 @@
-import { router } from 'expo-router'
+import { router, type Href } from 'expo-router'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 
 import { AdamSymbol, AdamWordmark } from '@/components/brand/adam-mark'
-import { contaAtual } from '@/data/mock'
+import { Avatar } from '@/components/ui'
+import { usePerfil } from '@/data/perfis'
+import type { NomeIcone } from '@/components/ui/icone'
+import { Icone } from '@/components/ui/icone'
+import { voltar } from '@/lib/navegacao'
 import { color, onDark, radius, space, target, type } from '@/theme/tokens'
 
 /**
  * Cabecalho de tela de setor: marca, perfil, titulo e subtitulo.
  *
- * O perfil e a porta para Ajustes — e a unica, ja que Ajustes saiu da
- * barra inferior. A marca volta para a Home.
+ * O selo do perfil diz quem esta usando o app. Para o ADM ele e a porta
+ * para Ajustes; para os outros, para a propria conta — Ajustes do app e
+ * so de quem administra. A marca volta para a Home, que tem estatistica,
+ * entao so quem ve dado sensivel vai para la; os outros voltam para a
+ * Chamada.
  */
 export function HeroSetor({ titulo, subtitulo }: { titulo: string; subtitulo: string }) {
+  const { rotulo, pessoa, veDadosSensiveis } = usePerfil()
+
   return (
     <View style={s.hero}>
       <View style={s.topo}>
         <Pressable
-          onPress={() => router.push('/inicio')}
+          onPress={() => router.navigate(veDadosSensiveis ? '/inicio' : '/chamada')}
           style={({ pressed }) => [s.marca, pressed && s.pressed]}
           accessibilityRole="button"
           accessibilityLabel="Ir para o início">
@@ -24,15 +33,15 @@ export function HeroSetor({ titulo, subtitulo }: { titulo: string; subtitulo: st
           <AdamWordmark fontSize={16} />
         </Pressable>
 
+        {/* a foto de quem esta logado (ou as iniciais) abre a propria conta:
+            senha, foto, nome e e-mail. O ADM chega aos Ajustes por la. */}
         <Pressable
-          onPress={() => router.push('/ajustes')}
-          style={({ pressed }) => [s.pill, pressed && s.pressed]}
+          onPress={() => router.push('/ajustes/conta')}
+          hitSlop={space.sm}
+          style={({ pressed }) => [s.foto, pressed && s.pressed]}
           accessibilityRole="button"
-          accessibilityLabel="Abrir ajustes">
-          <View style={s.pillAvatar}>
-            <Text style={s.pillInicial}>{contaAtual.iniciais.charAt(0)}</Text>
-          </View>
-          <Text style={s.pillRotulo}>{contaAtual.papel}</Text>
+          accessibilityLabel={`${pessoa.nome || rotulo} · abrir minha conta`}>
+          <Avatar iniciais={pessoa.iniciais || '?'} size={36} foto={pessoa.foto} />
         </Pressable>
       </View>
 
@@ -42,42 +51,87 @@ export function HeroSetor({ titulo, subtitulo }: { titulo: string; subtitulo: st
   )
 }
 
+type Acao = { icone: NomeIcone; rotulo: string; onPress: () => void }
+
+/**
+ * A linha de cima de toda tela empilhada: voltar na margem esquerda e, se a
+ * tela tiver, uma acao na margem direita. Mora num lugar so para as telas
+ * nunca voltarem a desenhar o proprio voltar — foi assim que quatro delas
+ * ficaram com um circulo atras da seta e sem o fundo do cabecalho.
+ */
+function TopoVoltar({ acao, voltarPara }: { acao?: Acao; voltarPara?: Href }) {
+  return (
+    <View style={s.topo}>
+      <Pressable
+        onPress={() => voltar(voltarPara)}
+        hitSlop={space.sm}
+        style={({ pressed }) => [s.voltar, pressed && s.pressed]}
+        accessibilityRole="button"
+        accessibilityLabel="Voltar">
+        <Icone nome="voltar" cor={color.text} tamanho={22} />
+      </Pressable>
+
+      {acao ? (
+        <Pressable
+          onPress={acao.onPress}
+          hitSlop={space.sm}
+          style={({ pressed }) => [s.voltar, s.acao, pressed && s.pressed]}
+          accessibilityRole="button"
+          accessibilityLabel={acao.rotulo}>
+          <Icone nome={acao.icone} cor={color.text} tamanho={20} />
+        </Pressable>
+      ) : null}
+    </View>
+  )
+}
+
 /** Cabecalho de tela empilhada: voltar, titulo e subtitulo. */
 export function HeroVoltar({
   titulo,
   subtitulo,
   acao,
+  voltarPara,
 }: {
   titulo: string
   subtitulo: string
-  acao?: { icone: string; rotulo: string; onPress: () => void }
+  acao?: Acao
+  /** para onde o voltar leva quando nao ha historico (web recarregada) */
+  voltarPara?: Href
 }) {
   return (
     <View style={s.hero}>
-      <View style={s.topo}>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={space.sm}
-          style={({ pressed }) => [s.voltar, pressed && s.pressed]}
-          accessibilityRole="button"
-          accessibilityLabel="Voltar">
-          <Text style={s.voltarIcone}>‹</Text>
-        </Pressable>
-
-        {acao ? (
-          <Pressable
-            onPress={acao.onPress}
-            hitSlop={space.sm}
-            style={({ pressed }) => [s.voltar, pressed && s.pressed]}
-            accessibilityRole="button"
-            accessibilityLabel={acao.rotulo}>
-            <Text style={s.voltarIcone}>{acao.icone}</Text>
-          </Pressable>
-        ) : null}
-      </View>
-
+      <TopoVoltar acao={acao} voltarPara={voltarPara} />
       <Text style={s.titulo}>{titulo}</Text>
       <Text style={s.subtitulo}>{subtitulo}</Text>
+    </View>
+  )
+}
+
+/**
+ * Cabecalho da ficha de uma pessoa (tela 06): o mesmo fundo e o mesmo topo
+ * do HeroVoltar, com a foto e o nome no centro, como no design.
+ */
+export function HeroPerfil({
+  iniciais,
+  nome,
+  meta,
+  foto,
+  acao,
+}: {
+  iniciais: string
+  nome: string
+  meta: string
+  foto?: string | null
+  acao?: Acao
+}) {
+  return (
+    <View style={s.hero}>
+      <TopoVoltar acao={acao} />
+      <View style={s.perfil}>
+        <Avatar iniciais={iniciais} size={68} foto={foto} />
+        <Text style={s.perfilNome}>{nome}</Text>
+        <Text style={s.subtitulo}>{meta}</Text>
+      </View>
     </View>
   )
 }
@@ -142,9 +196,16 @@ const s = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
+    overflow: 'hidden',
     backgroundColor: onDark.fill,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  pillFoto: { width: 18, height: 18 },
+  foto: {
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: color.surface2,
   },
   pillInicial: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.text },
   pillRotulo: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
@@ -156,12 +217,12 @@ const s = StyleSheet.create({
   voltar: {
     width: target.minimo,
     height: target.minimo,
-    borderRadius: target.minimo / 2,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
-    backgroundColor: color.surface2,
   },
-  voltarIcone: { fontSize: 24, lineHeight: 28, color: color.text },
+  acao: { alignItems: 'flex-end' },
+  perfil: { alignItems: 'center', gap: space.xs, marginTop: -space.md },
+  perfilNome: { ...type.h2, fontFamily: 'Inter_700Bold', color: color.text, marginTop: space.sm },
 
   segmentado: {
     flexDirection: 'row',
