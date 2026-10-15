@@ -210,10 +210,19 @@ async function listarArquivos(admin: Admin, bucket: string, pasta = ''): Promise
 const nomeNoDrive = (a: Pick<Arquivo, 'bucket' | 'caminho'>) =>
   `${a.bucket}__${a.caminho.replace(/\//g, '__')}`
 
+/**
+ * O endereco do Apps Script. Aceita o URL inteiro (.../exec) ou so o ID da
+ * implantacao (AKfy...), que o Apps Script mostra logo acima do URL e e
+ * facil de copiar no lugar dele.
+ */
+function enderecoDoDrive() {
+  const valor = process.env.BACKUP_DRIVE_URL?.trim()
+  if (!valor) throw new Error('Falta BACKUP_DRIVE_URL na Vercel (o endereço do Apps Script).')
+  return /^https?:\/\//i.test(valor) ? valor : `https://script.google.com/macros/s/${valor}/exec`
+}
+
 async function drive(acao: string, dados: Record<string, unknown> = {}) {
-  const url = process.env.BACKUP_DRIVE_URL
-  if (!url) throw new Error('Falta BACKUP_DRIVE_URL na Vercel (o endereço do Apps Script).')
-  const resposta = await fetch(url, {
+  const resposta = await fetch(enderecoDoDrive(), {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ token: process.env.CRON_SECRET, acao, ...dados }),
