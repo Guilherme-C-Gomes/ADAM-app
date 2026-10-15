@@ -7,9 +7,9 @@ import { baixarCopiaAqui, fazerCopiaAgora, useBackups, type RegistroBackup } fro
 import { color } from '@/theme/tokens'
 
 /**
- * Copia de seguranca (so o ADM). A automatica vai para a pasta do Google
+ * Copia de seguranca (so a conta de suporte, suporte.ti). A automatica vai para a pasta do Google
  * Drive da ADAM tres vezes por dia — e e ela que mantem o Supabase gratuito
- * acordado nas ferias. Aqui o ADM ve se as ultimas deram certo, pede uma
+ * acordado nas ferias. Aqui o suporte ve se as ultimas deram certo, pede uma
  * agora, ou baixa uma para guardar fora (pendrive).
  */
 const dois = (n: number) => String(n).padStart(2, '0')

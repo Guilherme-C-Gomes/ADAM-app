@@ -2,8 +2,8 @@
 /**
  * ADAM · copia de seguranca (e o "despertador" do Supabase).
  *
- * Roda 3 vezes por dia, agendada na Vercel (vercel.json > crons), e quando o
- * ADM toca em "Fazer copia agora" no app. Cada vez:
+ * Roda 3 vezes por dia, agendada na Vercel (vercel.json > crons), e quando a
+ * conta de suporte (suporte.ti) toca em "Fazer copia agora" no app. Cada vez:
  *
  * 0. o despertador: uma consulta pequena com a chave publica, antes de tudo
  *    e sem depender das outras variaveis — mesmo com a copia por configurar
@@ -108,10 +108,13 @@ function cliente() {
 }
 type Admin = ReturnType<typeof cliente>
 
-const NEGADO = 'Só o agendamento ou a coordenação (ADM).'
+const NEGADO = 'Só o agendamento ou a conta de suporte (suporte.ti).'
+
+/** So esta conta pede copia pelo app (src/data/backup.ts tem a mesma). */
+const RESPONSAVEL_BACKUP = 'suporte.ti@adam.ong.br'
 
 /**
- * Agendamento da Vercel (senha do cron) ou ADM logado (token da sessao).
+ * Agendamento da Vercel (senha do cron) ou a conta de suporte logada (token da sessao).
  * Quando recusa um login, diz por que — e o erro de configuracao aparece
  * como tal, nao como "voce nao e ADM".
  */
@@ -141,7 +144,8 @@ async function quemPede(
     return {
       erro: 'A SUPABASE_SECRET_KEY na Vercel não lê o banco: confira se é a chave secreta (sb_secret_) deste projeto.',
     }
-  return perfil.ativo && perfil.permissao === 'acesso_total'
+  const eOSuporte = (data.user.email ?? '').toLowerCase() === RESPONSAVEL_BACKUP
+  return eOSuporte && perfil.ativo && perfil.permissao === 'acesso_total'
     ? { origem: 'manual' }
     : { erro: NEGADO }
 }

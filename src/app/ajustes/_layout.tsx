@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router'
 
 import { GuardaSessao } from '@/components/guarda-sessao'
+import { cuidaDoBackup } from '@/data/backup'
 import { usePerfil } from '@/data/perfis'
 import { color } from '@/theme/tokens'
 
@@ -13,6 +14,8 @@ import { color } from '@/theme/tokens'
  *   falso as rotas deixam de existir — quem digitar /ajustes no navegador
  *   cai em Minha conta. O banco recusa as mudancas de qualquer forma; aqui
  *   e para ninguem ver uma tela que nao e dele.
+ * - Copia de seguranca (backup): so da conta de suporte (suporte.ti); nem os
+ *   outros ADMs a veem, e o servidor tambem confere.
  */
 export default function AjustesLayout() {
   return (
@@ -23,7 +26,7 @@ export default function AjustesLayout() {
 }
 
 function Rotas() {
-  const { administra } = usePerfil()
+  const { administra, pessoa } = usePerfil()
   return (
     <Stack
       screenOptions={{
@@ -39,6 +42,8 @@ function Rotas() {
         <Stack.Screen name="usuarios" />
         <Stack.Screen name="novo-usuario" />
         <Stack.Screen name="usuario/[id]" />
+      </Stack.Protected>
+      <Stack.Protected guard={administra && cuidaDoBackup(pessoa.email)}>
         <Stack.Screen name="backup" />
       </Stack.Protected>
     </Stack>

@@ -9,13 +9,23 @@ import { URL_SITE } from '@/lib/site'
 import { supabase } from '@/lib/supabase'
 
 /**
- * Copias de seguranca (so o ADM). A automatica roda 3 vezes por dia na
+ * Copias de seguranca (so a conta de suporte). A automatica roda 3 vezes por dia na
  * Vercel (api/backup.ts) e vai para a pasta do Google Drive da ADAM; cada
  * uma deixa uma linha na tabela `backups`, que esta tela mostra.
  *
  * Alem dela, o ADM pode pedir uma agora, ou baixar uma copia dos dados para
  * o proprio aparelho (para guardar num pendrive antes das ferias).
  */
+
+/**
+ * So a conta de suporte da ADAM ve a tela de copias e pede copia (pedido da
+ * coordenacao em 15/10/2026); os outros ADMs nem veem a linha. O servidor
+ * confere de novo (api/backup.ts). Pelo e-mail, que e unico no Supabase.
+ */
+export const RESPONSAVEL_BACKUP = 'suporte.ti@adam.ong.br'
+
+export const cuidaDoBackup = (email: string | null | undefined) =>
+  (email ?? '').trim().toLowerCase() === RESPONSAVEL_BACKUP
 
 export type RegistroBackup = {
   id: number

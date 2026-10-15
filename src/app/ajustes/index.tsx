@@ -2,8 +2,9 @@ import { router, useFocusEffect } from 'expo-router'
 import { useCallback } from 'react'
 
 import { Bloco, Grupo, Linha, Rotulo, TelaForm } from '@/components/ui/form'
-import { useBackups } from '@/data/backup'
+import { cuidaDoBackup, useBackups } from '@/data/backup'
 import { useUnidades } from '@/data/chamada'
+import { usePerfil } from '@/data/perfis'
 import { useUsuarios } from '@/data/usuarios'
 
 /**
@@ -14,6 +15,8 @@ import { useUsuarios } from '@/data/usuarios'
 export default function ConfiguracaoDaAdam() {
   const unidades = useUnidades()
   const equipe = useUsuarios()
+  const { pessoa } = usePerfil()
+  const veCopias = cuidaDoBackup(pessoa.email)
   const copias = useBackups()
   const ultimaBoa = copias.lista.find((b) => b.ok)
   const ultimaFalhou = copias.lista[0] ? !copias.lista[0].ok : false
@@ -53,24 +56,26 @@ export default function ConfiguracaoDaAdam() {
         </Grupo>
       </Bloco>
 
-      <Bloco ordem={1}>
-        <Rotulo>Proteção dos dados</Rotulo>
-        <Grupo>
-          <Linha
-            titulo="Cópia de segurança"
-            legenda={
-              copias.carregando
-                ? '…'
-                : ultimaBoa
-                  ? `Automática no Drive · última boa: ${new Date(ultimaBoa.feitoEm).getDate()}/${new Date(ultimaBoa.feitoEm).getMonth() + 1}`
-                  : 'Automática no Drive, 3 vezes por dia'
-            }
-            legendaTom={ultimaFalhou ? 'ambar' : undefined}
-            selo={ultimaFalhou ? { rotulo: 'última falhou', tom: 'ambar' } : undefined}
-            onPress={() => router.push('/ajustes/backup')}
-          />
-        </Grupo>
-      </Bloco>
+      {veCopias ? (
+        <Bloco ordem={1}>
+          <Rotulo>Proteção dos dados</Rotulo>
+          <Grupo>
+            <Linha
+              titulo="Cópia de segurança"
+              legenda={
+                copias.carregando
+                  ? '…'
+                  : ultimaBoa
+                    ? `Automática no Drive · última boa: ${new Date(ultimaBoa.feitoEm).getDate()}/${new Date(ultimaBoa.feitoEm).getMonth() + 1}`
+                    : 'Automática no Drive, 3 vezes por dia'
+              }
+              legendaTom={ultimaFalhou ? 'ambar' : undefined}
+              selo={ultimaFalhou ? { rotulo: 'última falhou', tom: 'ambar' } : undefined}
+              onPress={() => router.push('/ajustes/backup')}
+            />
+          </Grupo>
+        </Bloco>
+      ) : null}
     </TelaForm>
   )
 }
