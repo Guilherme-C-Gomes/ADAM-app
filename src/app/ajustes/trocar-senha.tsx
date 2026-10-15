@@ -49,7 +49,8 @@ export default function TrocarSenha() {
       <TelaForm
         titulo="Trocar senha"
         subtitulo="Pronto"
-        rodape={<Botao rotulo="Voltar para a conta" onPress={() => voltar()} />}>
+        voltarPara="/ajustes/conta"
+        rodape={<Botao rotulo="Voltar para a conta" onPress={() => voltar('/ajustes/conta')} />}>
         <Aviso titulo="Senha trocada" texto="Da próxima vez que entrar, use a senha nova." />
       </TelaForm>
     )
@@ -59,6 +60,7 @@ export default function TrocarSenha() {
     <TelaForm
       titulo="Trocar senha"
       subtitulo="A nova vale a partir de agora"
+      voltarPara="/ajustes/conta"
       rodape={
         <Botao
           rotulo={salvando ? 'Salvando…' : 'Salvar senha nova'}

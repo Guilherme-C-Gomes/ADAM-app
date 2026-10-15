@@ -92,27 +92,58 @@ async function despertar() {
 
 function cliente() {
   const url = urlDoBanco()
-  const chave = process.env.SUPABASE_SECRET_KEY
+  const chave = process.env.SUPABASE_SECRET_KEY?.trim()
   if (!url || !chave) throw new Error('Falta SUPABASE_URL ou SUPABASE_SECRET_KEY na Vercel.')
+  // a publicavel no lugar da secreta passa no login mas o RLS esconde o
+  // perfil — o ADM leva um "so a coordenacao" sem saber por que
+  if (chave.startsWith('sb_publishable_'))
+    throw new Error(
+      'A SUPABASE_SECRET_KEY na Vercel está com a chave pública (sb_publishable_). Troque pela secreta (sb_secret_).',
+    )
+  if (!chave.startsWith('sb_secret_') && !chave.startsWith('eyJ'))
+    throw new Error(
+      'A SUPABASE_SECRET_KEY na Vercel não é uma chave secreta (precisa começar com sb_secret_).',
+    )
   return createClient(url, chave, { auth: { persistSession: false, autoRefreshToken: false } })
 }
 type Admin = ReturnType<typeof cliente>
 
-/** Agendamento da Vercel (senha do cron) ou ADM logado (token da sessao). */
-async function quemPede(request: Request, admin: Admin): Promise<'agendado' | 'manual' | null> {
+const NEGADO = 'Só o agendamento ou a coordenação (ADM).'
+
+/**
+ * Agendamento da Vercel (senha do cron) ou ADM logado (token da sessao).
+ * Quando recusa um login, diz por que — e o erro de configuracao aparece
+ * como tal, nao como "voce nao e ADM".
+ */
+async function quemPede(
+  request: Request,
+  admin: Admin,
+): Promise<{ origem: 'agendado' | 'manual' } | { erro: string }> {
   const auth = request.headers.get('authorization') ?? ''
   const segredo = process.env.CRON_SECRET
-  if (segredo && auth === `Bearer ${segredo}`) return 'agendado'
+  if (segredo && auth === `Bearer ${segredo}`) return { origem: 'agendado' }
   const token = auth.replace(/^Bearer\s+/i, '')
-  if (!token) return null
-  const { data } = await admin.auth.getUser(token)
-  if (!data.user) return null
-  const { data: perfil } = await admin
+  if (!token) return { erro: NEGADO }
+  const { data, error } = await admin.auth.getUser(token)
+  if (!data.user) {
+    if (error && /api ?key/i.test(error.message))
+      return { erro: 'A SUPABASE_SECRET_KEY na Vercel não vale para este projeto do Supabase.' }
+    return { erro: 'Sua sessão não foi reconhecida. Saia e entre de novo no app.' }
+  }
+  const { data: perfil, error: erroPerfil } = await admin
     .from('usuarios')
     .select('permissao, ativo')
     .eq('id', data.user.id)
     .maybeSingle()
-  return perfil?.ativo && perfil.permissao === 'acesso_total' ? 'manual' : null
+  // com a chave secreta o perfil sempre aparece (ela passa pelo RLS); sem
+  // perfil, a chave cadastrada nao e a secreta deste projeto
+  if (erroPerfil || !perfil)
+    return {
+      erro: 'A SUPABASE_SECRET_KEY na Vercel não lê o banco: confira se é a chave secreta (sb_secret_) deste projeto.',
+    }
+  return perfil.ativo && perfil.permissao === 'acesso_total'
+    ? { origem: 'manual' }
+    : { erro: NEGADO }
 }
 
 const tabelaAusente = (e: unknown) => {
@@ -222,9 +253,9 @@ async function copiar(request: Request) {
     return json({ ok: false, acordou, erro: (e as Error).message }, 500)
   }
 
-  const origem = await quemPede(request, admin)
-  if (!origem)
-    return json({ ok: false, acordou, erro: 'Só o agendamento ou a coordenação (ADM).' }, 401)
+  const pedido = await quemPede(request, admin)
+  if ('erro' in pedido) return json({ ok: false, acordou, erro: pedido.erro }, 401)
+  const { origem } = pedido
 
   const registro = {
     origem,

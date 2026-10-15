@@ -10,6 +10,10 @@ import { Platform } from 'react-native'
  * Sem historico, vai para `destino` ou, sem destino, para o comeco do setor
  * da tela atual ("/ajustes/novo-usuario" -> "/ajustes"). Todo "voltar" do
  * app passa por aqui, nunca pelo `router.back()` direto.
+ *
+ * Minha conta volta para o inicio ("/"): sem isso, o comeco de "ajustes" era
+ * a Configuracao da ADAM, que volta para Minha conta — e o ADM ficava indo e
+ * voltando entre as duas. Se o destino for a propria tela, tambem vai ao inicio.
  */
 export function voltar(destino?: Href) {
   if (router.canGoBack()) {
@@ -19,5 +23,7 @@ export function voltar(destino?: Href) {
   const caminho =
     Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.pathname : ''
   const setor = caminho.split('/').filter(Boolean)[0]
-  router.replace(destino ?? ((setor ? `/${setor}` : '/') as Href))
+  const alvo = destino ?? ((setor ? `/${setor}` : '/') as Href)
+  const mesmaTela = typeof alvo === 'string' && caminho !== '' && alvo === caminho
+  router.replace(mesmaTela ? '/' : alvo)
 }

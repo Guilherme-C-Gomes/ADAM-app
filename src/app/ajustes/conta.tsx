@@ -43,7 +43,7 @@ export default function MinhaConta() {
   }
 
   return (
-    <TelaForm titulo="Minha conta" subtitulo={pessoa.email}>
+    <TelaForm titulo="Minha conta" subtitulo={pessoa.email} voltarPara="/">
       <Bloco>
         <Pressable
           onPress={() => router.push('/ajustes/foto')}
