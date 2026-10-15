@@ -8,7 +8,10 @@
     "scheme": "adam",
     "userInterfaceStyle": "dark",
     "ios": {
-      "bundleIdentifier": "br.ong.adam.app"
+      "bundleIdentifier": "br.ong.adam.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "br.ong.adam.app",
@@ -32,6 +35,14 @@
           "backgroundColor": "#0A0A12",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 120
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O ADAM usa as suas fotos para colocar a foto do seu perfil, a foto da criança na ficha e os documentos entregues.",
+          "cameraPermission": "O ADAM usa a câmera para tirar a foto do seu perfil, a foto da criança na ficha e fotografar os documentos entregues.",
+          "microphonePermission": false
         }
       ],
       "expo-sharing",
