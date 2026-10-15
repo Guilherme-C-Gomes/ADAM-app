@@ -61,6 +61,12 @@
         "projectId": "ab11c914-beab-4d88-b530-ab75ae9f5465"
       }
     },
-    "owner": "tay4ang"
+    "owner": "tay4ang",
+    "updates": {
+      "url": "https://u.expo.dev/ab11c914-beab-4d88-b530-ab75ae9f5465"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
