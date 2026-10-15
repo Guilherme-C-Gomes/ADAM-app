@@ -8,7 +8,7 @@
  * 0. o despertador: uma consulta pequena com a chave publica, antes de tudo
  *    e sem depender das outras variaveis — mesmo com a copia por configurar
  *    ou o Drive fora do ar, o Supabase gratuito ve uso e nao pausa (ele pausa
- *    depois de 7 dias parado, como aconteceu de 08 a 15/10/2026);
+ *    depois de uns dias parado, como aconteceu em 13/10/2026);
  * 1. le TODAS as tabelas do banco, pagina por pagina;
  * 2. manda a copia completa (um .json) para a pasta do Google Drive da ADAM,
  *    pelo Apps Script em backup/apps-script.gs;
