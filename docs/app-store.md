@@ -63,7 +63,9 @@ chamada,frequência,presença,ONG,projeto social,futebol,treino,escala,secretari
 | Copyright | 2026 Associação Desportiva Apoio ao Menor - ADAM |
 | Build | escolher o build que eu enviar (aparece aqui uns 15 min depois do envio) |
 
-**Capturas de tela:** eu gero as do iPhone 6,9" (1320 × 2868) e mando.
+**Capturas de tela:** os 5 arquivos de `docs/loja/ios/` (1290 × 2796), na
+ordem do nome, no espaço **iPhone 6,9"**: chamada, jogo, secretaria, estudo e
+minha conta.
 
 ## 4. Informações para a revisão da Apple
 
