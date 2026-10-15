@@ -54,6 +54,13 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "backgroundColor": "#0A0A12"
+    "backgroundColor": "#0A0A12",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ab11c914-beab-4d88-b530-ab75ae9f5465"
+      }
+    },
+    "owner": "tay4ang"
   }
 }
