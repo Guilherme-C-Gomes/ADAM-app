@@ -43,8 +43,9 @@ Variables**, crie para **Production**:
 | `CRON_SECRET` | a senha do passo 1 |
 | `BACKUP_DRIVE_URL` | o URL do passo 2 |
 
-(`SUPABASE_URL` já está lá.) Depois disso o site precisa ser publicado de
-novo para a função enxergar as variáveis.
+(`SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` já estão lá: são as do
+despertador, que funciona mesmo antes destas três.) Depois disso o site
+precisa ser publicado de novo para a função enxergar as variáveis.
 
 ### 4. Conferir
 

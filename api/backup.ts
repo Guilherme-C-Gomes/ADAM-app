@@ -5,8 +5,11 @@
  * Roda 3 vezes por dia, agendada na Vercel (vercel.json > crons), e quando o
  * ADM toca em "Fazer copia agora" no app. Cada vez:
  *
- * 1. le TODAS as tabelas do banco, pagina por pagina — isso ja conta como
- *    uso, entao o Supabase gratuito nunca fica 7 dias parado, nem nas ferias;
+ * 0. o despertador: uma consulta pequena com a chave publica, antes de tudo
+ *    e sem depender das outras variaveis — mesmo com a copia por configurar
+ *    ou o Drive fora do ar, o Supabase gratuito ve uso e nao pausa (ele pausa
+ *    depois de 7 dias parado, como aconteceu de 08 a 15/10/2026);
+ * 1. le TODAS as tabelas do banco, pagina por pagina;
  * 2. manda a copia completa (um .json) para a pasta do Google Drive da ADAM,
  *    pelo Apps Script em backup/apps-script.gs;
  * 3. manda as fotos e documentos que ainda nao estao no Drive (aos poucos,
@@ -15,6 +18,8 @@
  *
  * Variaveis na Vercel (Settings > Environment Variables), nunca no codigo:
  * - SUPABASE_URL           endereco do projeto do ADAM
+ * - SUPABASE_PUBLISHABLE_KEY  a chave publica do app (sb_publishable_...): so
+ *                          o despertador usa
  * - SUPABASE_SECRET_KEY    chave secreta (sb_secret_...): le tudo, passa o RLS
  * - CRON_SECRET            senha longa; a Vercel manda no agendamento, e o
  *                          Apps Script confere a mesma
@@ -67,8 +72,26 @@ const json = (corpo: unknown, status = 200) =>
     headers: { ...CORS, 'Content-Type': 'application/json' },
   })
 
+const urlDoBanco = () => process.env.SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL
+
+/** Uma leitura pequena: conta como uso para o Supabase. true se ele respondeu. */
+async function despertar() {
+  const url = urlDoBanco()
+  const chave = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_SECRET_KEY
+  if (!url || !chave) return false
+  try {
+    const resposta = await fetch(`${url}/rest/v1/unidades?select=id&limit=1`, {
+      headers: { apikey: chave },
+      signal: AbortSignal.timeout(15000),
+    })
+    return resposta.ok
+  } catch {
+    return false
+  }
+}
+
 function cliente() {
-  const url = process.env.SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL
+  const url = urlDoBanco()
   const chave = process.env.SUPABASE_SECRET_KEY
   if (!url || !chave) throw new Error('Falta SUPABASE_URL ou SUPABASE_SECRET_KEY na Vercel.')
   return createClient(url, chave, { auth: { persistSession: false, autoRefreshToken: false } })
@@ -189,15 +212,19 @@ function carimbo() {
 }
 
 async function copiar(request: Request) {
+  // 0. o despertador vem antes de qualquer conferencia
+  const acordou = await despertar()
+
   let admin: Admin
   try {
     admin = cliente()
   } catch (e) {
-    return json({ ok: false, erro: (e as Error).message }, 500)
+    return json({ ok: false, acordou, erro: (e as Error).message }, 500)
   }
 
   const origem = await quemPede(request, admin)
-  if (!origem) return json({ ok: false, erro: 'Só o agendamento ou a coordenação (ADM).' }, 401)
+  if (!origem)
+    return json({ ok: false, acordou, erro: 'Só o agendamento ou a coordenação (ADM).' }, 401)
 
   const registro = {
     origem,
@@ -280,7 +307,7 @@ async function copiar(request: Request) {
       () => undefined,
     )
 
-  return json(registro, registro.ok ? 200 : 500)
+  return json({ ...registro, acordou }, registro.ok ? 200 : 500)
 }
 
 export function OPTIONS() {
