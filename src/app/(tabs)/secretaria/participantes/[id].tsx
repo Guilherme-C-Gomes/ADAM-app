@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Card, Contador } from '@/components/ui'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
-import { Aviso, Botao } from '@/components/ui/form'
+import { Aviso, Botao, Entrada, Link } from '@/components/ui/form'
 import { mostrarRecado } from '@/components/ui/recado'
 import { Esqueleto, SkeletonCard } from '@/components/ui/skeleton'
 import { HeroPerfil } from '@/components/ui/setor'
@@ -14,8 +14,14 @@ import {
   DOCUMENTOS,
   emQueda,
   excluirFicha,
+  hojeISO,
   LIMITE_BAIXA_FREQUENCIA,
+  marcarSaida,
+  paraBR,
+  paraISO,
+  reativarFicha,
   useParticipantes,
+  type Participante,
 } from '@/data/fichas'
 import { usePerfil } from '@/data/perfis'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
@@ -190,6 +196,10 @@ export default function PerfilParticipante() {
           </Card>
         </Animated.View>
 
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(100)}>
+          <Saida key={`${p.id}-${p.ativa}`} p={p} aoMudar={recarregar} />
+        </Animated.View>
+
         {perfil === 'adm' ? (
           <Animated.View
             entering={FadeInDown.duration(motion.medium).delay(120)}
@@ -224,6 +234,110 @@ export default function PerfilParticipante() {
         ) : null}
       </ScrollView>
     </SafeAreaView>
+  )
+}
+
+/** "05092026" vira "05/09/2026". */
+function mascaraData(texto: string) {
+  const d = texto.replace(/\D/g, '').slice(0, 8)
+  if (d.length <= 2) return d
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`
+}
+
+/**
+ * Saida da ADAM (ADM e Secretaria). A ficha nao some: fica inativa, com a
+ * data e o motivo, e sai da chamada, da convocacao e do emprestimo. O
+ * historico continua contando no periodo em que a crianca estava.
+ */
+function Saida({ p, aoMudar }: { p: Participante; aoMudar: () => void }) {
+  const [aberto, setAberto] = useState(false)
+  const [data, setData] = useState(paraBR(hojeISO()))
+  const [motivo, setMotivo] = useState('')
+  const [salvando, setSalvando] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
+  const dataISO = paraISO(data)
+
+  const executar = async (acao: () => Promise<void>, recado: string) => {
+    setErro(null)
+    setSalvando(true)
+    try {
+      await acao()
+      mostrarRecado(recado)
+      aoMudar()
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível salvar.')
+      setSalvando(false)
+    }
+  }
+
+  if (!p.ativa) {
+    return (
+      <View style={st.excluir}>
+        <Aviso
+          tom="ambar"
+          titulo={p.saiuEm ? `Saiu da ADAM em ${paraBR(p.saiuEm)}` : 'Ficha inativa'}
+          texto={p.motivoSaida ?? 'Sem motivo anotado.'}
+        />
+        {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
+        <Botao
+          rotulo={salvando ? 'Salvando…' : 'Voltou para a ADAM'}
+          variante="secundario"
+          desabilitado={salvando}
+          onPress={() =>
+            executar(() => reativarFicha(p.id), `${p.nome.split(' ')[0]} voltou para a ADAM`)
+          }
+        />
+      </View>
+    )
+  }
+
+  if (!aberto) {
+    return (
+      <View style={st.excluir}>
+        <Botao
+          rotulo="Marcar que saiu da ADAM"
+          variante="secundario"
+          onPress={() => setAberto(true)}
+        />
+      </View>
+    )
+  }
+
+  return (
+    <View style={st.excluir}>
+      <Entrada
+        rotulo="Saiu em"
+        value={data}
+        onChangeText={(t) => setData(mascaraData(t))}
+        placeholder="DD/MM/AAAA"
+        keyboardType="number-pad"
+        maxLength={10}
+      />
+      <Entrada
+        rotulo="Motivo (opcional)"
+        value={motivo}
+        onChangeText={setMotivo}
+        placeholder="Ex.: mudou de cidade"
+      />
+      {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
+      <Botao
+        rotulo={salvando ? 'Salvando…' : 'Confirmar saída'}
+        desabilitado={!dataISO || dataISO > hojeISO() || salvando}
+        onPress={() =>
+          dataISO &&
+          executar(
+            () => marcarSaida(p.id, dataISO, motivo),
+            `Saída de ${p.nome.split(' ')[0]} registrada`,
+          )
+        }
+      />
+      <Link centro rotulo="Cancelar" onPress={() => setAberto(false)} />
+      <Aviso
+        titulo="A ficha não é apagada"
+        texto="Ela sai da chamada e das listas, mas as presenças e os empréstimos continuam no histórico. Se a criança voltar, é só reativar."
+      />
+    </View>
   )
 }
 

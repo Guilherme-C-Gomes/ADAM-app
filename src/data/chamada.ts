@@ -1,4 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useCallback, useEffect, useState } from 'react'
+import { Platform } from 'react-native'
 
 import { iniciaisDe } from '@/data/jogo'
 import { supabase } from '@/lib/supabase'
@@ -56,9 +58,7 @@ export function horaDe(iso: string | null) {
 
 /** "você e Rafael", a partir dos ids. */
 export function juntos(ids: string[], eu: string | null, equipe: Record<string, Pessoa>) {
-  return ids
-    .map((id) => (id === eu ? 'você' : (equipe[id]?.nome.split(' ')[0] ?? '…')))
-    .join(' e ')
+  return ids.map((id) => (id === eu ? 'você' : (equipe[id]?.nome.split(' ')[0] ?? '…'))).join(' e ')
 }
 
 // ─── leitura ──────────────────────────────────────────────────────────
@@ -76,9 +76,20 @@ async function lerChamadas(filtro: { ids?: string[]; data?: string; unidade?: st
 
   const ids = base.map((c) => c.id)
   const [participantes, marcas, correcoes] = await Promise.all([
-    supabase.from('chamada_participantes').select('chamada_id, usuario_id, entrou_em').in('chamada_id', ids).order('entrou_em'),
-    supabase.from('chamada_marcas').select('chamada_id, crianca_id, marcado_por').in('chamada_id', ids),
-    supabase.from('chamada_correcoes').select('chamada_id, corrigida_por, corrigida_em').in('chamada_id', ids).order('corrigida_em'),
+    supabase
+      .from('chamada_participantes')
+      .select('chamada_id, usuario_id, entrou_em')
+      .in('chamada_id', ids)
+      .order('entrou_em'),
+    supabase
+      .from('chamada_marcas')
+      .select('chamada_id, crianca_id, marcado_por')
+      .in('chamada_id', ids),
+    supabase
+      .from('chamada_correcoes')
+      .select('chamada_id, corrigida_por, corrigida_em')
+      .in('chamada_id', ids)
+      .order('corrigida_em'),
   ])
   for (const r of [participantes, marcas, correcoes]) if (r.error) throw r.error
 
@@ -86,9 +97,13 @@ async function lerChamadas(filtro: { ids?: string[]; data?: string; unidade?: st
     ...c,
     turma: c.turma as Turma,
     estado: c.estado as Chamada['estado'],
-    participantes: (participantes.data ?? []).filter((p) => p.chamada_id === c.id).map((p) => p.usuario_id),
+    participantes: (participantes.data ?? [])
+      .filter((p) => p.chamada_id === c.id)
+      .map((p) => p.usuario_id),
     marcas: Object.fromEntries(
-      (marcas.data ?? []).filter((m) => m.chamada_id === c.id).map((m) => [m.crianca_id, m.marcado_por]),
+      (marcas.data ?? [])
+        .filter((m) => m.chamada_id === c.id)
+        .map((m) => [m.crianca_id, m.marcado_por]),
     ),
     correcoes: (correcoes.data ?? [])
       .filter((r) => r.chamada_id === c.id)
@@ -101,7 +116,11 @@ async function lerChamadas(filtro: { ids?: string[]; data?: string; unidade?: st
  * exclusoes so chegam filtradas porque `chamada_marcas` tem replica
  * identity full (ver a migracao).
  */
-function acompanhar(nome: string, filtros: { tabela: string; filtro?: string }[], aoMudar: () => void) {
+function acompanhar(
+  nome: string,
+  filtros: { tabela: string; filtro?: string }[],
+  aoMudar: () => void,
+) {
   let canal = supabase.channel(`${nome}-${Math.random().toString(36).slice(2)}`)
   for (const { tabela, filtro } of filtros) {
     canal = canal.on(
@@ -118,6 +137,31 @@ function acompanhar(nome: string, filtros: { tabela: string; filtro?: string }[]
 
 type Estado<T> = { dados: T; carregando: boolean; erro: string | null }
 
+// ─── o que a chamada precisa ter no celular sem internet ─────────────
+// Unidades, criancas (nome, idade, turma) e nomes da equipe ficam guardados
+// a cada vez que chegam do banco; sem conexao, a tela usa o que guardou e a
+// chamada continua (data/chamada-offline.ts).
+
+const podeGuardar = Platform.OS !== 'web' || typeof window !== 'undefined'
+
+function lembrar(chave: string, valor: unknown) {
+  if (!podeGuardar) return
+  AsyncStorage.setItem(`adam.guardado.${chave}`, JSON.stringify(valor)).catch(() => {})
+}
+
+async function lembrado<T>(chave: string): Promise<T | null> {
+  if (!podeGuardar) return null
+  try {
+    const texto = await AsyncStorage.getItem(`adam.guardado.${chave}`)
+    return texto ? (JSON.parse(texto) as T) : null
+  } catch {
+    return null
+  }
+}
+
+/** Chamada que so existe no celular (feita sem sinal) — nao se busca no banco. */
+const soNoCelular = (id: string) => id.startsWith('local-')
+
 /** A equipe (para mostrar quem marcou). Ativos leem os nomes da equipe. */
 export function useEquipe() {
   const [equipe, setEquipe] = useState<Record<string, Pessoa>>({})
@@ -126,9 +170,18 @@ export function useEquipe() {
     supabase
       .from('usuarios')
       .select('id, nome')
-      .then(({ data }) => {
-        if (!ativo || !data) return
-        setEquipe(Object.fromEntries(data.map((u) => [u.id, { nome: u.nome, iniciais: iniciaisDe(u.nome) }])))
+      .then(async ({ data }) => {
+        if (!ativo) return
+        if (data) {
+          const equipe = Object.fromEntries(
+            data.map((u) => [u.id, { nome: u.nome, iniciais: iniciaisDe(u.nome) }]),
+          )
+          lembrar('equipe', equipe)
+          setEquipe(equipe)
+          return
+        }
+        const guardada = await lembrado<Record<string, Pessoa>>('equipe')
+        if (ativo && guardada) setEquipe(guardada)
       })
     return () => {
       ativo = false
@@ -138,16 +191,31 @@ export function useEquipe() {
 }
 
 export function useUnidades() {
-  const [estado, setEstado] = useState<Estado<Unidade[]>>({ dados: [], carregando: true, erro: null })
+  const [estado, setEstado] = useState<Estado<Unidade[]>>({
+    dados: [],
+    carregando: true,
+    erro: null,
+  })
   useEffect(() => {
     let ativo = true
     supabase
       .from('unidades')
       .select('id, nome')
       .order('nome')
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (!ativo) return
-        setEstado({ dados: data ?? [], carregando: false, erro: error ? 'Não foi possível carregar as unidades.' : null })
+        if (!error) {
+          lembrar('unidades', data ?? [])
+          setEstado({ dados: data ?? [], carregando: false, erro: null })
+          return
+        }
+        const guardadas = await lembrado<Unidade[]>('unidades')
+        if (!ativo) return
+        setEstado(
+          guardadas
+            ? { dados: guardadas, carregando: false, erro: null }
+            : { dados: [], carregando: false, erro: 'Não foi possível carregar as unidades.' },
+        )
       })
     return () => {
       ativo = false
@@ -161,16 +229,28 @@ export function useUnidades() {
  * que treinador e professor podem ver (a ficha inteira eles nao leem).
  */
 export function useCriancas() {
-  const [estado, setEstado] = useState<Estado<Crianca[]>>({ dados: [], carregando: true, erro: null })
+  const [estado, setEstado] = useState<Estado<Crianca[]>>({
+    dados: [],
+    carregando: true,
+    erro: null,
+  })
   useEffect(() => {
     let ativo = true
-    supabase.rpc('criancas_basico').then(({ data, error }) => {
+    supabase.rpc('criancas_basico').then(async ({ data, error }) => {
       if (!ativo) return
-      setEstado({
-        dados: (data ?? []).map((c: Crianca) => ({ ...c, turma: c.turma as Turma })),
-        carregando: false,
-        erro: error ? 'Não foi possível carregar as crianças.' : null,
-      })
+      if (!error) {
+        const dados = (data ?? []).map((c: Crianca) => ({ ...c, turma: c.turma as Turma }))
+        lembrar('criancas', dados)
+        setEstado({ dados, carregando: false, erro: null })
+        return
+      }
+      const guardadas = await lembrado<Crianca[]>('criancas')
+      if (!ativo) return
+      setEstado(
+        guardadas
+          ? { dados: guardadas, carregando: false, erro: null }
+          : { dados: [], carregando: false, erro: 'Não foi possível carregar as crianças.' },
+      )
     })
     return () => {
       ativo = false
@@ -193,7 +273,9 @@ export function useChamadasDoDia(unidadeId: string | null) {
     () =>
       lerChamadas({ data: hojeLocal(), unidade: unidadeId ?? undefined }).then(
         (lista) => ({
-          dados: Object.fromEntries(lista.map((c) => [c.turma, c])) as Partial<Record<Turma, Chamada>>,
+          dados: Object.fromEntries(lista.map((c) => [c.turma, c])) as Partial<
+            Record<Turma, Chamada>
+          >,
           carregando: false,
           erro: null,
         }),
@@ -232,12 +314,20 @@ export function useChamadasDoDia(unidadeId: string | null) {
 
 /** Uma chamada, ao vivo: as marcas de quem marca junto chegam sozinhas. */
 export function useChamada(id: string) {
-  const [estado, setEstado] = useState<Estado<Chamada | null>>({ dados: null, carregando: true, erro: null })
+  const [estado, setEstado] = useState<Estado<Chamada | null>>({
+    dados: null,
+    carregando: !soNoCelular(id),
+    erro: null,
+  })
 
   const buscar = useCallback(
     () =>
       lerChamadas({ ids: [id] }).then(
-        ([c]) => ({ dados: c ?? null, carregando: false, erro: c ? null : 'Chamada não encontrada.' }),
+        ([c]) => ({
+          dados: c ?? null,
+          carregando: false,
+          erro: c ? null : 'Chamada não encontrada.',
+        }),
         () => ({ dados: null, carregando: false, erro: 'Não foi possível carregar a chamada.' }),
       ),
     [id],
@@ -246,6 +336,7 @@ export function useChamada(id: string) {
   const recarregar = useCallback(() => buscar().then(setEstado), [buscar])
 
   useEffect(() => {
+    if (soNoCelular(id)) return
     let ativo = true
     const aplicar = () =>
       buscar().then((novo) => {
@@ -287,6 +378,7 @@ export function useAvulsos(chamadaId: string) {
   const recarregar = useCallback(() => buscar().then(setLista), [buscar])
 
   useEffect(() => {
+    if (soNoCelular(chamadaId)) return
     let ativo = true
     buscar().then((novos) => {
       if (ativo) setLista(novos)
@@ -294,7 +386,7 @@ export function useAvulsos(chamadaId: string) {
     return () => {
       ativo = false
     }
-  }, [buscar])
+  }, [buscar, chamadaId])
 
   return { lista, recarregar }
 }
@@ -312,7 +404,9 @@ export async function entrarNaChamada(unidadeId: string, turma: Turma) {
 }
 
 export async function marcar(chamadaId: string, criancaId: string) {
-  const { error } = await supabase.from('chamada_marcas').insert({ chamada_id: chamadaId, crianca_id: criancaId })
+  const { error } = await supabase
+    .from('chamada_marcas')
+    .insert({ chamada_id: chamadaId, crianca_id: criancaId })
   // marca repetida (outra pessoa marcou no mesmo instante) nao e erro
   if (error && error.code !== '23505') throw error
 }
@@ -333,7 +427,11 @@ export async function encerrar(chamadaId: string) {
 }
 
 /** Aplica a diferenca entre antes e depois e registra quem corrigiu. */
-export async function salvarCorrecao(chamadaId: string, antes: Record<string, string>, depois: Record<string, string>) {
+export async function salvarCorrecao(
+  chamadaId: string,
+  antes: Record<string, string>,
+  depois: Record<string, string>,
+) {
   const entraram = Object.keys(depois).filter((id) => !antes[id])
   const sairam = Object.keys(antes).filter((id) => !depois[id])
   for (const id of entraram) await marcar(chamadaId, id)

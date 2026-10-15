@@ -3,13 +3,25 @@ import { useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 
 import { Chip } from '@/components/ui'
-import { Aviso, Bloco, Botao, Grupo, Linha, Opcao, Rotulo, TelaForm } from '@/components/ui/form'
+import {
+  Aviso,
+  Bloco,
+  Botao,
+  Entrada,
+  Grupo,
+  Linha,
+  Link,
+  Opcao,
+  Rotulo,
+  TelaForm,
+} from '@/components/ui/form'
 import { sessao, type Funcao, type Permissao } from '@/data/perfis'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { mostrarRecado } from '@/components/ui/recado'
 import {
   atualizarUsuario,
   excluirUsuario,
+  redefinirSenha,
   FUNCOES,
   PERMISSOES,
   useUsuarios,
@@ -53,6 +65,22 @@ function FichaDoUsuario({ usuario }: { usuario: Usuario }) {
   const [permissao, setPermissao] = useState<Permissao>(usuario.permissao)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const [senhaNova, setSenhaNova] = useState('')
+  const [mostrarSenha, setMostrarSenha] = useState(false)
+
+  const trocarSenha = async () => {
+    setErro(null)
+    setSalvando(true)
+    try {
+      await redefinirSenha(usuario.id, senhaNova)
+      setSenhaNova('')
+      mostrarRecado(`Senha redefinida. Passe a nova para ${usuario.nome.split(' ')[0]}.`)
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível redefinir a senha.')
+    } finally {
+      setSalvando(false)
+    }
+  }
 
   const gravar = async (dados: Parameters<typeof atualizarUsuario>[1]) => {
     setErro(null)
@@ -161,6 +189,36 @@ function FichaDoUsuario({ usuario }: { usuario: Usuario }) {
 
       {souEu ? null : (
         <Bloco ordem={2}>
+          <Rotulo>Esqueceu a senha?</Rotulo>
+          <Entrada
+            rotulo="Senha nova"
+            value={senhaNova}
+            onChangeText={setSenhaNova}
+            placeholder="Pelo menos 8 caracteres"
+            secureTextEntry={!mostrarSenha}
+            autoCapitalize="none"
+            autoCorrect={false}
+            textContentType="newPassword"
+          />
+          <Link
+            rotulo={mostrarSenha ? 'Esconder' : 'Mostrar'}
+            onPress={() => setMostrarSenha((v) => !v)}
+          />
+          <Botao
+            rotulo={salvando ? 'Salvando…' : 'Redefinir senha'}
+            variante="secundario"
+            desabilitado={senhaNova.length < 8 || salvando}
+            onPress={trocarSenha}
+          />
+          <Aviso
+            titulo="Passe a senha nova por um canal seguro"
+            texto="A pessoa entra com ela e troca por uma só dela em Minha conta."
+          />
+        </Bloco>
+      )}
+
+      {souEu ? null : (
+        <Bloco ordem={3}>
           <Grupo>
             <Linha
               titulo={usuario.ativo ? 'Tirar o acesso' : 'Devolver o acesso'}

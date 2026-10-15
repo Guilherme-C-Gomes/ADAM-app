@@ -5,11 +5,12 @@ import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Card, Chip, Overline } from '@/components/ui'
-import { Aviso, Botao, Selo } from '@/components/ui/form'
+import { Aviso, Botao, Link, Selo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
 import { HeroSetor } from '@/components/ui/setor'
 import {
   entrarNaChamada,
+  hojeLocal,
   horaDe,
   HORARIO,
   juntos,
@@ -24,6 +25,17 @@ import {
   type Turma,
   type Unidade,
 } from '@/data/chamada'
+import {
+  chamadaLocal,
+  comAFila,
+  ehLocal,
+  enfileirar,
+  esquecerFalhas,
+  idLocal,
+  semConexao,
+  sincronizar,
+  useFilaChamada,
+} from '@/data/chamada-offline'
 import { sessao } from '@/data/perfis'
 import { color, motion, space, type } from '@/theme/tokens'
 
@@ -121,15 +133,60 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
   const chamadas = useChamadasDoDia(unidade.id)
   const criancas = useCriancas()
   const equipe = useEquipe()
+  const fila = useFilaChamada()
 
   if (chamadas.carregando || criancas.carregando) return <Carregando />
-  const erro = chamadas.erro ?? criancas.erro
-  if (erro) return <Erro texto={erro} />
+  // sem a lista de criancas (nem a guardada no celular) nao ha chamada
+  if (criancas.erro) return <Erro texto={criancas.erro} />
+  // sem conexao com o banco: segue com o que esta no celular
+  const semSinal = !!chamadas.erro
 
-  const encerradas = TURMAS.filter((t) => chamadas.dados[t]?.estado === 'encerrada').length
+  // a chamada de cada turma: a do banco com a fila por cima, ou a que so
+  // existe no celular (comecada sem sinal)
+  const deHoje = (turma: Turma): Chamada | null => {
+    const doBanco = chamadas.dados[turma]
+    if (doBanco) return comAFila(doBanco, fila.acoes, fila.resolvidas)
+    return chamadaLocal(idLocal(hojeLocal(), unidade.id, turma), fila.acoes, eu)
+  }
+  const encerradas = TURMAS.filter((t) => deHoje(t)?.estado === 'encerrada').length
 
   return (
     <>
+      {semSinal ? (
+        <Aviso
+          tom="ambar"
+          titulo="Sem internet agora"
+          texto="Dá para fazer a chamada mesmo assim: ela fica guardada no celular e sobe sozinha quando a conexão voltar."
+        />
+      ) : null}
+
+      {fila.acoes.length ? (
+        <View style={st.fila}>
+          <Aviso
+            tom="roxo"
+            titulo={`${fila.acoes.length} ${fila.acoes.length === 1 ? 'ação guardada' : 'ações guardadas'} no celular`}
+            texto={
+              fila.enviando
+                ? 'Enviando agora…'
+                : 'Sobe sozinha quando a internet voltar. Até lá, não desinstale o app.'
+            }
+          />
+          <Link
+            rotulo={fila.enviando ? 'Enviando…' : 'Enviar agora'}
+            onPress={() => {
+              sincronizar().then(() => chamadas.recarregar())
+            }}
+          />
+        </View>
+      ) : null}
+
+      {fila.falhas.length ? (
+        <View style={st.fila}>
+          <Aviso tom="ambar" titulo="Algumas ações não subiram" texto={fila.falhas.join(' · ')} />
+          <Link rotulo="Entendi" onPress={esquecerFalhas} />
+        </View>
+      ) : null}
+
       <View style={st.linhaTopo}>
         <Overline>Chamadas de hoje</Overline>
         <Text style={st.contagem}>
@@ -142,7 +199,7 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
           <CardTurma
             turma={turma}
             unidade={unidade}
-            chamada={chamadas.dados[turma] ?? null}
+            chamada={deHoje(turma)}
             total={
               criancas.dados.filter((c) => c.turma === turma && c.unidade_id === unidade.id).length
             }
@@ -195,12 +252,28 @@ function CardTurma({
     setErro(null)
     setAbrindo(true)
     try {
-      // encerrada so abre para corrigir; nas outras, abrir e entrar nela
+      // encerrada so abre para corrigir; a que so existe no celular abre
+      // direto; nas outras, abrir e entrar nela
       const id =
-        chamada?.estado === 'encerrada' ? chamada.id : await entrarNaChamada(unidade.id, turma)
+        chamada && (chamada.estado === 'encerrada' || ehLocal(chamada.id))
+          ? chamada.id
+          : await entrarNaChamada(unidade.id, turma)
       router.push({ pathname: '/chamada/turma/[id]', params: { id } })
-    } catch {
-      setErro('Não foi possível abrir a chamada. Confira a conexão.')
+    } catch (e) {
+      if (semConexao(e)) {
+        // sem sinal: a chamada comeca no celular e sobe depois
+        const id = idLocal(hojeLocal(), unidade.id, turma)
+        await enfileirar({
+          tipo: 'abrir',
+          chamada: id,
+          unidadeId: unidade.id,
+          turma,
+          data: hojeLocal(),
+        })
+        router.push({ pathname: '/chamada/turma/[id]', params: { id } })
+      } else {
+        setErro('Não foi possível abrir a chamada.')
+      }
     } finally {
       setAbrindo(false)
     }
@@ -304,6 +377,7 @@ function capitalizar(s: string) {
 }
 
 const st = StyleSheet.create({
+  fila: { gap: space.xs },
   screen: { flex: 1, backgroundColor: color.bg },
   conteudo: { padding: space.lg, gap: space.md, paddingBottom: 120 },
   centro: { padding: space.xxl, alignItems: 'center' },

@@ -165,6 +165,8 @@ export type Metricas = {
   equipe: { marcaram: number; comAcesso: number }
   /** fichas novas: crianca que entrou (campo "desde") no periodo */
   entraram: number
+  /** criancas que sairam no periodo (null = o SQL das saidas ainda nao rodou) */
+  sairam: number | null
   /** de quem tem 3 meses ou mais de ADAM, quantos vieram nos ultimos 30 dias */
   continuidade: { base: number; continuam: number; ate: string }
   /**
@@ -192,7 +194,13 @@ export type Metricas = {
 }
 
 type LinhaChamada = { id: string; data: string; turma: Turma; unidade_id: string }
-type LinhaCrianca = { id: string; unidade_id: string; desde: string; ativa: boolean }
+type LinhaCrianca = {
+  id: string
+  unidade_id: string
+  desde: string
+  ativa: boolean
+  saiu_em?: string | null
+}
 
 const dentro = (data: string, i: { inicio: string; fim: string }) =>
   data >= i.inicio && data <= i.fim
@@ -221,7 +229,8 @@ export async function lerMetricas(
       return q.order('id').range(de, ate)
     }),
     todasAsLinhas<LinhaCrianca>((de, ate) =>
-      supabase.from('criancas').select('id, unidade_id, desde, ativa').order('id').range(de, ate),
+      // `*`: inclui saiu_em quando o SQL das saidas ja rodou, sem quebrar antes
+      supabase.from('criancas').select('*').order('id').range(de, ate),
     ),
     todasAsLinhas<{ id: string; responsavel_id: string | null }>((de, ate) => {
       let q = supabase
@@ -410,6 +419,10 @@ export async function lerMetricas(
       comAcesso: equipe.count ?? 0,
     },
     entraram: daUnidade.filter((c) => dentro(c.desde, intervalo)).length,
+    sairam:
+      criancas.length && !('saiu_em' in criancas[0])
+        ? null
+        : daUnidade.filter((c) => c.saiu_em && dentro(c.saiu_em, intervalo)).length,
     continuidade: {
       base: base.length,
       continuam: base.filter((c) => vieram30.has(c.id)).length,

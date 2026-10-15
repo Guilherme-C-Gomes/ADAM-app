@@ -4,9 +4,19 @@
   "devCommand": "expo",
   "cleanUrls": true,
   "framework": null,
+  "functions": {
+    "api/backup.ts": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    { "path": "/api/backup?vez=manha", "schedule": "0 10 * * *" },
+    { "path": "/api/backup?vez=tarde", "schedule": "0 16 * * *" },
+    { "path": "/api/backup?vez=noite", "schedule": "0 0 * * *" }
+  ],
   "rewrites": [
     {
-      "source": "/:path*",
+      "source": "/((?!api/).*)",
       "destination": "/"
     }
   ]

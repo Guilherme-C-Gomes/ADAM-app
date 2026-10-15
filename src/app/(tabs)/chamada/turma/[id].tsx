@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
 
 import { Avatar, Chip } from '@/components/ui'
@@ -29,6 +29,16 @@ import {
   useEquipe,
   type Pessoa,
 } from '@/data/chamada'
+import {
+  avulsosNaFila,
+  chamadaLocal,
+  comAFila,
+  ehLocal,
+  enfileirar,
+  semConexao,
+  useFilaChamada,
+} from '@/data/chamada-offline'
+import { mostrarRecado } from '@/components/ui/recado'
 import { sessao } from '@/data/perfis'
 import { iniciaisDe } from '@/data/jogo'
 import { color, space, target, type } from '@/theme/tokens'
@@ -52,12 +62,19 @@ import { voltar } from '@/lib/navegacao'
 type Filtro = 'Todos' | 'Falta marcar'
 
 export default function ListaDaChamada() {
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { id: idDaRota } = useLocalSearchParams<{ id: string }>()
   const { usuarioId: eu } = sessao.useValor()
+  const fila = useFilaChamada()
+  // a chamada feita sem sinal que ja subiu: passa a ser a do banco
+  const id = fila.resolvidas[idDaRota] ?? idDaRota
+  useEffect(() => {
+    if (id !== idDaRota) router.replace({ pathname: '/chamada/turma/[id]', params: { id } })
+  }, [id, idDaRota])
   const chamada = useChamada(id)
   const criancas = useCriancas()
   const equipe = useEquipe()
   const avulsos = useAvulsos(id)
+  const local = ehLocal(id)
 
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState<Filtro>('Todos')
@@ -69,8 +86,14 @@ export default function ListaDaChamada() {
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
 
-  const c = chamada.dados
-  if (chamada.carregando || criancas.carregando) {
+  // a do banco com a fila por cima, ou a que so existe no celular
+  const c =
+    local && eu
+      ? chamadaLocal(id, fila.acoes, eu)
+      : chamada.dados
+        ? comAFila(chamada.dados, fila.acoes, fila.resolvidas)
+        : null
+  if ((!local && chamada.carregando) || criancas.carregando) {
     return (
       <TelaForm titulo="Chamada" subtitulo="Carregando…">
         <ActivityIndicator color={color.primaryCh} />
@@ -86,6 +109,9 @@ export default function ListaDaChamada() {
   }
 
   const corrigindo = c.estado === 'encerrada'
+  // os nomes do banco mais os que ainda estao na fila do celular
+  const nomesSemFicha =
+    avulsos.lista.length + avulsosNaFila(fila.acoes, c.id, fila.resolvidas).length
   const turma = NOME_TURMA[c.turma]
   const daTurma = criancas.dados.filter((k) => k.turma === c.turma && k.unidade_id === c.unidade_id)
 
@@ -116,13 +142,27 @@ export default function ListaDaChamada() {
       return
     }
     const estavaMarcada = !!marcas[criancaId]
+    const guardarNoCelular = () =>
+      enfileirar({
+        tipo: estavaMarcada ? 'desmarcar' : 'marcar',
+        chamada: c.id,
+        criancaId,
+        por: eu,
+      })
+    // chamada feita sem sinal: tudo vai para a fila do celular
+    if (local) {
+      await guardarNoCelular()
+      return
+    }
     setPendentes((p) => ({ ...p, [criancaId]: estavaMarcada ? null : eu }))
     try {
       if (estavaMarcada) await desmarcar(c.id, criancaId)
       else await marcar(c.id, criancaId)
       await chamada.recarregar()
-    } catch {
-      setErro('Não deu para gravar essa marca. Confira a conexão e toque de novo.')
+    } catch (e) {
+      // sem sinal: a marca fica no celular e sobe depois
+      if (semConexao(e)) await guardarNoCelular()
+      else setErro('Não deu para gravar essa marca. Toque de novo.')
     } finally {
       setPendentes((p) => {
         const resto = { ...p }
@@ -135,17 +175,31 @@ export default function ListaDaChamada() {
   const concluir = async () => {
     setErro(null)
     setSalvando(true)
+    const encerrarNoCelular = async () => {
+      await enfileirar({ tipo: 'encerrar', chamada: c.id })
+      mostrarRecado('Chamada encerrada no celular. Ela sobe quando a internet voltar.')
+      voltar()
+    }
     try {
       if (corrigindo) {
         if (rascunho) await salvarCorrecao(c.id, c.marcas, rascunho)
+      } else if (local) {
+        await encerrarNoCelular()
+        return
       } else {
         await encerrar(c.id)
       }
       voltar()
-    } catch {
+    } catch (e) {
+      if (!corrigindo && semConexao(e)) {
+        await encerrarNoCelular()
+        return
+      }
       setErro(
         corrigindo
-          ? 'Não foi possível salvar a correção. Ela só vale até o fim do dia da chamada.'
+          ? semConexao(e)
+            ? 'Correção precisa de internet. Tente de novo quando a conexão voltar.'
+            : 'Não foi possível salvar a correção. Ela só vale até o fim do dia da chamada.'
           : 'Não foi possível encerrar. Só quem está marcando pode encerrar.',
       )
     } finally {
@@ -204,7 +258,9 @@ export default function ListaDaChamada() {
                 id={k.id}
                 nome={k.nome}
                 idade={k.idade}
-                marcadoPor={marcas[k.id] ? (equipe[marcas[k.id]] ?? { nome: '', iniciais: '·' }) : null}
+                marcadoPor={
+                  marcas[k.id] ? (equipe[marcas[k.id]] ?? { nome: '', iniciais: '·' }) : null
+                }
                 onTocar={tocar}
               />
             ))
@@ -226,14 +282,16 @@ export default function ListaDaChamada() {
             titulo="Sem ficha ainda"
             legenda="Nomes digitados hoje"
             selo={
-              avulsos.lista.length
+              nomesSemFicha
                 ? {
-                    rotulo: `${avulsos.lista.length} ${avulsos.lista.length === 1 ? 'nome' : 'nomes'}`,
+                    rotulo: `${nomesSemFicha} ${nomesSemFicha === 1 ? 'nome' : 'nomes'}`,
                     tom: 'ambar',
                   }
                 : undefined
             }
-            onPress={() => router.push({ pathname: '/chamada/sem-ficha', params: { chamada: c.id } })}
+            onPress={() =>
+              router.push({ pathname: '/chamada/sem-ficha', params: { chamada: c.id } })
+            }
           />
         </Grupo>
       </Bloco>

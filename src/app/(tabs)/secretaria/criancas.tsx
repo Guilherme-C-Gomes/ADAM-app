@@ -5,16 +5,18 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { Avatar, Chip } from '@/components/ui'
 import { Aviso, Bloco, Botao, Busca, Grupo, Linha, TelaForm } from '@/components/ui/form'
 import { useUnidades } from '@/data/chamada'
-import { DOCUMENTOS, useParticipantes } from '@/data/fichas'
+import { DOCUMENTOS, paraBR, useParticipantes } from '@/data/fichas'
 import { color, space } from '@/theme/tokens'
 
 /**
  * Tela 12f. A lista de fichas pelo lado do cadastro: o que falta de
  * documento ou de responsavel aparece em ambar, nunca escondido — e o
- * toque abre a ficha.
+ * toque abre a ficha. "Saíram" mostra quem deixou a ADAM (a ficha fica, e da
+ * para reativar se a criança voltar).
  */
 export default function CriancasCadastradas() {
-  const { lista: fichas, carregando, erro, recarregar } = useParticipantes()
+  const [saidas, setSaidas] = useState(false)
+  const { lista: fichas, carregando, erro, recarregar } = useParticipantes(undefined, saidas)
   const unidades = useUnidades()
   const [busca, setBusca] = useState('')
   const [unidade, setUnidade] = useState<string>('Todos')
@@ -37,7 +39,9 @@ export default function CriancasCadastradas() {
       subtitulo={
         carregando
           ? 'Carregando as fichas…'
-          : `${fichas.length} ${fichas.length === 1 ? 'ficha' : 'fichas'} · toque para abrir`
+          : saidas
+            ? `${fichas.length} ${fichas.length === 1 ? 'criança saiu' : 'crianças saíram'} · a ficha continua`
+            : `${fichas.length} ${fichas.length === 1 ? 'ficha' : 'fichas'} · toque para abrir`
       }
       rodape={
         <Botao
@@ -52,6 +56,7 @@ export default function CriancasCadastradas() {
           {['Todos', ...unidades.dados.map((u) => u.nome)].map((u) => (
             <Chip key={u} rotulo={u} ativo={unidade === u} onPress={() => setUnidade(u)} />
           ))}
+          <Chip rotulo="Saíram" ativo={saidas} onPress={() => setSaidas((v) => !v)} />
         </View>
       </Bloco>
 
@@ -73,15 +78,21 @@ export default function CriancasCadastradas() {
                 <Linha
                   key={p.id}
                   titulo={p.nome}
-                  legenda={`${p.idade} anos · ${p.unidade}`}
+                  legenda={
+                    p.ativa
+                      ? `${p.idade} anos · ${p.unidade}`
+                      : `saiu em ${p.saiuEm ? paraBR(p.saiuEm) : '—'} · ${p.unidade}`
+                  }
                   esquerda={<Avatar iniciais={p.iniciais} size={34} foto={p.fotoUrl} />}
                   selo={
-                    pendencias
-                      ? {
-                          rotulo: `${pendencias} ${pendencias === 1 ? 'pendente' : 'pendentes'}`,
-                          tom: 'ambar',
-                        }
-                      : { rotulo: 'completa', tom: 'verde' }
+                    !p.ativa
+                      ? { rotulo: 'saiu', tom: 'neutro' }
+                      : pendencias
+                        ? {
+                            rotulo: `${pendencias} ${pendencias === 1 ? 'pendente' : 'pendentes'}`,
+                            tom: 'ambar',
+                          }
+                        : { rotulo: 'completa', tom: 'verde' }
                   }
                   onPress={() =>
                     router.push({
@@ -95,7 +106,13 @@ export default function CriancasCadastradas() {
           </Grupo>
         ) : (
           <Aviso
-            titulo={fichas.length ? 'Nenhuma ficha com esse nome' : 'Nenhuma criança cadastrada'}
+            titulo={
+              fichas.length
+                ? 'Nenhuma ficha com esse nome'
+                : saidas
+                  ? 'Ninguém saiu da ADAM'
+                  : 'Nenhuma criança cadastrada'
+            }
           />
         )}
       </Bloco>

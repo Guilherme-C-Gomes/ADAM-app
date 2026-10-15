@@ -102,6 +102,11 @@ export type Participante = {
   semanas: (boolean | null)[]
   documentosEntregues: number
   temResponsavel: boolean
+  /** false = saiu da ADAM (a ficha e o historico ficam) */
+  ativa: boolean
+  /** "AAAA-MM-DD" da saida, se saiu */
+  saiuEm: string | null
+  motivoSaida: string | null
 }
 
 const SEMANAS = 8
@@ -125,17 +130,23 @@ type LinhaCrianca = {
   unidades: { nome: string } | null
   documentos: { tipo: string }[]
   responsaveis: { id: string }[]
+  ativa: boolean
+  saiu_em?: string | null
+  motivo_saida?: string | null
 }
 
-async function lerParticipantes(id?: string): Promise<Participante[]> {
+/**
+ * As fichas. Sem `id`: as ativas (ou, com `saidas`, so as de quem saiu).
+ * Com `id`: aquela, ativa ou nao — o perfil de quem saiu continua abrindo.
+ * `*` le a linha inteira, inclusive colunas que um SQL novo acrescenta
+ * (saiu_em), sem quebrar enquanto ele nao roda.
+ */
+async function lerParticipantes(id?: string, saidas = false): Promise<Participante[]> {
   const criancas = (await todasAsLinhas((de, ate) => {
     let consulta = supabase
       .from('criancas')
-      .select(
-        'id, nome, nascimento, unidade_id, posicao, foto_path, observacao, desde, unidades(nome), documentos(tipo), responsaveis(id)',
-      )
-      .eq('ativa', true)
-    if (id) consulta = consulta.eq('id', id)
+      .select('*, unidades(nome), documentos(tipo), responsaveis(id)')
+    consulta = id ? consulta.eq('id', id) : consulta.eq('ativa', !saidas)
     return consulta.order('nome').order('id').range(de, ate)
   })) as unknown as LinhaCrianca[]
 
@@ -222,6 +233,9 @@ async function lerParticipantes(id?: string): Promise<Participante[]> {
       semanas,
       documentosEntregues: new Set(c.documentos.map((d) => d.tipo)).size,
       temResponsavel: c.responsaveis.length > 0,
+      ativa: c.ativa,
+      saiuEm: c.saiu_em ?? null,
+      motivoSaida: c.motivo_saida ?? null,
     }
   })
 }
@@ -243,7 +257,7 @@ const horaAgora = () => {
  * As criancas ativas com frequencia, para as listas da Secretaria. Com
  * `id`, so aquela crianca (o perfil).
  */
-export function useParticipantes(id?: string) {
+export function useParticipantes(id?: string, saidas = false) {
   const [estado, setEstado] = useState<EstadoParticipantes>({
     lista: [],
     carregando: true,
@@ -253,7 +267,7 @@ export function useParticipantes(id?: string) {
 
   const buscar = useCallback(
     () =>
-      lerParticipantes(id).then(
+      lerParticipantes(id, saidas).then(
         (lista): EstadoParticipantes => ({
           lista,
           carregando: false,
@@ -267,7 +281,7 @@ export function useParticipantes(id?: string) {
           atualizadoEm: '',
         }),
       ),
-    [id],
+    [id, saidas],
   )
   const recarregar = useCallback(() => buscar().then(setEstado), [buscar])
 
@@ -502,4 +516,33 @@ export async function excluirFicha(id: string) {
     ...(docs.data ?? []).map((f) => `${pasta}/documentos/${f.name}`),
   ]
   if (arquivos.length) await supabase.storage.from('fichas').remove(arquivos)
+}
+
+/**
+ * A crianca saiu da ADAM: a ficha fica inativa (some da chamada, da
+ * convocacao e do emprestimo), com a data e o motivo. Presencas e
+ * emprestimos continuam contando no periodo em que ela estava. ADM e
+ * Secretaria fazem; excluir de vez continua so do ADM.
+ */
+export async function marcarSaida(id: string, saiuEm: string, motivo: string) {
+  const { error } = await supabase
+    .from('criancas')
+    .update({ ativa: false, saiu_em: saiuEm, motivo_saida: motivo.trim() || null })
+    .eq('id', id)
+  if (error) {
+    throw new Error(
+      error.code === '42703' || error.code === 'PGRST204'
+        ? 'Falta rodar o SQL de backup e saídas no Supabase.'
+        : 'Não foi possível registrar a saída.',
+    )
+  }
+}
+
+/** Voltou para a ADAM: a ficha volta a valer, sem a data de saida. */
+export async function reativarFicha(id: string) {
+  const { error } = await supabase
+    .from('criancas')
+    .update({ ativa: true, saiu_em: null, motivo_saida: null })
+    .eq('id', id)
+  if (error) throw new Error('Não foi possível reativar a ficha.')
 }

@@ -4,13 +4,16 @@ import { Pressable, StyleSheet, Text, View } from 'react-native'
 
 import { Aviso, Bloco, Botao, Entrada, Grupo, Marca, Rotulo, TelaForm } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { adicionarAvulso, NOME_TURMA, removerAvulso, useAvulsos, useChamada } from '@/data/chamada'
 import {
-  adicionarAvulso,
-  NOME_TURMA,
-  removerAvulso,
-  useAvulsos,
-  useChamada,
-} from '@/data/chamada'
+  avulsosNaFila,
+  chamadaLocal,
+  ehLocal,
+  enfileirar,
+  semConexao,
+  useFilaChamada,
+} from '@/data/chamada-offline'
+import { sessao } from '@/data/perfis'
 import { color, space, target, type } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
 
@@ -21,29 +24,41 @@ import { voltar } from '@/lib/navegacao'
  *
  * Cada nome grava na hora na chamada (tabela chamada_avulsos): quem esta
  * marcando junto ve o mesmo nome, e ninguem digita a mesma crianca duas
- * vezes.
+ * vezes. Sem sinal, o nome fica na fila do celular e sobe depois.
  */
 export default function SemFicha() {
-  const { chamada: chamadaId } = useLocalSearchParams<{ chamada: string }>()
+  const { chamada: idDaRota } = useLocalSearchParams<{ chamada: string }>()
+  const { usuarioId: eu } = sessao.useValor()
+  const fila = useFilaChamada()
+  const chamadaId = fila.resolvidas[idDaRota] ?? idDaRota
   const chamada = useChamada(chamadaId)
   const avulsos = useAvulsos(chamadaId)
+  const local = ehLocal(chamadaId)
+  const naFila = avulsosNaFila(fila.acoes, chamadaId, fila.resolvidas)
+  const daChamada = local && eu ? chamadaLocal(chamadaId, fila.acoes, eu) : chamada.dados
   const [novo, setNovo] = useState('')
   const [adicionando, setAdicionando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
 
-  const turma = chamada.dados ? NOME_TURMA[chamada.dados.turma] : ''
+  const turma = daChamada ? NOME_TURMA[daChamada.turma] : ''
 
   const adicionar = async () => {
     const nome = novo.trim()
     setNovo('')
     setAdicionando(false)
     if (!nome) return
+    setErro(null)
+    if (local) {
+      await enfileirar({ tipo: 'avulso', chamada: chamadaId, nome })
+      return
+    }
     try {
-      setErro(null)
       await adicionarAvulso(chamadaId, nome)
       await avulsos.recarregar()
-    } catch {
-      setErro('Não deu para gravar o nome. A chamada precisa estar aberta e você marcando nela.')
+    } catch (e) {
+      if (semConexao(e)) await enfileirar({ tipo: 'avulso', chamada: chamadaId, nome })
+      else
+        setErro('Não deu para gravar o nome. A chamada precisa estar aberta e você marcando nela.')
     }
   }
 
@@ -68,7 +83,8 @@ export default function SemFicha() {
         </Bloco>
       ) : null}
       <Bloco>
-        <Rotulo extra={`${avulsos.lista.length} ${avulsos.lista.length === 1 ? 'nome' : 'nomes'}`}>
+        <Rotulo
+          extra={`${avulsos.lista.length + naFila.length} ${avulsos.lista.length + naFila.length === 1 ? 'nome' : 'nomes'}`}>
           Nomes digitados hoje
         </Rotulo>
         <Grupo>
@@ -84,6 +100,13 @@ export default function SemFicha() {
                   accessibilityLabel={`Remover ${a.nome}`}>
                   <Icone nome="lixeira" cor={color.faint} />
                 </Pressable>
+              </View>
+            )),
+            ...naFila.map((nome, i) => (
+              <View key={`fila-${i}-${nome}`} style={st.linha}>
+                <Marca ativa />
+                <Text style={st.nome}>{nome}</Text>
+                <Text style={st.noCelular}>no celular</Text>
               </View>
             )),
             adicionando ? (
@@ -131,4 +154,5 @@ const st = StyleSheet.create({
   link: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.primaryLt },
   novo: { paddingVertical: space.md },
   pressed: { opacity: 0.7 },
+  noCelular: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.warn },
 })

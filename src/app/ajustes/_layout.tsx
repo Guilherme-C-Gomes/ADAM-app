@@ -39,6 +39,7 @@ function Rotas() {
         <Stack.Screen name="usuarios" />
         <Stack.Screen name="novo-usuario" />
         <Stack.Screen name="usuario/[id]" />
+        <Stack.Screen name="backup" />
       </Stack.Protected>
     </Stack>
   )

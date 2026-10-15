@@ -220,13 +220,25 @@ export default function Relatorio() {
                 <Text style={st.cardTitulo}>Fichas no período</Text>
                 <View style={st.placar}>
                   <Placar valor={m.entraram} rotulo="entraram" cor={color.success} />
-                  <Placar valor={m.semFicha} rotulo="vieram sem ficha" cor={color.warn} />
-                  <Placar valor={m.ativas} rotulo="ativas hoje" cor={color.text} />
+                  {m.sairam === null ? (
+                    <Placar valor={m.semFicha} rotulo="vieram sem ficha" cor={color.warn} />
+                  ) : (
+                    <>
+                      <Placar valor={m.sairam} rotulo="saíram" cor={color.danger} />
+                      <Placar valor={m.entraram - m.sairam} rotulo="saldo" cor={color.text} sinal />
+                    </>
+                  )}
                 </View>
                 <Text style={st.legenda}>
-                  {m.semFicha
-                    ? 'Quem veio sem ficha foi digitado na chamada — falta cadastrar.'
-                    : 'A saída de crianças ainda não é registrada no app.'}
+                  {[
+                    `${m.ativas} ${m.ativas === 1 ? 'ficha ativa' : 'fichas ativas'} hoje`,
+                    m.sairam !== null && m.semFicha
+                      ? `${m.semFicha} ${m.semFicha === 1 ? 'veio' : 'vieram'} sem ficha (falta cadastrar)`
+                      : null,
+                    m.sairam === null ? 'a saída ainda não é registrada (falta o SQL)' : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </Text>
               </Card>
             </Animated.View>
@@ -389,10 +401,24 @@ function NotaBarra({ rotulo, valor, cor }: { rotulo: string; valor: number | nul
   )
 }
 
-function Placar({ valor, rotulo, cor }: { valor: number; rotulo: string; cor: string }) {
+function Placar({
+  valor,
+  rotulo,
+  cor,
+  sinal,
+}: {
+  valor: number
+  rotulo: string
+  cor: string
+  /** mostra "+" no positivo (saldo) */
+  sinal?: boolean
+}) {
   return (
     <View style={st.placarItem}>
-      <Text style={[st.placarValor, { color: cor }]}>{valor}</Text>
+      <Text style={[st.placarValor, { color: cor }]}>
+        {sinal && valor > 0 ? '+' : ''}
+        {valor}
+      </Text>
       <Text style={st.legenda}>{rotulo}</Text>
     </View>
   )

@@ -181,3 +181,11 @@ export async function atualizarMeuPerfil(dados: { nome: string; email: string })
     sessao.definir({ pessoa: { ...pessoa, nome, email, iniciais: iniciaisDe(nome) } })
   }
 }
+
+/** O ADM poe uma senha nova para quem esqueceu (e passa para a pessoa). */
+export async function redefinirSenha(id: string, senha: string) {
+  const { error } = await supabase.functions.invoke(FUNCAO_CRIAR_USUARIO, {
+    body: { acao: 'redefinir-senha', id, senha },
+  })
+  if (error) throw new Error(await mensagemDe(error))
+}

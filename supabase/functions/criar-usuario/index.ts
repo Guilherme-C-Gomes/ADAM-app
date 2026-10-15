@@ -1,5 +1,5 @@
-// ADAM · contas da equipe: criar e excluir (so a coordenacao) e a propria
-// pessoa trocar nome e e-mail (Minha conta).
+// ADAM · contas da equipe: criar, excluir e redefinir senha (so a
+// coordenacao) e a propria pessoa trocar nome e e-mail (Minha conta).
 //
 // Por que existe: criar conta de OUTRA pessoa exige a chave secreta do
 // Supabase, e ela nunca pode ir dentro do app. Esta funcao roda no servidor
@@ -149,6 +149,18 @@ Deno.serve(async (req) => {
           : 'Não foi possível excluir o usuário.',
       })
     }
+    return resposta(200, { ok: true })
+  }
+
+  // ── redefinir a senha de quem esqueceu ─────────────────────────────
+  if (acao === 'redefinir-senha') {
+    const id = String(corpo.id ?? '')
+    const senha = String(corpo.senha ?? '')
+    if (!id) return resposta(400, { erro: 'Qual usuário?' })
+    if (id === eu) return resposta(400, { erro: 'A sua senha você troca em Minha conta.' })
+    if (senha.length < 8) return resposta(400, { erro: 'A senha precisa de pelo menos 8 caracteres.' })
+    const { error } = await admin.auth.admin.updateUserById(id, { password: senha })
+    if (error) return resposta(400, { erro: 'Não foi possível redefinir a senha.' })
     return resposta(200, { ok: true })
   }
 
