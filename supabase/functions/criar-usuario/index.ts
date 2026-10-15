@@ -7,9 +7,9 @@
 // que quem pediu e da coordenacao (acesso total) e esta ativo.
 //
 // Publicar: Supabase > Edge Functions > Deploy a new function > Via Editor,
-// colar este arquivo e Deploy. O endereco publicado (slug) e
-// "smooth-service" — e o que src/data/usuarios.ts chama; se um dia publicar
-// de novo com outro slug, troque la tambem.
+// dar o nome "criar-usuario" ANTES de publicar, colar este arquivo e Deploy.
+// O endereco publicado (slug) e o que src/data/usuarios.ts chama; se um dia
+// publicar com outro slug, troque la tambem.
 //
 // Em Settings, "Verify JWT with legacy secret" fica DESLIGADO: este projeto
 // assina os logins com a chave nova (ES256), que o legado recusaria. A

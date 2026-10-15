@@ -43,7 +43,7 @@ function parar(mensagem) {
 if (!arquivoCopia) parar('Diga qual .json restaurar: node scripts/restaurar-backup.mjs <copia.json> [pasta-arquivos]')
 if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) parar('Defina SUPABASE_URL e SUPABASE_SECRET_KEY do projeto de DESTINO.')
 if (!SENHA_INICIAL || SENHA_INICIAL.length < 8) parar('Defina SENHA_INICIAL (8 caracteres ou mais) para as contas.')
-if (SUPABASE_URL.includes('xzpdrqtbyzcczfwxbnjq')) {
+if (SUPABASE_URL.includes('jmaztlceuandkyraazty')) {
   console.warn('⚠ O destino é o projeto de VERDADE do ADAM. Só faça isso se ele estiver vazio ou perdido.')
 }
 

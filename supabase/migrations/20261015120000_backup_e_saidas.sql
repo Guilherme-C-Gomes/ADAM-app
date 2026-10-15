@@ -1,6 +1,6 @@
 -- ADAM · registro das copias de seguranca e a saida da crianca.
 --
--- Rodar no SQL Editor do projeto do ADAM (xzpdrqtbyzcczfwxbnjq), depois do
+-- Rodar no SQL Editor do projeto do ADAM (jmaztlceuandkyraazty), depois do
 -- SQL do Jogo. Pode rodar de novo sem estragar nada.
 
 

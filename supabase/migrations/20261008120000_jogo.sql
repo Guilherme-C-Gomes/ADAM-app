@@ -2,7 +2,7 @@
 -- biblioteca de exercicios, a escala semanal dos tecnicos e os jogos com
 -- convocacao, comissao, tatica e placar.
 --
--- Rodar no SQL Editor do projeto do ADAM (xzpdrqtbyzcczfwxbnjq), depois dos
+-- Rodar no SQL Editor do projeto do ADAM (jmaztlceuandkyraazty), depois dos
 -- SQLs de 02/10. Pode rodar de novo sem estragar nada.
 --
 -- Quem faz o que (perfis do app):

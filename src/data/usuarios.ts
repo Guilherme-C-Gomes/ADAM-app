@@ -131,12 +131,12 @@ async function mensagemDe(error: unknown) {
 }
 
 /**
- * O endereco da Edge Function no Supabase. No painel ela se chama
- * "criar-usuario", mas o endereco (slug) ficou "smooth-service" ao publicar
- * pelo navegador — e o slug nao muda depois. O codigo e o de
- * supabase/functions/criar-usuario.
+ * O endereco (slug) da Edge Function no Supabase. O codigo e o de
+ * supabase/functions/criar-usuario; no projeto atual (desde 15/10/2026) ela
+ * foi publicada com o nome certo. O slug nao muda depois de publicar: se um
+ * dia ela for publicada de novo com outro nome, troque aqui.
  */
-const FUNCAO_CRIAR_USUARIO = 'smooth-service'
+const FUNCAO_CRIAR_USUARIO = 'criar-usuario'
 
 export async function criarUsuario(dados: {
   nome: string

@@ -1,6 +1,6 @@
 -- ADAM · Estudo no banco e foto de cada usuario.
 --
--- Rodar UMA vez no SQL Editor do projeto do ADAM (xzpdrqtbyzcczfwxbnjq),
+-- Rodar UMA vez no SQL Editor do projeto do ADAM (jmaztlceuandkyraazty),
 -- depois do esquema inicial. Pode rodar de novo sem estragar nada.
 
 

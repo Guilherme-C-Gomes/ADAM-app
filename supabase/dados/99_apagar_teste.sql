@@ -1,6 +1,6 @@
 -- ADAM · apaga os dados de TESTE para comecar a usar de verdade.
 --
--- Rodar no SQL Editor do projeto do ADAM (xzpdrqtbyzcczfwxbnjq), depois
+-- Rodar no SQL Editor do projeto do ADAM (jmaztlceuandkyraazty), depois
 -- dos dois SQLs de 02/10 (estudo_e_fotos e exclusao).
 --
 -- 1. As 12 criancas ficticias (observacao = 'TESTE') e tudo delas:

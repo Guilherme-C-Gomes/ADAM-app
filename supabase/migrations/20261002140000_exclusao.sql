@@ -1,6 +1,6 @@
 -- ADAM · excluir usuario e excluir ficha de crianca (so o ADM).
 --
--- Rodar no SQL Editor do projeto do ADAM (xzpdrqtbyzcczfwxbnjq), DEPOIS do
+-- Rodar no SQL Editor do projeto do ADAM (jmaztlceuandkyraazty), DEPOIS do
 -- 20261002120000_estudo_e_fotos.sql. Pode rodar de novo sem estragar nada.
 
 
