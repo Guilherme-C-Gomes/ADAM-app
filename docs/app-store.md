@@ -17,7 +17,7 @@ Os campos marcados **[preencher]** dependem da coordenação.
 | Categoria secundária | Esportes |
 | Direitos de conteúdo | Não, o app não mostra conteúdo de terceiros |
 | Classificação etária | responder **Nenhum / Não** em todas as perguntas (ver item 5) |
-| URL da política de privacidade | https://adam-beige-eight.vercel.app/privacidade **(só depois de publicada)** |
+| URL da política de privacidade | https://adam-beige-eight.vercel.app/privacidade |
 
 ## 2. Preço e disponibilidade
 
@@ -57,7 +57,7 @@ chamada,frequência,presença,ONG,projeto social,futebol,treino,escala,secretari
 
 | Campo | Valor |
 | --- | --- |
-| URL de suporte | https://adam-beige-eight.vercel.app/suporte **(vou publicar)** |
+| URL de suporte | https://adam-beige-eight.vercel.app/suporte |
 | URL de marketing | deixar em branco |
 | Versão | 1.0.0 |
 | Copyright | 2026 Associação Desportiva Apoio ao Menor - ADAM |
@@ -70,9 +70,9 @@ chamada,frequência,presença,ONG,projeto social,futebol,treino,escala,secretari
 | Campo | Valor |
 | --- | --- |
 | Login obrigatório | marcado |
-| Usuário | e-mail da conta de revisão **[preencher: criar no app, ver abaixo]** |
-| Senha | a senha dessa conta **[digitar direto no App Store Connect]** |
-| Contato | nome, telefone e e-mail de quem responde à Apple **[preencher]** |
+| Usuário | suporte.ti@adam.ong.br |
+| Senha | a senha dessa conta **(digitar direto no App Store Connect, nunca no chat)** |
+| Contato | quem responde à Apple; e-mail suporte.ti@adam.ong.br, telefone +55 11 4411-2648 |
 
 **Notas** (em inglês, para o revisor; colar como está):
 
@@ -94,12 +94,11 @@ The demo account has coordinator access, so every area is visible:
 Camera and photo library are requested only when the user chooses to add a profile photo, a child's photo or a photo of a document.
 ```
 
-**Conta de revisão:** criar no app em Configuração da ADAM › Usuários ›
-Adicionar usuário, por exemplo `revisao.apple@adam.ong.br`, com **Acesso
-total** e uma senha só dela. Depois da aprovação, **desative** a conta. Antes
-de cada nova revisão, reative e desative de novo no fim. Na hora da revisão,
-o revisor vê os dados que existirem no banco: o ideal é enviar antes de
-cadastrar as crianças de verdade.
+**Conta de revisão:** a coordenação escolheu usar a própria
+`suporte.ti@adam.ong.br`. O revisor entra com acesso total (inclusive a
+Cópia de segurança) e vê os dados que existirem no banco na hora da revisão;
+por isso, o ideal é enviar antes de cadastrar as crianças de verdade. Depois
+da aprovação, troque a senha dessa conta em Minha conta.
 
 ## 5. Classificação etária
 

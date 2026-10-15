@@ -1,19 +1,22 @@
 # Política de Privacidade do app ADAM
 
-> **RASCUNHO para a coordenação aprovar.** Os trechos entre colchetes
-> `[...]` precisam ser preenchidos pela ADAM. Só depois de aprovada ela vai
-> para o site e para as lojas (Apple e Google exigem o endereço público).
+> Versão publicada em https://adam-beige-eight.vercel.app/privacidade
+> (arquivo `public/privacidade.html`). Mudou aqui, muda lá também.
+> Falta só o CNPJ, quando a coordenação passar.
 
-Última atualização: [data da aprovação]
+Última atualização: 15 de outubro de 2026
 
 ## 1. Quem somos
 
-O app ADAM é usado pela equipe da [nome completo da associação], CNPJ
-[número], com sede em [endereço] ("ADAM"), para organizar as atividades com
-crianças e adolescentes: chamada, cadastro, biblioteca, aulas, treinos e jogos.
+O app ADAM (na App Store, "ADAM ONG") é usado pela equipe da Associação
+Desportiva Apoio ao Menor - ADAM, organização sem fins lucrativos com sede na
+Rua Casemiro de Abreu, 391, Atibaia (SP), CEP 12951-170 ("ADAM"), para
+organizar as atividades com crianças e adolescentes: chamada, cadastro,
+biblioteca, aulas, treinos e jogos.
 
-A ADAM é a **controladora** dos dados. Para falar sobre privacidade:
-[nome do(a) encarregado(a)], [e-mail], [telefone].
+A ADAM é a **controladora** dos dados. Para falar sobre privacidade com o
+encarregado pelo tratamento de dados: suporte.ti@adam.ong.br ou
+(11) 4411-2648.
 
 ## 2. Quem usa o app
 
@@ -53,8 +56,8 @@ Não vendemos, não alugamos e não usamos os dados para propaganda.
 
 Os dados de crianças e adolescentes são tratados no seu **melhor interesse**,
 como manda o art. 14 da LGPD, com o **consentimento específico de pelo menos
-um dos pais ou responsável legal**, colhido na ficha de inscrição
-[a coordenação confirma como o consentimento é colhido e guardado].
+um dos pais ou do responsável legal**, colhido na inscrição da criança na
+ADAM.
 
 A foto e o uso de imagem dependem da autorização de uso de imagem assinada.
 
@@ -72,34 +75,38 @@ Essas regras ficam no próprio banco de dados, não só na tela.
 
 ## 7. Onde os dados ficam
 
-- **Banco de dados e arquivos:** Supabase (fornecedor de banco de dados em
-  nuvem), em [região do projeto].
+- **Banco de dados e arquivos:** Supabase (banco de dados em nuvem), em
+  servidores da Amazon Web Services em São Paulo, no Brasil.
 - **Site do app:** Vercel (hospedagem).
 - **Cópias de segurança:** pasta privada do Google Drive da ADAM, três vezes
   por dia; a coordenação também pode guardar uma cópia num pendrive.
+- **Atualizações do app:** Expo, que entrega só o código do app, sem dados
+  pessoais.
 
-Esses fornecedores só guardam os dados para a ADAM e não os usam para
-outra coisa.
+A cópia de segurança passa pelos servidores da Vercel e fica no Google
+Drive, que podem estar fora do Brasil. Esses fornecedores só guardam e
+processam os dados para a ADAM e não os usam para outra coisa.
 
 ## 8. Por quanto tempo
 
-Enquanto a criança participa da ADAM e, depois da saída, por
-[prazo definido pela coordenação] para histórico e prestação de contas.
-Depois disso, a ficha é excluída. As cópias de segurança guardam os
-últimos 45 dias e uma cópia por mês antes disso.
+Enquanto a criança participa da ADAM e, depois da saída, por 5 (cinco) anos,
+para histórico e prestação de contas. Depois disso, a ficha é excluída. As
+cópias de segurança guardam os últimos 45 dias e uma cópia por mês antes
+disso.
 
 ## 9. Segurança
 
 Acesso só com conta e senha; cada função vê só o necessário; conexão
 criptografada; arquivos (fotos e documentos) em armazenamento privado;
-cópias de segurança diárias.
+cópias de segurança três vezes por dia.
 
 ## 10. Direitos dos responsáveis
 
 O responsável pode pedir, a qualquer momento: confirmação de que tratamos os
 dados, acesso, correção, exclusão, informação sobre com quem compartilhamos
-e a revogação do consentimento (art. 18 da LGPD). Basta falar com
-[contato do encarregado]. Respondemos em até [prazo].
+e a revogação do consentimento (art. 18 da LGPD). Basta escrever para
+suporte.ti@adam.ong.br ou ligar para (11) 4411-2648. Respondemos em até 15
+dias.
 
 ## 11. Mudanças
 
