@@ -17,7 +17,6 @@ Os campos marcados **[preencher]** dependem da coordenação.
 | Categoria secundária | Esportes |
 | Direitos de conteúdo | Não, o app não mostra conteúdo de terceiros |
 | Classificação etária | responder **Nenhum / Não** em todas as perguntas (ver item 5) |
-| URL da política de privacidade | https://adam-beige-eight.vercel.app/privacidade |
 
 ## 2. Preço e disponibilidade
 
@@ -111,6 +110,10 @@ web, conteúdo gerado por usuários público, redes sociais, chat entre
 usuários, compras. Resultado esperado: **4+**.
 
 ## 6. Privacidade do app ("Rótulos de privacidade")
+
+**URL da política de privacidade:** no topo desta mesma página, em
+"Política de privacidade" › Editar:
+https://adam-beige-eight.vercel.app/privacidade
 
 **Coleta dados?** Sim. **Rastreamento (tracking)?** Não, nenhum.
 
