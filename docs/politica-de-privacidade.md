@@ -91,8 +91,7 @@ processam os dados para a ADAM e não os usam para outra coisa.
 
 Enquanto a criança participa da ADAM e, depois da saída, por 5 (cinco) anos,
 para histórico e prestação de contas. Depois disso, a ficha é excluída. As
-cópias de segurança guardam os últimos 45 dias e uma cópia por mês antes
-disso.
+cópias de segurança guardam só as 3 mais recentes, de cerca de um dia.
 
 ## 9. Segurança
 

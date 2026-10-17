@@ -10,7 +10,8 @@ variação no plano grátis da Vercel), a função `api/backup.ts`:
 3. grava as fotos e os documentos novos na pasta `arquivos/`;
 4. anota o resultado no app (Configuração da ADAM › Cópia de segurança).
 
-No Drive ficam todas as cópias dos últimos 45 dias e, antes disso, uma por mês.
+No Drive ficam só as 3 cópias mais recentes do banco (manhã, tarde e noite); as
+mais antigas vão para a lixeira do Drive a cada cópia nova.
 
 ## Instalar (uma vez)
 

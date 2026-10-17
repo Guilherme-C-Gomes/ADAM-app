@@ -155,7 +155,7 @@ export default function CopiaDeSeguranca() {
       <Bloco ordem={2}>
         <Aviso
           titulo="Por que três vezes por dia"
-          texto="Cada cópia também mantém o servidor gratuito acordado: ele pausa depois de 7 dias sem uso, e isso não acontece nem nas férias. Antes das férias, baixe uma cópia e guarde num pendrive."
+          texto="Cada cópia também mantém o servidor gratuito acordado: ele pausa depois de 7 dias sem uso, e isso não acontece nem nas férias. No Drive ficam só as 3 cópias mais recentes; antes das férias, baixe uma cópia e guarde num pendrive."
         />
       </Bloco>
     </TelaForm>

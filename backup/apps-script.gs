@@ -8,8 +8,10 @@
  *   ├── banco/      adam-banco-AAAA-MM-DD_HHhMM.json  (o banco inteiro)
  *   └── arquivos/   fotos e documentos (fichas__criancas__..., capas__..., ...)
  *
- * Copias do banco: guarda todas dos ultimos 45 dias e, mais antigas, so a
- * primeira de cada mes (as outras vao para a lixeira do Drive).
+ * Copias do banco: ficam so as 3 mais recentes (cerca de um dia: manha,
+ * tarde e noite). A cada copia nova, as mais antigas vao para a lixeira do
+ * Drive, que o Google esvazia sozinho em 30 dias. Para limpar na hora as que
+ * sobraram, rode a funcao "limparAgora" pelo editor.
  *
  * COMO PUBLICAR (uma vez, logado na conta Google dona da pasta):
  * 1. script.google.com > Novo projeto > apague o que vier e cole este arquivo.
@@ -26,7 +28,7 @@
 
 const PASTA_ID = '18PYxJuhCcgMH16D3ED_bqnjJTLvcF5Zm'
 const SENHA = 'COLE_AQUI_A_MESMA_SENHA_DO_CRON_SECRET'
-const DIAS_GUARDANDO_TUDO = 45
+const COPIAS_GUARDADAS = 3
 
 function doPost(e) {
   try {
@@ -66,6 +68,12 @@ function doPost(e) {
   }
 }
 
+/** Rode pelo editor para deixar so as 3 copias mais recentes agora. */
+function limparAgora() {
+  const apagadas = limparAntigos_(subpasta_(DriveApp.getFolderById(PASTA_ID), 'banco'))
+  Logger.log('Copias antigas enviadas para a lixeira: ' + apagadas)
+}
+
 /** Rode uma vez pelo editor: autoriza o Drive e confere a pasta. */
 function testarPasta() {
   Logger.log('Pasta: ' + DriveApp.getFolderById(PASTA_ID).getName())
@@ -76,26 +84,23 @@ function subpasta_(raiz, nome) {
   return achadas.hasNext() ? achadas.next() : raiz.createFolder(nome)
 }
 
-/** Ultimos 45 dias: tudo. Antes disso: so a primeira copia de cada mes. */
+/** Deixa so as COPIAS_GUARDADAS mais recentes; devolve quantas apagou. */
 function limparAntigos_(pasta) {
-  const limite = Date.now() - DIAS_GUARDANDO_TUDO * 86400000
-  const arquivos = []
+  const copias = []
   const lista = pasta.getFiles()
-  while (lista.hasNext()) arquivos.push(lista.next())
-  arquivos.sort(function (a, b) {
-    return a.getName() < b.getName() ? -1 : 1
+  while (lista.hasNext()) {
+    const arquivo = lista.next()
+    if (/^adam-banco-.*\.json$/.test(arquivo.getName())) copias.push(arquivo)
+  }
+  // mais nova primeiro
+  copias.sort(function (a, b) {
+    return b.getDateCreated().getTime() - a.getDateCreated().getTime()
   })
-  const mesJaGuardado = {}
-  arquivos.forEach(function (arquivo) {
-    const achado = arquivo.getName().match(/^adam-banco-(\d{4}-\d{2})-\d{2}_/)
-    if (!achado) return
-    if (arquivo.getDateCreated().getTime() >= limite) return
-    if (!mesJaGuardado[achado[1]]) {
-      mesJaGuardado[achado[1]] = true
-      return
-    }
+  const sobrando = copias.slice(COPIAS_GUARDADAS)
+  sobrando.forEach(function (arquivo) {
     arquivo.setTrashed(true)
   })
+  return sobrando.length
 }
 
 function saida_(objeto) {
