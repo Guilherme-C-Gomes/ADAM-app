@@ -29,7 +29,7 @@ export default function Acervo() {
         <Botao
           rotulo="Cadastrar novo título"
           onPress={() => {
-            rascunhoLivro.definir({ tipo: '', capaUri: undefined })
+            rascunhoLivro.limpar()
             router.push('/estudo/novo-titulo')
           }}
         />
@@ -63,7 +63,7 @@ export default function Acervo() {
                   key={l.id}
                   onPress={() => {
                     // a ficha do livro parte do que esta no banco
-                    rascunhoLivro.definir({ tipo: '', capaUri: undefined })
+                    rascunhoLivro.limpar()
                     router.push({ pathname: '/estudo/livro/[id]', params: { id: l.id } })
                   }}
                   style={({ pressed }) => [st.linha, pressed && st.pressed]}

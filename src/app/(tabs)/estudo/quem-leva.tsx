@@ -2,17 +2,16 @@ import { router } from 'expo-router'
 import { useState } from 'react'
 
 import { Aviso, Bloco, Botao, Busca, Grupo, Opcao, TelaForm } from '@/components/ui/form'
-import { rascunhoEmprestar, useBiblioteca } from '@/data/estudo'
+import { rascunhoEmprestar, useBiblioteca, useEscolhaDoRascunho } from '@/data/estudo'
 import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
 
 /** Tela 13h. Quem nao tem ficha nao aparece — e o empurrao para cadastrar. */
 export default function QuemLeva() {
-  const escolha = rascunhoEmprestar.useValor()
   const { criancas, emprestimos } = useBiblioteca()
   const { veDadosSensiveis } = usePerfil()
   const [busca, setBusca] = useState('')
-  const [criancaId, setCriancaId] = useState(escolha.criancaId)
+  const [criancaId, setCriancaId] = useEscolhaDoRascunho(rascunhoEmprestar, 'criancaId')
 
   const todas = Object.values(criancas).sort((a, b) => a.nome.localeCompare(b.nome))
   const termo = busca.trim().toLowerCase()

@@ -1,6 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router'
-import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { useEffect, useState } from 'react'
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -10,7 +18,7 @@ import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
 import { rotuloCurto } from '@/data/calendario'
 import { NOME_TURMA } from '@/data/chamada'
-import { encerrarTreino, horaCurta, useJogo } from '@/data/jogo-dados'
+import { encerrarTreino, horaCurta, lerAvaliacao, useJogo, type Notas } from '@/data/jogo-dados'
 import { deISO } from '@/data/metricas'
 import { COR_FOCO, useFoco } from '@/hooks/use-foco'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
@@ -24,20 +32,80 @@ import { color, motion, onDark, radius, space, target, type } from '@/theme/toke
  */
 const ESCALA = [0, 1, 2, 3, 4, 5] as const
 
+type Avaliacao = Notas & { observacoes: string }
+
 export default function TreinoAvaliacao() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { treinos } = useJogo()
   const treino = treinos.find((t) => t.id === id)
-  const [notaTreino, setNotaTreino] = useState<number | null>(null)
-  const [notaCompreensao, setNotaCompreensao] = useState<number | null>(null)
-  const [notaDificuldade, setNotaDificuldade] = useState<number | null>(null)
+  // "Rever a avaliacao" abre com as notas que ja estavam gravadas
+  const [lida, setLida] = useState<{
+    de: string | null
+    avaliacao: Avaliacao | null
+    erro: string | null
+  }>({ de: null, avaliacao: null, erro: null })
+  useEffect(() => {
+    if (!id) return
+    let ativo = true
+    lerAvaliacao(id).then(
+      (avaliacao) => {
+        if (ativo) setLida({ de: id, avaliacao, erro: null })
+      },
+      (e) => {
+        if (ativo)
+          setLida({
+            de: id,
+            avaliacao: null,
+            erro: e instanceof Error ? e.message : 'Não foi possível ler a avaliação.',
+          })
+      },
+    )
+    return () => {
+      ativo = false
+    }
+  }, [id])
+
+  const subtitulo = treino
+    ? `${NOME_TURMA[treino.turma]} · ${rotuloCurto(deISO(treino.data))} · ${horaCurta(treino.hora)}`
+    : 'Avaliação do treino'
+
+  if (!id || lida.de !== id || lida.erro) {
+    return (
+      <SafeAreaView style={st.screen} edges={['top']}>
+        <HeroVoltar titulo="Como foi o treino?" subtitulo={subtitulo} voltarPara="/jogo" />
+        <View style={st.conteudo}>
+          {lida.erro ? (
+            <Aviso tom="ambar" titulo={lida.erro} />
+          ) : (
+            <ActivityIndicator color={color.primaryCh} />
+          )}
+        </View>
+      </SafeAreaView>
+    )
+  }
+  return <Formulario key={id} id={id} subtitulo={subtitulo} inicial={lida.avaliacao} />
+}
+
+function Formulario({
+  id,
+  subtitulo,
+  inicial,
+}: {
+  id: string
+  subtitulo: string
+  inicial: Avaliacao | null
+}) {
+  const [notaTreino, setNotaTreino] = useState<number | null>(inicial?.treino ?? null)
+  const [notaCompreensao, setNotaCompreensao] = useState<number | null>(inicial?.entenderam ?? null)
+  const [notaDificuldade, setNotaDificuldade] = useState<number | null>(
+    inicial?.dificuldade ?? null,
+  )
   const foco = useFoco()
-  const [observacoes, setObservacoes] = useState('')
+  const [observacoes, setObservacoes] = useState(inicial?.observacoes ?? '')
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
 
   const terminar = async (comNotas: boolean) => {
-    if (!id) return
     setErro(null)
     setSalvando(true)
     try {
@@ -67,15 +135,7 @@ export default function TreinoAvaliacao() {
 
   return (
     <SafeAreaView style={st.screen} edges={['top']}>
-      <HeroVoltar
-        titulo="Como foi o treino?"
-        subtitulo={
-          treino
-            ? `${NOME_TURMA[treino.turma]} · ${rotuloCurto(deISO(treino.data))} · ${horaCurta(treino.hora)}`
-            : 'Avaliação do treino'
-        }
-        voltarPara="/jogo"
-      />
+      <HeroVoltar titulo="Como foi o treino?" subtitulo={subtitulo} voltarPara="/jogo" />
 
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
         {erro ? <Aviso tom="ambar" titulo={erro} /> : null}

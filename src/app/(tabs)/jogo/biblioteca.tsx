@@ -52,7 +52,11 @@ function Tela({ emEdicao }: { emEdicao?: Exercicio }) {
   const [modo, setModo] = useState<(typeof MODOS)[number]>(emEdicao ? 'Novo exercício' : 'Do banco')
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState<CategoriaExercicio | 'Todos'>('Todos')
-  const [noTreino, setNoTreino] = useState(plano.exercicios)
+  // a lista mora no rascunho do plano: o "Pôr no treino" do detalhe (11k)
+  // mexe nela tambem, e as duas telas veem sempre a mesma coisa
+  const noTreino = plano.exercicios
+  const definirNoTreino = (mudar: (atual: typeof plano.exercicios) => typeof plano.exercicios) =>
+    rascunhoTreino.definir({ exercicios: mudar(rascunhoTreino.ler().exercicios) })
 
   const [nome, setNome] = useState(emEdicao?.nome ?? '')
   const [tempo, setTempo] = useState(emEdicao ? String(emEdicao.duracaoMin) : '')
@@ -71,8 +75,8 @@ function Tela({ emEdicao }: { emEdicao?: Exercicio }) {
   const marcado = (id: string) => noTreino.some((x) => x.exercicioId === id)
 
   const alternar = (e: Exercicio) =>
-    setNoTreino((atual) =>
-      marcado(e.id)
+    definirNoTreino((atual) =>
+      atual.some((x) => x.exercicioId === e.id)
         ? atual.filter((x) => x.exercicioId !== e.id)
         : [...atual, { exercicioId: e.id, duracaoMin: e.duracaoMin }],
     )
@@ -96,7 +100,7 @@ function Tela({ emEdicao }: { emEdicao?: Exercicio }) {
         voltar('/jogo/biblioteca')
         return
       }
-      setNoTreino((atual) => [...atual, { exercicioId: id, duracaoMin: minutos }])
+      definirNoTreino((atual) => [...atual, { exercicioId: id, duracaoMin: minutos }])
       mostrarRecado('Exercício cadastrado e posto no treino')
       setNome('')
       setTempo('')
@@ -127,10 +131,7 @@ function Tela({ emEdicao }: { emEdicao?: Exercicio }) {
         modo === 'Do banco' ? (
           <Botao
             rotulo={`Concluir · ${noTreino.length} no treino`}
-            onPress={() => {
-              rascunhoTreino.definir({ exercicios: noTreino })
-              voltar('/jogo/planejar')
-            }}
+            onPress={() => voltar('/jogo/planejar')}
           />
         ) : (
           <Botao

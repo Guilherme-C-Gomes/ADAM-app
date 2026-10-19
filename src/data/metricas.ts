@@ -154,6 +154,13 @@ export type Metricas = {
   ativas: number
   /** fichas com presenca em ao menos uma chamada encerrada do periodo */
   foram: number
+  /**
+   * A base do "foram X de N": fichas (na unidade escolhida) que estavam na
+   * ADAM em algum dia do periodo — entraram ate o fim dele e nao tinham
+   * saido antes do inicio — mais quem foi marcado. Assim X nunca passa de N,
+   * mesmo com quem saiu depois ou trocou de unidade.
+   */
+  noPeriodo: number
   foramAntes: number
   /** criancas sem ficha que vieram (nomes distintos das chamadas avulsas) */
   semFicha: number
@@ -393,11 +400,21 @@ export async function lerMetricas(
   const base = ativas.filter((c) => c.desde <= limite3Meses)
   const vieram30 = presentesEntre({ inicio: inicio30, fim: fimEfetivo })
 
+  // "foram X de N": N sai das mesmas fichas que podiam ter ido. Ficha
+  // inativa sem data de saida (SQL das saidas nao rodou) so entra se foi.
+  const foram = presentesEntre(intervalo)
+  const noPeriodo = new Set(foram)
+  for (const c of daUnidade) {
+    const estava = c.ativa || (!!c.saiu_em && c.saiu_em >= intervalo.inicio)
+    if (estava && c.desde <= intervalo.fim) noPeriodo.add(c.id)
+  }
+
   return {
     intervalo,
     anterior,
     ativas: ativas.length,
-    foram: presentesEntre(intervalo).size,
+    foram: foram.size,
+    noPeriodo: noPeriodo.size,
     foramAntes: presentesEntre(anterior).size,
     semFicha: new Set(avulsos.map((a) => a.nome.trim().toLowerCase())).size,
     recortes: intervalo.recortes.map((r) => ({

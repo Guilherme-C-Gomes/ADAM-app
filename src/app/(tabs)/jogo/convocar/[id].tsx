@@ -99,6 +99,8 @@ export default function Convocar() {
 
         {atletas.carregando ? (
           <ActivityIndicator color={color.primaryCh} />
+        ) : atletas.erro ? (
+          <Aviso tom="ambar" titulo={atletas.erro} texto="Volte e abra de novo em instantes." />
         ) : elegiveis.length ? (
           <Animated.View entering={FadeInDown.duration(motion.medium)}>
             <Card style={st.cardLista}>

@@ -13,6 +13,18 @@
  * Drive, que o Google esvazia sozinho em 30 dias. Para limpar na hora as que
  * sobraram, rode a funcao "limparAgora" pelo editor.
  *
+ * Fotos e documentos: o nome e o caminho no Storage (o restaurar-backup.mjs
+ * usa o nome para devolver o arquivo ao lugar) e a descricao guarda a versao
+ * ("v:<updated_at>"). Quando a foto da ficha ou um documento e trocado no app,
+ * a versao muda, a Vercel manda de novo e a versao antiga (mesmo nome) vai
+ * para a lixeira. Arquivos sem descricao sao de antes das versoes: a Vercel
+ * troca todos, aos poucos, nas primeiras copias.
+ *
+ * ATUALIZAR (sempre que este arquivo mudar): no projeto do Apps Script, cole
+ * o arquivo novo MANTENDO a sua linha SENHA, salve e va em Implantar >
+ * Gerenciar implantacoes > lapis (editar) > Versao: Nova versao > Implantar.
+ * Assim o URL /exec continua o mesmo e a Vercel nao precisa mudar.
+ *
  * COMO PUBLICAR (uma vez, logado na conta Google dona da pasta):
  * 1. script.google.com > Novo projeto > apague o que vier e cole este arquivo.
  * 2. Na linha SENHA abaixo, cole a MESMA senha que vai no CRON_SECRET da Vercel.
@@ -48,16 +60,35 @@ function doPost(e) {
     if (pedido.acao === 'listar-arquivos') {
       const pasta = subpasta_(raiz, 'arquivos')
       const nomes = []
+      // nome -> versao (a descricao "v:..."); sem descricao = gravado antes
+      // das versoes, conta como versao antiga
+      const versoes = {}
       const lista = pasta.getFiles()
-      while (lista.hasNext()) nomes.push(lista.next().getName())
-      return saida_({ ok: true, nomes: nomes })
+      while (lista.hasNext()) {
+        const arquivo = lista.next()
+        const nome = arquivo.getName()
+        nomes.push(nome)
+        versoes[nome] = versaoDe_(arquivo)
+      }
+      return saida_({ ok: true, nomes: nomes, versoes: versoes })
     }
 
     if (pedido.acao === 'salvar-arquivo') {
       const pasta = subpasta_(raiz, 'arquivos')
+      // as versoes antigas do mesmo arquivo (mesmo nome) saem depois que a
+      // nova estiver gravada
+      const antigas = []
+      const iguais = pasta.getFilesByName(pedido.nome)
+      while (iguais.hasNext()) antigas.push(iguais.next())
       const bytes = Utilities.base64Decode(pedido.base64)
-      pasta.createFile(Utilities.newBlob(bytes, pedido.mime || 'application/octet-stream', pedido.nome))
-      return saida_({ ok: true })
+      const novo = pasta.createFile(
+        Utilities.newBlob(bytes, pedido.mime || 'application/octet-stream', pedido.nome),
+      )
+      novo.setDescription('v:' + (pedido.versao || ''))
+      antigas.forEach(function (arquivo) {
+        arquivo.setTrashed(true)
+      })
+      return saida_({ ok: true, substituidos: antigas.length })
     }
 
     if (pedido.acao === 'teste') return saida_({ ok: true, pasta: raiz.getName() })
@@ -77,6 +108,12 @@ function limparAgora() {
 /** Rode uma vez pelo editor: autoriza o Drive e confere a pasta. */
 function testarPasta() {
   Logger.log('Pasta: ' + DriveApp.getFolderById(PASTA_ID).getName())
+}
+
+/** A versao gravada na descricao ("v:2026..."); null se nao tem (arquivo antigo). */
+function versaoDe_(arquivo) {
+  const descricao = arquivo.getDescription() || ''
+  return descricao.indexOf('v:') === 0 ? descricao.slice(2) : null
 }
 
 function subpasta_(raiz, nome) {

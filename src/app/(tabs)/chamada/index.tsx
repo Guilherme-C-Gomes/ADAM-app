@@ -16,11 +16,13 @@ import {
   juntos,
   NOME_TURMA,
   TURMAS,
+  useChamadasAbertas,
   useChamadasDoDia,
   useCriancas,
   useEquipe,
   useUnidades,
   type Chamada,
+  type Crianca,
   type Pessoa,
   type Turma,
   type Unidade,
@@ -72,6 +74,17 @@ const MESES = [
 function hojePorExtenso() {
   const d = new Date()
   return `${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]}`
+}
+
+/** "2026-10-17" -> "17 de outubro", direto do texto (sem fuso, sem Intl). */
+function diaPorExtenso(data: string) {
+  const [, mes, dia] = data.split('-').map(Number)
+  return `${dia} de ${MESES[mes - 1] ?? ''}`
+}
+
+/** As marcas que contam: so as das criancas que estao na lista da turma. */
+function marcadasNaLista(chamada: Chamada | null, daTurma: Crianca[]) {
+  return chamada ? daTurma.filter((k) => chamada.marcas[k.id]).length : 0
 }
 
 // A unidade escolhida fica lembrada enquanto o app esta aberto.
@@ -131,6 +144,7 @@ function ChamadasDoBanco({ eu }: { eu: string }) {
 
 function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
   const chamadas = useChamadasDoDia(unidade.id)
+  const abertas = useChamadasAbertas(unidade.id)
   const criancas = useCriancas()
   const equipe = useEquipe()
   const fila = useFilaChamada()
@@ -149,6 +163,14 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
     return chamadaLocal(idLocal(hojeLocal(), unidade.id, turma), fila.acoes, eu)
   }
   const encerradas = TURMAS.filter((t) => deHoje(t)?.estado === 'encerrada').length
+  // a mesma lista da tela da turma: ativas, desta turma e desta unidade
+  const daTurma = (turma: Turma) =>
+    criancas.dados.filter((c) => c.turma === turma && c.unidade_id === unidade.id)
+  // de dias anteriores, ainda em andamento (com a fila por cima: encerrar
+  // guardado no celular ja tira daqui)
+  const ficaramAbertas = abertas.dados
+    .map((c) => comAFila(c, fila.acoes, fila.resolvidas))
+    .filter((c) => c.estado === 'andamento')
 
   return (
     <>
@@ -174,7 +196,10 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
           <Link
             rotulo={fila.enviando ? 'Enviando…' : 'Enviar agora'}
             onPress={() => {
-              sincronizar().then(() => chamadas.recarregar())
+              sincronizar().then(() => {
+                chamadas.recarregar()
+                abertas.recarregar()
+              })
             }}
           />
         </View>
@@ -185,6 +210,28 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
           <Aviso tom="ambar" titulo="Algumas ações não subiram" texto={fila.falhas.join(' · ')} />
           <Link rotulo="Entendi" onPress={esquecerFalhas} />
         </View>
+      ) : null}
+
+      {ficaramAbertas.length ? (
+        <>
+          <View style={st.linhaTopo}>
+            <Overline>Ficaram abertas</Overline>
+            <Text style={st.contagem}>
+              {ficaramAbertas.length} {ficaramAbertas.length === 1 ? 'chamada' : 'chamadas'}
+            </Text>
+          </View>
+          {ficaramAbertas.map((c) => (
+            <CardAberta
+              key={c.id}
+              chamada={c}
+              unidade={unidade}
+              total={daTurma(c.turma).length}
+              marcadas={marcadasNaLista(c, daTurma(c.turma))}
+              eu={eu}
+              equipe={equipe}
+            />
+          ))}
+        </>
       ) : null}
 
       <View style={st.linhaTopo}>
@@ -200,9 +247,8 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
             turma={turma}
             unidade={unidade}
             chamada={deHoje(turma)}
-            total={
-              criancas.dados.filter((c) => c.turma === turma && c.unidade_id === unidade.id).length
-            }
+            total={daTurma(turma).length}
+            marcadas={marcadasNaLista(deHoje(turma), daTurma(turma))}
             eu={eu}
             equipe={equipe}
           />
@@ -229,6 +275,7 @@ function CardTurma({
   unidade,
   chamada,
   total,
+  marcadas,
   eu,
   equipe,
 }: {
@@ -236,6 +283,7 @@ function CardTurma({
   unidade: Unidade
   chamada: Chamada | null
   total: number
+  marcadas: number
   eu: string
   equipe: Record<string, Pessoa>
 }) {
@@ -243,7 +291,6 @@ function CardTurma({
   const [erro, setErro] = useState<string | null>(null)
   const estadoChave = chamada?.estado ?? 'afazer'
   const estado = ESTADO[estadoChave]
-  const marcadas = chamada ? Object.keys(chamada.marcas).length : 0
   const ultimaCorrecao = chamada?.correcoes.at(-1)
   const euMarcando = !!chamada?.participantes.includes(eu)
   const nome = NOME_TURMA[turma]
@@ -260,8 +307,13 @@ function CardTurma({
           : await entrarNaChamada(unidade.id, turma)
       router.push({ pathname: '/chamada/turma/[id]', params: { id } })
     } catch (e) {
-      if (semConexao(e)) {
-        // sem sinal: a chamada comeca no celular e sobe depois
+      if (semConexao(e) && chamada && euMarcando) {
+        // sem sinal, mas a chamada do banco ja esta na tela e eu ja estou
+        // nela: abre a mesma (as marcas vao para a fila), sem criar outra
+        router.push({ pathname: '/chamada/turma/[id]', params: { id: chamada.id } })
+      } else if (semConexao(e)) {
+        // sem sinal: a chamada comeca no celular e sobe depois (ao subir,
+        // entra na do banco se ja houver uma)
         const id = idLocal(hojeLocal(), unidade.id, turma)
         await enfileirar({
           tipo: 'abrir',
@@ -352,6 +404,64 @@ function CardTurma({
         />
       ) : null}
       {erro ? <Text style={st.erro}>{erro}</Text> : null}
+    </Card>
+  )
+}
+
+/**
+ * Uma chamada de dia anterior que ficou em andamento. Abre direto pelo id
+ * (entrar_na_chamada so abre a de hoje) para quem estava marcando encerrar.
+ */
+function CardAberta({
+  chamada,
+  unidade,
+  total,
+  marcadas,
+  eu,
+  equipe,
+}: {
+  chamada: Chamada
+  unidade: Unidade
+  total: number
+  marcadas: number
+  eu: string
+  equipe: Record<string, Pessoa>
+}) {
+  const nome = NOME_TURMA[chamada.turma]
+  const euMarcando = chamada.participantes.includes(eu)
+  const abrir = () => router.push({ pathname: '/chamada/turma/[id]', params: { id: chamada.id } })
+
+  return (
+    <Card style={st.card}>
+      <Pressable
+        onPress={abrir}
+        style={({ pressed }) => [st.porta, pressed && st.pressed]}
+        accessibilityRole="button"
+        accessibilityLabel={`Chamada dos ${nome} de ${diaPorExtenso(chamada.data)}, ainda aberta`}>
+        <View style={st.cabecalho}>
+          <View style={st.texto}>
+            <Text style={st.turma}>{nome}</Text>
+            <Text style={st.legenda}>
+              {diaPorExtenso(chamada.data)} · {unidade.nome}
+            </Text>
+          </View>
+          <Selo rotulo="Aberta" tom="ambar" />
+          <Icone nome="seta" cor={color.faint} />
+        </View>
+        <View style={st.divisoria} />
+        <View style={st.texto}>
+          <Text style={st.forte}>
+            {marcadas} de {total} marcadas
+          </Text>
+          <Text style={st.legendaPequena}>
+            {chamada.participantes.length
+              ? `${capitalizar(juntos(chamada.participantes, eu, equipe))} ${chamada.participantes.length > 1 ? 'estavam' : 'estava'} marcando. `
+              : ''}
+            Não foi encerrada, então ainda não conta nas métricas.
+          </Text>
+        </View>
+      </Pressable>
+      {euMarcando ? <Botao rotulo="Abrir para encerrar" onPress={abrir} /> : null}
     </Card>
   )
 }

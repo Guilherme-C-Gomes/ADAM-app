@@ -4,8 +4,10 @@ import { ActivityIndicator } from 'react-native'
 
 import { Aviso, Bloco, Botao, Grupo, Linha, Opcao, Rotulo, TelaForm } from '@/components/ui/form'
 import { mostrarRecado } from '@/components/ui/recado'
+import { useUnidades } from '@/data/chamada'
 import {
   rascunhoTreino,
+  responsavelDoPlano,
   salvarComissaoDoJogo,
   useDetalheJogo,
   useJogo,
@@ -28,12 +30,15 @@ const FUNCAO: Record<string, string> = { treinador: 'Treinador', professor: 'Pro
 
 export default function Comissao() {
   const { alvo = 'treino' } = useLocalSearchParams<{ alvo?: string }>()
-  const { equipe, carregando } = useJogo()
+  const { equipe, escala, carregando } = useJogo()
   const plano = rascunhoTreino.useValor()
+  const unidades = useUnidades()
   const jogo = useDetalheJogo(alvo === 'treino' ? undefined : alvo)
 
   const voluntarios = equipe.filter((p) => p.funcao === 'treinador' || p.funcao === 'professor')
-  if (carregando || (alvo !== 'treino' && jogo.carregando)) {
+  // a mesma unidade que o "Planejar treino" usa quando nenhuma foi escolhida
+  const esperaUnidade = alvo === 'treino' && !plano.unidadeId && unidades.carregando
+  if (carregando || esperaUnidade || (alvo !== 'treino' && jogo.carregando)) {
     return (
       <TelaForm titulo="Comissão técnica" subtitulo="Carregando…">
         <ActivityIndicator color={color.primaryCh} />
@@ -41,9 +46,18 @@ export default function Comissao() {
     )
   }
 
+  // no treino novo, o tecnico da escala ja vem marcado como responsavel
+  // (o mesmo que o "Planejar treino" mostra)
+  const responsavelId = responsavelDoPlano(
+    plano,
+    escala,
+    plano.unidadeId ?? unidades.dados[0]?.id ?? null,
+  )
   const inicial =
     alvo === 'treino'
-      ? [plano.responsavelId, ...plano.comissao].filter((x): x is string => !!x)
+      ? [responsavelId, ...plano.comissao].filter(
+          (x, i, todos): x is string => !!x && todos.indexOf(x) === i,
+        )
       : (jogo.dados?.comissao ?? [])
   return (
     <Escolha

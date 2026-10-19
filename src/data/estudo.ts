@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
-import { useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import type { Turma } from '@/data/chamada'
 import { iniciaisDe } from '@/data/jogo'
@@ -234,6 +234,30 @@ export function useBiblioteca() {
   return biblioteca.useValor()
 }
 
+/**
+ * Escolha de uma tela-seletor que parte do rascunho. Quando a tela volta a
+ * ter foco e o rascunho mudou enquanto ela estava escondida (outra tela gravou
+ * nele, ex.: o novo tipo de livro), a escolha passa a ser a do rascunho. Se o
+ * rascunho nao mudou, fica o que a pessoa ja tinha tocado aqui.
+ */
+export function useEscolhaDoRascunho<T extends object, K extends keyof T>(
+  rascunho: { ler: () => T },
+  campo: K,
+) {
+  const [escolha, setEscolha] = useState<T[K]>(() => rascunho.ler()[campo])
+  const visto = useRef<T[K]>(escolha)
+  useFocusEffect(
+    useCallback(() => {
+      const agora = rascunho.ler()[campo]
+      if (agora !== visto.current) {
+        visto.current = agora
+        setEscolha(agora)
+      }
+    }, [rascunho, campo]),
+  )
+  return [escolha, setEscolha] as const
+}
+
 /** Exemplares na estante agora. */
 export function disponiveis(livro: Livro, emprestimos: Emprestimo[]) {
   return livro.exemplares - emprestimos.filter((e) => e.livroId === livro.id).length
@@ -256,11 +280,18 @@ export const rascunhoLivro = criarRascunho({
   tipo: '' as string,
   /** foto nova, ainda no aparelho */
   capaUri: undefined as string | undefined,
+  /**
+   * Titulo novo que ja entrou no banco numa tentativa que falhou depois
+   * (na capa): tentar de novo atualiza esse, em vez de cadastrar outro.
+   */
+  criado: undefined as string | undefined,
+  /** capa que ja subiu numa tentativa anterior: nao sobe de novo */
+  capaEnviada: undefined as { uri: string; path: string } | undefined,
 })
 
 export async function emprestar(livroId: string, criancaId: string, entrega: string) {
   // confere a estante no banco na hora: outra pessoa pode ter levado o ultimo
-  const [{ data: livro }, { count }] = await Promise.all([
+  const [{ data: livro, error: erroLivro }, { count, error: erroConta }] = await Promise.all([
     supabase.from('livros').select('exemplares').eq('id', livroId).single(),
     supabase
       .from('emprestimos')
@@ -268,7 +299,10 @@ export async function emprestar(livroId: string, criancaId: string, entrega: str
       .eq('livro_id', livroId)
       .is('devolvido_em', null),
   ])
-  if (livro && (count ?? 0) >= livro.exemplares) {
+  if (erroLivro || erroConta || !livro) {
+    throw new Error('Não foi possível conferir a estante. Confira a internet e tente de novo.')
+  }
+  if ((count ?? 0) >= livro.exemplares) {
     throw new Error('Não sobrou exemplar na estante. Alguém levou o último agora há pouco.')
   }
   const { error } = await supabase
@@ -279,12 +313,19 @@ export async function emprestar(livroId: string, criancaId: string, entrega: str
 }
 
 export async function devolver(emprestimoId: string) {
-  const { error } = await supabase
+  // so o que ainda esta aberto: devolvido por outra pessoa mantem a data dela
+  const { data, error } = await supabase
     .from('emprestimos')
     .update({ devolvido_em: hojeISO() })
     .eq('id', emprestimoId)
+    .is('devolvido_em', null)
+    .select('id')
   if (error) throw new Error('Não foi possível registrar a devolução.')
   await carregarBiblioteca()
+  // nenhuma linha: ja tinha voltado (tudo certo) ou a conta nao pode mexer
+  if (!data?.length && biblioteca.ler().emprestimos.some((e) => e.id === emprestimoId)) {
+    throw new Error('Não foi possível registrar a devolução.')
+  }
 }
 
 export async function criarTipo(nome: string) {
@@ -300,13 +341,17 @@ export async function criarTipo(nome: string) {
   await carregarBiblioteca()
 }
 
-/** Manda um arquivo do aparelho para um bucket privado. */
+/** Manda um arquivo do aparelho para um bucket privado. Devolve se deu certo. */
 async function enviar(bucket: string, caminho: string, uri: string, tipo?: string) {
-  const dados = await (await fetch(uri)).arrayBuffer()
-  const { error } = await supabase.storage
-    .from(bucket)
-    .upload(caminho, dados, { contentType: tipo ?? 'application/octet-stream' })
-  if (error) throw error
+  try {
+    const dados = await (await fetch(uri)).arrayBuffer()
+    const { error } = await supabase.storage
+      .from(bucket)
+      .upload(caminho, dados, { contentType: tipo ?? 'application/octet-stream' })
+    return !error
+  } catch {
+    return false
+  }
 }
 
 /** Grava o titulo (novo ou existente). A capa nova sobe junto. */
@@ -319,23 +364,41 @@ export async function salvarLivro(dados: {
   capaAntiga?: string | null
 }) {
   const linha = { titulo: dados.titulo.trim(), tipo: dados.tipo, exemplares: dados.exemplares }
-  let id = dados.id
+  const rascunho = rascunhoLivro.ler()
+  // titulo novo que ja entrou numa tentativa anterior vira edicao dele
+  let id = dados.id ?? rascunho.criado
   if (id) {
-    const { error } = await supabase.from('livros').update(linha).eq('id', id)
-    if (error) throw new Error('Não foi possível salvar o livro.')
+    const { data, error } = await supabase.from('livros').update(linha).eq('id', id).select('id')
+    if (error || !data?.length) throw new Error('Não foi possível salvar o livro.')
   } else {
     const { data, error } = await supabase.from('livros').insert(linha).select('id').single()
     if (error || !data) throw new Error('Não foi possível cadastrar o livro.')
     id = data.id as string
+    // ja no rascunho: se a capa falhar, tentar de novo nao cadastra outro
+    rascunhoLivro.definir({ criado: id })
   }
 
   if (dados.capaUri) {
-    // nome novo a cada troca: o banco so deixa enviar, nao sobrescrever
-    const caminho = `livros/${id}/${Date.now()}.jpg`
-    await enviar('capas', caminho, dados.capaUri, 'image/jpeg')
-    await supabase.from('livros').update({ capa_path: caminho }).eq('id', id)
-    if (dados.capaAntiga) await supabase.storage.from('capas').remove([dados.capaAntiga])
+    const falhou = new Error(
+      dados.id
+        ? 'O livro foi salvo, mas a capa não subiu. Toque em salvar de novo.'
+        : 'O livro foi cadastrado, mas a capa não subiu. Toque em salvar de novo.',
+    )
+    let caminho = rascunho.capaEnviada?.uri === dados.capaUri ? rascunho.capaEnviada.path : null
+    if (!caminho) {
+      // nome novo a cada troca: o banco so deixa enviar, nao sobrescrever
+      caminho = `livros/${id}/${Date.now()}.jpg`
+      if (!(await enviar('capas', caminho, dados.capaUri, 'image/jpeg'))) throw falhou
+      rascunhoLivro.definir({ capaEnviada: { uri: dados.capaUri, path: caminho } })
+    }
+    const { error } = await supabase.from('livros').update({ capa_path: caminho }).eq('id', id)
+    if (error) throw falhou
+    if (dados.capaAntiga && dados.capaAntiga !== caminho) {
+      // a capa nova ja vale; se a antiga nao sair, sobra so o arquivo
+      await supabase.storage.from('capas').remove([dados.capaAntiga])
+    }
   }
+  rascunhoLivro.definir({ criado: undefined, capaEnviada: undefined })
   await carregarBiblioteca()
   return id
 }
@@ -494,6 +557,27 @@ export const horaCurta = (h: string) =>
 
 export type ArquivoNovo = { nome: string; uri: string; tipo?: string; tamanho?: string }
 
+/**
+ * O que uma tentativa de salvar a aula ja deixou no banco. O formulario guarda
+ * entre as tentativas: a aula criada nao e criada de novo e o arquivo que ja
+ * subiu nao sobe outra vez.
+ */
+export type ProgressoAula = {
+  id?: string
+  /** por `uri` do arquivo no aparelho */
+  enviados: Record<string, Material>
+}
+
+/** Junta listas de material sem repetir o mesmo arquivo. */
+function semRepetir(...listas: Material[][]) {
+  const vistos = new Set<string>()
+  return listas.flat().filter((m) => {
+    if (vistos.has(m.path)) return false
+    vistos.add(m.path)
+    return true
+  })
+}
+
 const semAcento = (nome: string) =>
   nome
     .normalize('NFD')
@@ -513,7 +597,9 @@ export async function salvarAula(dados: {
   material: Material[]
   materialAntes: Material[]
   novos: ArquivoNovo[]
+  progresso: ProgressoAula
 }) {
+  const { progresso } = dados
   const linha = {
     data: dados.data,
     hora: dados.hora,
@@ -523,32 +609,57 @@ export async function salvarAula(dados: {
     historia: dados.historia.trim() || null,
     levar: dados.levar,
   }
-  let id = dados.id
+  // aula nova que ja entrou numa tentativa anterior vira edicao dela
+  let id = dados.id ?? progresso.id
   if (id) {
-    const { error } = await supabase.from('aulas').update(linha).eq('id', id)
-    if (error) throw new Error('Não foi possível salvar a aula.')
+    const { data, error } = await supabase.from('aulas').update(linha).eq('id', id).select('id')
+    if (error || !data?.length) throw new Error('Não foi possível salvar a aula.')
   } else {
     const { data, error } = await supabase.from('aulas').insert(linha).select('id').single()
     if (error || !data) throw new Error('Não foi possível marcar a aula.')
     id = data.id as string
+    // guardado ja: se um arquivo falhar, tentar de novo nao marca outra aula
+    progresso.id = id
   }
 
-  const material = [...dados.material]
+  const falhou = new Error(
+    'A aula foi salva, mas um arquivo não subiu. Toque em salvar de novo: o que já subiu não sobe outra vez.',
+  )
+  const gravar = async (lista: Material[]) => {
+    const { error } = await supabase.from('aulas').update({ material: lista }).eq('id', id)
+    if (error) throw falhou
+  }
+
+  const enviados: Material[] = []
   for (const arquivo of dados.novos) {
-    const caminho = `aulas/${id}/${Date.now()}-${semAcento(arquivo.nome)}`
-    try {
-      await enviar('materiais', caminho, arquivo.uri, arquivo.tipo)
-    } catch {
-      throw new Error(
-        'A aula foi salva, mas o arquivo não subiu. Confira se o SQL do Estudo já rodou no Supabase.',
+    let m = progresso.enviados[arquivo.uri]
+    if (!m) {
+      const caminho = `aulas/${id}/${Date.now()}-${semAcento(arquivo.nome)}`
+      if (!(await enviar('materiais', caminho, arquivo.uri, arquivo.tipo))) throw falhou
+      m = { nome: arquivo.nome, path: caminho, tamanho: arquivo.tamanho }
+      progresso.enviados[arquivo.uri] = m
+      // vai para a aula na hora: arquivo no armazenamento nunca fica sem dono.
+      // O que a pessoa tirou da lista so sai no fim, junto com o arquivo.
+      await gravar(
+        semRepetir(dados.materialAntes, dados.material, Object.values(progresso.enviados)),
       )
     }
-    material.push({ nome: arquivo.nome, path: caminho, tamanho: arquivo.tamanho })
+    enviados.push(m)
   }
-  await supabase.from('aulas').update({ material }).eq('id', id)
 
-  const saiu = dados.materialAntes.filter((m) => !material.some((x) => x.path === m.path))
-  if (saiu.length) await supabase.storage.from('materiais').remove(saiu.map((m) => m.path))
+  const material = semRepetir(dados.material, enviados)
+  await gravar(material)
+
+  // sai do armazenamento o que saiu da lista, inclusive arquivo que subiu numa
+  // tentativa anterior e foi tirado antes de salvar de novo
+  const saiu = semRepetir(dados.materialAntes, Object.values(progresso.enviados)).filter(
+    (m) => !material.some((x) => x.path === m.path),
+  )
+  progresso.enviados = {}
+  if (saiu.length) {
+    // a aula ja nao aponta para eles; se nao sairem, sobra so o arquivo
+    await supabase.storage.from('materiais').remove(saiu.map((m) => m.path))
+  }
 
   await carregarAulas()
   return id

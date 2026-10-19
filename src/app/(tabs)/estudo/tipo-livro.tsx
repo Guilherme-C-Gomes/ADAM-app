@@ -1,15 +1,13 @@
 import { router } from 'expo-router'
-import { useState } from 'react'
-
 import { Aviso, Bloco, Botao, Grupo, Opcao, TelaForm } from '@/components/ui/form'
-import { rascunhoLivro, useBiblioteca } from '@/data/estudo'
+import { rascunhoLivro, useBiblioteca, useEscolhaDoRascunho } from '@/data/estudo'
 import { voltar } from '@/lib/navegacao'
 
 /** Tela 13o. O tipo vale para todos os livros — e por ele que se procura. */
 export default function TipoDoLivro() {
-  const escolha = rascunhoLivro.useValor()
   const { livros, tipos } = useBiblioteca()
-  const [tipo, setTipo] = useState(escolha.tipo)
+  // o novo tipo (13s) grava no rascunho e volta: a escolha acompanha
+  const [tipo, setTipo] = useEscolhaDoRascunho(rascunhoLivro, 'tipo')
 
   const quantos = (nome: string) => livros.filter((l) => l.tipo === nome).length
 

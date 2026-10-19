@@ -15,8 +15,8 @@ import {
   horaCurta,
   nomeNaEquipe,
   rascunhoTreino,
+  responsavelDoPlano,
   salvarTreino,
-  tecnicoDaEscala,
   useJogo,
 } from '@/data/jogo-dados'
 import { deISO } from '@/data/metricas'
@@ -41,8 +41,7 @@ export default function PlanejarTreino() {
   const [erro, setErro] = useState<string | null>(null)
 
   const unidadeId = plano.unidadeId ?? unidades.dados[0]?.id ?? null
-  const daEscala = tecnicoDaEscala(escala, unidadeId, plano.data, plano.hora, plano.turma)
-  const responsavelId = plano.responsavelId ?? daEscala
+  const responsavelId = responsavelDoPlano(plano, escala, unidadeId)
   const responsavel = nomeNaEquipe(equipe, responsavelId)
 
   const itens = plano.exercicios.flatMap((item) => {

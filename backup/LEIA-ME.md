@@ -7,11 +7,35 @@ variação no plano grátis da Vercel), a função `api/backup.ts`:
    num mês de férias (ele pausa depois de 7 dias sem uso);
 2. grava a cópia completa (`adam-banco-AAAA-MM-DD_HHhMM.json`) na pasta
    `banco/` do Google Drive da ADAM;
-3. grava as fotos e os documentos novos na pasta `arquivos/`;
+3. grava na pasta `arquivos/` as fotos e os documentos novos e os que foram
+   trocados (cada arquivo do Drive guarda na descrição a versão que tem; se a
+   foto da ficha mudou no app, vai a nova e a antiga vai para a lixeira);
 4. anota o resultado no app (Configuração da ADAM › Cópia de segurança).
 
 No Drive ficam só as 3 cópias mais recentes do banco (manhã, tarde e noite); as
 mais antigas vão para a lixeira do Drive a cada cópia nova.
+
+Se a última cópia boa passar de 12 horas, o app avisa em âmbar ("confira a
+Vercel"): é sinal de que a cópia nem começou (variável faltando, senha do
+agendamento errada, tempo esgotado). O motivo aparece em Vercel › projeto
+**adam** › **Logs** (filtre por `/api/backup`).
+
+## Atualizar o Apps Script (quando `backup/apps-script.gs` mudar)
+
+A Vercel publica sozinha; o Apps Script, não. Depois de cada mudança neste
+arquivo, logado na conta Google dona da pasta:
+
+1. Abra o projeto em <https://script.google.com>.
+2. Copie a sua linha `const SENHA = '...'` (para não perder a senha), apague
+   tudo, cole o `backup/apps-script.gs` novo e devolva a linha da senha.
+3. Salve.
+4. **Implantar › Gerenciar implantações** › lápis (editar) › **Versão: Nova
+   versão** › **Implantar**. O URL `/exec` continua o mesmo; não mexa na Vercel.
+
+Sem a nova versão, a cópia segue funcionando como antes (só não troca as fotos
+alteradas). Na primeira cópia depois de atualizar, todas as fotos e documentos
+já guardados são mandados de novo uma vez (eles ainda não têm a versão),
+aos poucos: o app mostra "N na fila" por um ou dois dias.
 
 ## Instalar (uma vez)
 

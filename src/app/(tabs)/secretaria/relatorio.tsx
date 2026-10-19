@@ -94,9 +94,7 @@ export default function Relatorio() {
                 </View>
                 <View style={st.valorLinha}>
                   <Contador valor={m.foram} style={st.valor} />
-                  <Text style={st.valorMeta}>
-                    de {m.ativas} {m.ativas === 1 ? 'cadastrada' : 'cadastradas'}
-                  </Text>
+                  <Text style={st.valorMeta}>de {m.noPeriodo} com ficha no período</Text>
                 </View>
                 <Text style={st.meta}>
                   {m.foramAntes} no período anterior ({m.anterior.rotulo})

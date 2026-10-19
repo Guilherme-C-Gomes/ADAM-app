@@ -1,6 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker'
 import { useLocalSearchParams } from 'expo-router'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
 
 import { Chip } from '@/components/ui'
@@ -28,6 +28,7 @@ import {
   type ArquivoNovo,
   type Aula,
   type Material,
+  type ProgressoAula,
 } from '@/data/estudo'
 import { deISO, hojeISO, paraISO } from '@/data/metricas'
 import { voltar } from '@/lib/navegacao'
@@ -88,6 +89,8 @@ function Formulario({ aula }: { aula?: Aula }) {
   const [novos, setNovos] = useState<ArquivoNovo[]>([])
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  // o que uma tentativa que falhou ja gravou: a proxima continua dali
+  const progresso = useRef<ProgressoAula>({ enviados: {} })
 
   // a unidade padrao e a primeira, enquanto ninguem escolheu
   const unidade = unidadeId ?? unidades.dados[0]?.id ?? null
@@ -127,6 +130,7 @@ function Formulario({ aula }: { aula?: Aula }) {
         material,
         materialAntes: aula?.material ?? [],
         novos,
+        progresso: progresso.current,
       })
       mostrarRecado(aula ? 'Aula salva' : 'Aula marcada')
       voltar('/estudo')

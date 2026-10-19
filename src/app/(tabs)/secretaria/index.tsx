@@ -91,9 +91,7 @@ export default function Secretaria() {
                   </View>
                   <View style={st.valorLinha}>
                     <Contador valor={m.foram} style={st.valor} />
-                    <Text style={st.valorMeta}>
-                      de {m.ativas} {m.ativas === 1 ? 'cadastrada' : 'cadastradas'}
-                    </Text>
+                    <Text style={st.valorMeta}>de {m.noPeriodo} com ficha no período</Text>
                     <Pressable
                       onPress={() => router.push('/secretaria/relatorio')}
                       hitSlop={space.sm}

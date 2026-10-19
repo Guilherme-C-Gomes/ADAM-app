@@ -1,3 +1,8 @@
+import {
+  isAuthRetryableFetchError,
+  isAuthWeakPasswordError,
+  type AuthError,
+} from '@supabase/supabase-js'
 import { useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 
@@ -15,6 +20,22 @@ import { voltar } from '@/lib/navegacao'
  * iCloud.
  */
 const MINIMO = 8
+
+/** Cada recusa do Supabase com a sua explicacao; "conexao" so quando foi a rede. */
+function motivo(error: AuthError) {
+  if (isAuthWeakPasswordError(error) || error.code === 'weak_password') {
+    const reasons = isAuthWeakPasswordError(error) ? error.reasons : []
+    return reasons.includes('pwned')
+      ? 'Essa senha aparece em vazamentos conhecidos. Escolha outra.'
+      : `A senha é fraca: use pelo menos ${MINIMO} caracteres, misturando letras e números.`
+  }
+  if (error.code === 'same_password') return 'A nova senha precisa ser diferente da atual.'
+  if (error.code === 'reauthentication_needed')
+    return 'Por segurança, saia e entre de novo no app antes de trocar a senha.'
+  if (isAuthRetryableFetchError(error) || error.status === 0)
+    return 'Sem conexão com o servidor. Confira a internet e tente de novo.'
+  return 'Não foi possível trocar a senha. Tente de novo em instantes.'
+}
 
 export default function TrocarSenha() {
   const [senha, setSenha] = useState('')
@@ -34,11 +55,7 @@ export default function TrocarSenha() {
     const { error } = await supabase.auth.updateUser({ password: senha })
     setSalvando(false)
     if (error) {
-      setErro(
-        error.code === 'same_password'
-          ? 'A senha nova é igual à atual. Escolha outra.'
-          : 'Não foi possível trocar a senha. Confira a conexão e tente de novo.',
-      )
+      setErro(motivo(error))
       return
     }
     setPronto(true)

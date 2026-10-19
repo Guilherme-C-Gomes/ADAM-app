@@ -15,8 +15,10 @@ import {
   TelaForm,
 } from '@/components/ui/form'
 import {
+  correcaoIncompleta,
   desmarcar,
   encerrar,
+  hojeLocal,
   horaDe,
   HORARIO,
   juntos,
@@ -36,6 +38,8 @@ import {
   ehLocal,
   enfileirar,
   semConexao,
+  sincronizar,
+  temNaFila,
   useFilaChamada,
 } from '@/data/chamada-offline'
 import { mostrarRecado } from '@/components/ui/recado'
@@ -60,6 +64,31 @@ import { voltar } from '@/lib/navegacao'
  * o que treinador e professor podem ver.
  */
 type Filtro = 'Todos' | 'Falta marcar'
+
+/** Quanto o Encerrar espera a fila subir antes de voltar (sinal ruim nao trava a tela). */
+const ESPERA_ENVIO = 4000
+
+/** O que dizer quando a correcao nao foi inteira — sem deixar meia correcao calada. */
+function erroDaCorrecao(e: unknown) {
+  const caiu = semConexao(e)
+  if (correcaoIncompleta(e)) {
+    if (e.etapa === 'registro') {
+      return `As mudanças foram gravadas, mas o registro de quem corrigiu não${caiu ? ' (a internet caiu)' : ''}. Toque em Salvar correção de novo.`
+    }
+    if (e.aplicadas > 0) {
+      return `Só ${e.aplicadas} de ${e.total} mudanças foram gravadas${caiu ? ' (a internet caiu)' : ''}. Toque em Salvar correção de novo para terminar.`
+    }
+  }
+  return caiu
+    ? 'Correção precisa de internet. Tente de novo quando a conexão voltar.'
+    : 'Não foi possível salvar a correção. Ela só vale até o fim do dia da chamada.'
+}
+
+/** "2026-10-17" -> "17/10", direto do texto. */
+const diaMes = (data: string) => {
+  const [, mes, dia] = data.split('-')
+  return `${dia}/${mes}`
+}
 
 export default function ListaDaChamada() {
   const { id: idDaRota } = useLocalSearchParams<{ id: string }>()
@@ -149,9 +178,15 @@ export default function ListaDaChamada() {
         criancaId,
         por: eu,
       })
-    // chamada feita sem sinal: tudo vai para a fila do celular
-    if (local) {
+    // chamada feita sem sinal, ou com algo desta chamada ainda na fila: o
+    // toque vai pela fila, para manter a ordem (e para o marcar e o
+    // desmarcar da mesma crianca se anularem la). Direto no banco, um
+    // desmarcar agora nao apagaria a marca que ainda nem subiu.
+    if (local || (await temNaFila(c.id))) {
       await guardarNoCelular()
+      sincronizar().then(() => {
+        if (!local) chamada.recarregar()
+      })
       return
     }
     setPendentes((p) => ({ ...p, [criancaId]: estavaMarcada ? null : eu }))
@@ -175,15 +210,29 @@ export default function ListaDaChamada() {
   const concluir = async () => {
     setErro(null)
     setSalvando(true)
+    // com algo desta chamada ainda no celular, o banco ainda nao tem a
+    // chamada (ou nao tem as marcas): encerrar vai pela fila, depois delas
+    const naFila = local || (await temNaFila(c.id))
     const encerrarNoCelular = async () => {
       await enfileirar({ tipo: 'encerrar', chamada: c.id })
-      mostrarRecado('Chamada encerrada no celular. Ela sobe quando a internet voltar.')
+      // da a fila uns segundos para subir; sinal ruim nao prende a tela
+      await Promise.race([sincronizar(), new Promise((pronto) => setTimeout(pronto, ESPERA_ENVIO))])
+      if (await temNaFila(c.id)) {
+        mostrarRecado('Chamada encerrada no celular. Ela sobe quando a internet voltar.')
+      }
       voltar()
     }
     try {
       if (corrigindo) {
+        if (naFila) {
+          // a correcao grava direto no banco, e a chamada ainda nao subiu
+          setErro(
+            'Para corrigir, é preciso internet: esta chamada ainda está guardada no celular e precisa subir antes.',
+          )
+          return
+        }
         if (rascunho) await salvarCorrecao(c.id, c.marcas, rascunho)
-      } else if (local) {
+      } else if (naFila) {
         await encerrarNoCelular()
         return
       } else {
@@ -195,13 +244,14 @@ export default function ListaDaChamada() {
         await encerrarNoCelular()
         return
       }
-      setErro(
-        corrigindo
-          ? semConexao(e)
-            ? 'Correção precisa de internet. Tente de novo quando a conexão voltar.'
-            : 'Não foi possível salvar a correção. Ela só vale até o fim do dia da chamada.'
-          : 'Não foi possível encerrar. Só quem está marcando pode encerrar.',
-      )
+      if (corrigindo) {
+        setErro(erroDaCorrecao(e))
+        // parte pode ter subido: busca de novo, para a proxima tentativa
+        // aplicar so o que falta
+        if (!local) chamada.recarregar()
+      } else {
+        setErro('Não foi possível encerrar. Só quem está marcando pode encerrar.')
+      }
     } finally {
       setSalvando(false)
     }
@@ -213,7 +263,9 @@ export default function ListaDaChamada() {
       subtitulo={
         corrigindo
           ? `Encerrada às ${horaDe(c.encerrada_em)} · dá para corrigir até 23h59`
-          : `${HORARIO[c.turma]} · ${juntos(c.participantes, eu, equipe)} marcando agora`
+          : c.data !== hojeLocal()
+            ? `Chamada de ${diaMes(c.data)}, ainda aberta · ${juntos(c.participantes, eu, equipe)}`
+            : `${HORARIO[c.turma]} · ${juntos(c.participantes, eu, equipe)} marcando agora`
       }
       rodape={
         <Botao
@@ -225,6 +277,16 @@ export default function ListaDaChamada() {
       {erro ? (
         <Bloco>
           <Aviso tom="ambar" titulo={erro} />
+        </Bloco>
+      ) : null}
+
+      {!local && chamada.erro && chamada.dados ? (
+        <Bloco>
+          <Aviso
+            tom="ambar"
+            titulo="Sem conexão agora"
+            texto="A lista pode estar desatualizada. Dá para seguir marcando: as marcas ficam no celular e sobem quando a internet voltar."
+          />
         </Bloco>
       ) : null}
 

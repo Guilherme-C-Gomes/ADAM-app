@@ -2,7 +2,15 @@ import * as Clipboard from 'expo-clipboard'
 import * as Print from 'expo-print'
 import { useLocalSearchParams } from 'expo-router'
 import * as Sharing from 'expo-sharing'
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
+import {
+  ActivityIndicator,
+  Linking,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -35,12 +43,19 @@ export default function Compartilhar() {
   const atletas = useAtletas()
   const jogo = detalhe.dados?.jogo
 
-  if (!jogo || atletas.carregando) {
+  // sem os nomes das criancas a convocacao sairia vazia: mostra o erro
+  if (!jogo || atletas.carregando || atletas.erro) {
     return (
       <SafeAreaView style={st.screen} edges={['top']}>
         <HeroVoltar
-          titulo={detalhe.carregando || atletas.carregando ? 'Montando…' : 'Jogo não encontrado'}
-          subtitulo="Convocação para o grupo das famílias"
+          titulo={
+            detalhe.carregando || atletas.carregando
+              ? 'Montando…'
+              : jogo
+                ? 'Não deu para montar'
+                : 'Jogo não encontrado'
+          }
+          subtitulo={jogo && atletas.erro ? atletas.erro : 'Convocação para o grupo das famílias'}
         />
         {detalhe.carregando || atletas.carregando ? (
           <ActivityIndicator color={color.primaryCh} />
@@ -127,9 +142,18 @@ export default function Compartilhar() {
                   <h2>${titulo}</h2><p>${quando}<br/>${onde}</p>
                   <h4>EM CAMPO (${emCampo.length})</h4><p>${emCampo.join(', ')}</p>
                   <h4>BANCO (${banco.length})</h4><p>${banco.join(', ')}</p></body></html>`
-                const { uri } = await Print.printToFileAsync({ html })
-                if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(uri)
-                mostrarRecado('PDF gerado')
+                try {
+                  // na web nao ha arquivo: abre a janela de imprimir (salvar como PDF)
+                  if (Platform.OS === 'web') {
+                    await Print.printAsync({ html })
+                    return
+                  }
+                  const { uri } = await Print.printToFileAsync({ html })
+                  if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(uri)
+                  mostrarRecado('PDF gerado')
+                } catch {
+                  mostrarRecado('Não foi possível gerar o PDF. Tente de novo.')
+                }
               }}
             />
           </Grupo>

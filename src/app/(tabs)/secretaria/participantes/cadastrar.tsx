@@ -48,6 +48,10 @@ export default function FichaDaCrianca() {
   const [abrindo, setAbrindo] = useState(!!id)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  // a ficha nao abriu inteira: o formulario NAO aparece (salvar um
+  // rascunho pela metade apagaria responsaveis e documentos)
+  const [erroAoAbrir, setErroAoAbrir] = useState<string | null>(null)
+  const [tentativa, setTentativa] = useState(0)
 
   // Ao entrar: ficha existente vem do banco; ficha nova comeca vazia. Voltar
   // das telas de foto e responsaveis nao passa por aqui de novo.
@@ -61,17 +65,23 @@ export default function FichaDaCrianca() {
       () => {
         if (ativo) setAbrindo(false)
       },
-      () => {
+      (e: unknown) => {
         if (ativo) {
           setAbrindo(false)
-          setErro('Não foi possível abrir a ficha.')
+          setErroAoAbrir(e instanceof Error ? e.message : 'Não foi possível abrir a ficha.')
         }
       },
     )
     return () => {
       ativo = false
     }
-  }, [id])
+  }, [id, tentativa])
+
+  const tentarDeNovo = () => {
+    setErroAoAbrir(null)
+    setAbrindo(true)
+    setTentativa((t) => t + 1)
+  }
 
   // a unidade padrao e a primeira, enquanto ninguem escolheu
   const unidadeId = ficha.unidadeId ?? unidades.dados[0]?.id ?? null
@@ -101,6 +111,21 @@ export default function FichaDaCrianca() {
     return (
       <TelaForm titulo="Editar ficha" subtitulo="Abrindo…">
         <ActivityIndicator color={color.primaryCh} />
+      </TelaForm>
+    )
+  }
+
+  if (erroAoAbrir) {
+    return (
+      <TelaForm titulo="Editar ficha" subtitulo="A ficha não abriu">
+        <Bloco>
+          <Aviso
+            tom="ambar"
+            titulo={erroAoAbrir}
+            texto="Nada foi alterado. Toque para tentar de novo"
+            onPress={tentarDeNovo}
+          />
+        </Bloco>
       </TelaForm>
     )
   }

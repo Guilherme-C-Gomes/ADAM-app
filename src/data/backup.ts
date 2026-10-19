@@ -39,14 +39,18 @@ export type RegistroBackup = {
   erro: string | null
 }
 
-/** As ultimas copias. `faltaSql` = a tabela ainda nao existe no banco. */
+/**
+ * As ultimas copias. `faltaSql` = a tabela ainda nao existe no banco.
+ * `lidoEm` = quando a lista foi lida (o relogio fica fora do render).
+ */
 export function useBackups() {
   const [estado, setEstado] = useState<{
     lista: RegistroBackup[]
     carregando: boolean
     faltaSql: boolean
     erro: string | null
-  }>({ lista: [], carregando: true, faltaSql: false, erro: null })
+    lidoEm: number
+  }>({ lista: [], carregando: true, faltaSql: false, erro: null, lidoEm: 0 })
 
   const buscar = useCallback(async () => {
     const { data, error } = await supabase
@@ -61,6 +65,7 @@ export function useBackups() {
         carregando: false,
         faltaSql,
         erro: faltaSql ? null : 'Não foi possível ler as cópias.',
+        lidoEm: Date.now(),
       }
     }
     return {
@@ -78,6 +83,7 @@ export function useBackups() {
       carregando: false,
       faltaSql: false,
       erro: null,
+      lidoEm: Date.now(),
     }
   }, [])
 
@@ -88,6 +94,28 @@ export function useBackups() {
     }, [recarregar]),
   )
   return { ...estado, recarregar }
+}
+
+/** Sem copia boa ha mais que isso (3 por dia = no maximo 8h entre elas), avisa. */
+const HORAS_SEM_COPIA = 12
+
+/**
+ * O aviso de copia atrasada, ou null se esta em dia. Pega o que nao deixa
+ * linha na tabela: o agendamento que falha antes de comecar (variavel
+ * faltando, senha do cron, tempo esgotado). Sem nenhuma copia boa, conta
+ * desde a tentativa mais antiga da lista; sem lista, nao ha como saber.
+ */
+export function avisoDeAtraso(lista: RegistroBackup[], lidoEm: number) {
+  if (!lista.length || !lidoEm) return null
+  const boa = lista.find((b) => b.ok)
+  const desde = Date.parse((boa ?? lista[lista.length - 1]).feitoEm)
+  if (Number.isNaN(desde)) return null
+  const horas = Math.floor((lidoEm - desde) / 3_600_000)
+  if (horas < HORAS_SEM_COPIA) return null
+  const tempo = horas < 48 ? `${horas} horas` : `${Math.floor(horas / 24)} dias`
+  return boa
+    ? `A última cópia boa foi há ${tempo} — confira a Vercel`
+    : `Nenhuma cópia deu certo em ${tempo} — confira a Vercel`
 }
 
 /** Pede uma copia agora, igual a agendada (banco + fotos novas no Drive). */

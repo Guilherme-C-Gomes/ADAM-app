@@ -72,6 +72,20 @@ export function idadeDe(iso: string) {
   return idade
 }
 
+/**
+ * A turma do banco ("pequenos" | "maiores") que a crianca tinha no dia
+ * `data`: o mesmo que `turma_da_idade` do SQL (anos completos de
+ * `age(data, nascimento)`, 12 ou mais vai para os Maiores), so que na data
+ * da chamada em vez de hoje. Tudo "AAAA-MM-DD", sem fuso.
+ */
+function turmaNaData(nascimento: string, data: string) {
+  const anos =
+    Number(data.slice(0, 4)) -
+    Number(nascimento.slice(0, 4)) -
+    (data.slice(5, 10) < nascimento.slice(5, 10) ? 1 : 0)
+  return anos >= 12 ? 'maiores' : 'pequenos'
+}
+
 /** "março de 2024" */
 export function mesPorExtenso(iso: string) {
   const [ano, mes] = iso.slice(0, 7).split('-').map(Number)
@@ -94,7 +108,11 @@ export type Participante = {
   /** endereco temporario (1 hora) da foto, ja assinado */
   fotoUrl: string | null
   posicao: string | null
-  /** presencas / chamadas encerradas da turma dele nas ultimas 8 semanas */
+  /**
+   * presencas / chamadas encerradas das ultimas 8 semanas que eram dela
+   * (unidade dela, turma da idade no dia, entre `desde` e a saida) ou em
+   * que ela foi marcada
+   */
   frequencia: number | null
   presencas: number
   chamadas: number
@@ -200,11 +218,18 @@ async function lerParticipantes(id?: string, saidas = false): Promise<Participan
   return criancas.map((c) => {
     const idade = idadeDe(c.nascimento)
     const turma = turmaDaIdade(idade)
+    // A chamada conta para a crianca se ela foi marcada ali (presenca
+    // registrada nunca some), ou se era a chamada dela naquele dia: a
+    // unidade dela e a turma da idade que ela tinha NA DATA da chamada
+    // (quem fez 12 anos no meio das 8 semanas muda de turma ali). Antes do
+    // `desde` e depois da saida a falta nao conta: ela nao estava na ADAM.
     const daTurma = chamadas.filter(
       (ch) =>
-        ch.unidade_id === c.unidade_id &&
-        ch.turma === (turma === 'Maiores' ? 'maiores' : 'pequenos') &&
-        ch.data >= c.desde,
+        presente.has(`${ch.id}:${c.id}`) ||
+        (ch.data >= c.desde &&
+          (!c.saiu_em || ch.data <= c.saiu_em) &&
+          ch.unidade_id === c.unidade_id &&
+          ch.turma === turmaNaData(c.nascimento, ch.data)),
     )
     const semanas: (boolean | null)[] = Array(SEMANAS).fill(null)
     let presencas = 0
@@ -325,7 +350,11 @@ const POSICAO_TELA: Record<string, NonNullable<typeof FICHA_VAZIA.funcao>> = {
   ataque: 'Ataque',
 }
 
-/** Abre uma ficha existente no rascunho, para editar. */
+/**
+ * Abre uma ficha existente no rascunho, para editar. Se qualquer parte nao
+ * vier (a crianca, os responsaveis ou os documentos), nada entra no
+ * rascunho: abrir com listas vazias faria o "Salvar" apagar o que existe.
+ */
 export async function abrirFicha(id: string) {
   const [crianca, responsaveis, documentos] = await Promise.all([
     supabase
@@ -340,9 +369,15 @@ export async function abrirFicha(id: string) {
       .order('criado_em'),
     supabase.from('documentos').select('tipo').eq('crianca_id', id),
   ])
-  if (crianca.error) throw crianca.error
+  if (crianca.error || !crianca.data) throw new Error('Não foi possível abrir a ficha.')
+  if (responsaveis.error || !responsaveis.data) {
+    throw new Error('Não foi possível ler os responsáveis desta ficha.')
+  }
+  if (documentos.error || !documentos.data) {
+    throw new Error('Não foi possível ler os documentos desta ficha.')
+  }
   const c = crianca.data
-  const tipos = new Set((documentos.data ?? []).map((d) => d.tipo))
+  const tipos = new Set(documentos.data.map((d) => d.tipo))
   rascunhoFicha.definir({
     ...FICHA_VAZIA,
     id: c.id,
@@ -352,7 +387,7 @@ export async function abrirFicha(id: string) {
     fotoPath: c.foto_path ?? undefined,
     funcao: c.posicao ? POSICAO_TELA[c.posicao] : null,
     observacao: c.observacao ?? '',
-    contatos: (responsaveis.data ?? []).map((r) => ({
+    contatos: responsaveis.data.map((r) => ({
       nome: r.nome,
       relacao: RELACAO_TELA[r.relacao] ?? 'Outro',
       telefone: r.telefone,
@@ -415,48 +450,95 @@ export async function salvarFicha() {
     rascunhoFicha.definir({ id })
   }
 
+  // Daqui para baixo a crianca ja esta no banco (e o id no rascunho): se
+  // um passo falha, para ali, o rascunho fica e "Salvar" de novo refaz
+  // tudo. Nada e apagado antes do substituto estar gravado.
+  const falhou = (parte: string) =>
+    new Error(`A ficha foi salva, mas ${parte} não. Toque em salvar de novo.`)
+
   // foto: so sobe se a pessoa escolheu uma nova agora
   if (f.fotoUri) {
     const caminho = `criancas/${id}/foto.jpg`
-    await enviarArquivo(caminho, f.fotoUri, 'image/jpeg')
-    await supabase.from('criancas').update({ foto_path: caminho }).eq('id', id)
+    try {
+      await enviarArquivo(caminho, f.fotoUri, 'image/jpeg')
+    } catch {
+      throw falhou('a foto')
+    }
+    const { error } = await supabase.from('criancas').update({ foto_path: caminho }).eq('id', id)
+    if (error) throw falhou('a foto')
   } else if (!f.fotoPath) {
-    await supabase.from('criancas').update({ foto_path: null }).eq('id', id)
+    const { error } = await supabase.from('criancas').update({ foto_path: null }).eq('id', id)
+    if (error) throw falhou('a retirada da foto')
   }
 
-  // responsaveis: a lista da tela e a verdade; troca a antiga inteira
-  await supabase.from('responsaveis').delete().eq('crianca_id', id)
-  const contatos = f.contatos.filter((c) => c.nome.trim() && c.telefone.trim())
+  // responsaveis: a lista da tela e a verdade. Grava os novos primeiro,
+  // depois apaga os antigos e so entao marca o principal (o indice unico
+  // nao deixa dois principais convivendo).
+  const antigos = await supabase.from('responsaveis').select('id').eq('crianca_id', id)
+  if (antigos.error || !antigos.data) throw falhou('os responsáveis')
+  const idsAntigos = antigos.data.map((r) => r.id as string)
+  const preenchidos = f.contatos.filter((c) => c.nome.trim() && c.telefone.trim())
+  const contatos = preenchidos.map((c) => ({
+    crianca_id: id,
+    nome: c.nome.trim(),
+    relacao: RELACAO_BANCO[c.relacao],
+    telefone: c.telefone.trim(),
+    whatsapp: c.whatsapp,
+    principal: false,
+  }))
   // um principal so: se nenhum foi marcado, o primeiro vira o principal
-  const temPrincipal = contatos.some((c) => c.principal)
+  const indicePrincipal = Math.max(
+    0,
+    preenchidos.findIndex((c) => c.principal),
+  )
+  let idsNovos: string[] = []
+  let idPrincipal: string | null = null
   if (contatos.length) {
-    const { error } = await supabase.from('responsaveis').insert(
-      contatos.map((c, i) => ({
-        crianca_id: id,
-        nome: c.nome.trim(),
-        relacao: RELACAO_BANCO[c.relacao],
-        telefone: c.telefone.trim(),
-        whatsapp: c.whatsapp,
-        principal: temPrincipal ? c.principal : i === 0,
-      })),
-    )
-    if (error) throw new Error('A ficha foi salva, mas os responsáveis não. Abra e salve de novo.')
+    const { data, error } = await supabase
+      .from('responsaveis')
+      .insert(contatos)
+      .select('id, nome, relacao, telefone')
+    if (error || !data || data.length !== contatos.length) throw falhou('os responsáveis')
+    idsNovos = data.map((r) => r.id as string)
+    const p = contatos[indicePrincipal]
+    idPrincipal =
+      (data.find((r) => r.nome === p.nome && r.relacao === p.relacao && r.telefone === p.telefone)
+        ?.id as string | undefined) ?? null
+  }
+  if (idsAntigos.length) {
+    const { error } = await supabase.from('responsaveis').delete().in('id', idsAntigos)
+    if (error) {
+      // desfaz os novos, para nao ficar a lista em dobro
+      if (idsNovos.length) await supabase.from('responsaveis').delete().in('id', idsNovos)
+      throw falhou('os responsáveis')
+    }
+  }
+  if (idPrincipal) {
+    const { error } = await supabase
+      .from('responsaveis')
+      .update({ principal: true })
+      .eq('id', idPrincipal)
+    if (error) throw falhou('o responsável principal')
+  } else if (contatos.length) {
+    throw falhou('o responsável principal')
   }
 
-  // documentos: marca os entregues, apaga os que deixaram de estar
+  // documentos: grava os entregues (e os arquivos) primeiro; so depois
+  // apaga os que deixaram de estar marcados
   const entregues = new Set(f.documentos)
   for (const [i, d] of DOCUMENTOS.entries()) {
-    if (!entregues.has(i)) {
-      await supabase.from('documentos').delete().eq('crianca_id', id).eq('tipo', d.tipo)
-      continue
-    }
+    if (!entregues.has(i)) continue
     const anexo = f.anexos[i]
     let arquivo_path: string | undefined
     if (anexo?.uri) {
       arquivo_path = `criancas/${id}/documentos/${d.tipo}.${extensao(anexo)}`
-      await enviarArquivo(arquivo_path, anexo.uri, anexo.tipo)
+      try {
+        await enviarArquivo(arquivo_path, anexo.uri, anexo.tipo)
+      } catch {
+        throw falhou(`o arquivo de "${d.nome}"`)
+      }
     }
-    await supabase.from('documentos').upsert(
+    const { error } = await supabase.from('documentos').upsert(
       {
         crianca_id: id,
         tipo: d.tipo,
@@ -465,6 +547,16 @@ export async function salvarFicha() {
       },
       { onConflict: 'crianca_id,tipo', ignoreDuplicates: !arquivo_path },
     )
+    if (error) throw falhou(`o documento "${d.nome}"`)
+  }
+  const retirados = DOCUMENTOS.filter((_, i) => !entregues.has(i)).map((d) => d.tipo)
+  if (retirados.length) {
+    const { error } = await supabase
+      .from('documentos')
+      .delete()
+      .eq('crianca_id', id)
+      .in('tipo', retirados)
+    if (error) throw falhou('a lista de documentos')
   }
 
   return id as string

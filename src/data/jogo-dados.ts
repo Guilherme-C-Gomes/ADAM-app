@@ -1,5 +1,5 @@
 import { useFocusEffect } from 'expo-router'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { Turma } from '@/data/chamada'
 import { iniciaisDe, type Categoria, type CategoriaExercicio, type Modalidade } from '@/data/jogo'
@@ -244,6 +244,8 @@ async function lerJogo() {
         .limit(1),
     ])
     if (escala.error) throw escala.error
+    // sem a equipe, nomes e comissao sairiam como "ninguem": melhor o erro
+    if (equipe.error) throw equipe.error
 
     const ult = ultima.data?.[0] as
       | {
@@ -421,6 +423,37 @@ export const rascunhoFiltroJogos = criarRascunho({
 // ─── treinos: gravar ─────────────────────────────────────────────────
 
 /**
+ * Troca as linhas de uma ligacao (lista de exercicios, comissao) sem nunca
+ * deixa-la vazia no meio do caminho: primeiro grava as novas (upsert pela
+ * chave primaria), so depois tira as que sairam. Se algo falhar, fica a
+ * lista antiga ou uma mistura, nunca nada. Devolve false se falhou.
+ */
+async function trocarLigacoes(
+  tabela: string,
+  colunaDono: string,
+  dono: string,
+  colunaItem: string,
+  todas: Record<string, unknown>[],
+) {
+  // o mesmo item duas vezes estouraria a chave primaria: vale o primeiro
+  const linhas = todas.filter(
+    (l, i) => todas.findIndex((o) => o[colunaItem] === l[colunaItem]) === i,
+  )
+  if (linhas.length) {
+    const { error } = await supabase
+      .from(tabela)
+      .upsert(linhas, { onConflict: `${colunaDono},${colunaItem}` })
+    if (error) return false
+  }
+  let apagar = supabase.from(tabela).delete().eq(colunaDono, dono)
+  if (linhas.length) {
+    apagar = apagar.not(colunaItem, 'in', `(${linhas.map((l) => l[colunaItem]).join(',')})`)
+  }
+  const { error } = await apagar
+  return !error
+}
+
+/**
  * Grava o plano do rascunho: o treino, a lista de exercicios e (so quem
  * edita a escala) a comissao. Exercicio que ja estava marcado como feito
  * continua feito.
@@ -449,34 +482,50 @@ export async function salvarTreino(editaEscala: boolean) {
       throw new Error(semTabela(error) ? FALTA_SQL_JOGO : 'Não foi possível criar o treino.')
     }
     id = data.id as string
+    // o treino ja existe: se um passo abaixo falhar, o "tente de novo" edita
+    // este mesmo treino em vez de criar outro
+    rascunhoTreino.definir({ id })
   }
 
   // a lista: o que ja estava feito continua feito
-  const { data: antes } = await supabase
+  const { data: antes, error: erroAntes } = await supabase
     .from('treino_exercicios')
     .select('exercicio_id, feito')
     .eq('treino_id', id)
+  if (erroAntes) {
+    await carregarJogo()
+    throw new Error('O treino foi salvo, mas a lista de exercícios não. Tente de novo.')
+  }
   const feitos = new Set((antes ?? []).filter((e) => e.feito).map((e) => e.exercicio_id as string))
-  await supabase.from('treino_exercicios').delete().eq('treino_id', id)
-  if (p.exercicios.length) {
-    const { error } = await supabase.from('treino_exercicios').insert(
-      p.exercicios.map((e, i) => ({
-        treino_id: id,
-        exercicio_id: e.exercicioId,
-        ordem: i,
-        duracao_min: e.duracaoMin,
-        feito: feitos.has(e.exercicioId),
-      })),
-    )
-    if (error) throw new Error('O treino foi salvo, mas a lista de exercícios não. Tente de novo.')
+  const listaOk = await trocarLigacoes(
+    'treino_exercicios',
+    'treino_id',
+    id,
+    'exercicio_id',
+    p.exercicios.map((e, i) => ({
+      treino_id: id,
+      exercicio_id: e.exercicioId,
+      ordem: i,
+      duracao_min: e.duracaoMin,
+      feito: feitos.has(e.exercicioId),
+    })),
+  )
+  if (!listaOk) {
+    await carregarJogo()
+    throw new Error('O treino foi salvo, mas a lista de exercícios não. Tente de novo.')
   }
 
   if (editaEscala) {
-    await supabase.from('treino_comissao').delete().eq('treino_id', id)
-    if (p.comissao.length) {
-      await supabase
-        .from('treino_comissao')
-        .insert(p.comissao.map((usuario_id) => ({ treino_id: id, usuario_id })))
+    const comissaoOk = await trocarLigacoes(
+      'treino_comissao',
+      'treino_id',
+      id,
+      'usuario_id',
+      p.comissao.map((usuario_id) => ({ treino_id: id, usuario_id })),
+    )
+    if (!comissaoOk) {
+      await carregarJogo()
+      throw new Error('O treino foi salvo, mas a comissão não. Tente de novo.')
     }
   }
 
@@ -505,15 +554,37 @@ export async function marcarExercicio(treinoId: string, exercicioId: string, fei
   })
 }
 
+/** A avaliacao ja gravada de um treino (para rever sem apagar o que havia). */
+export async function lerAvaliacao(
+  treinoId: string,
+): Promise<(Notas & { observacoes: string }) | null> {
+  const { data, error } = await supabase
+    .from('treino_avaliacoes')
+    .select('nota_treino, entenderam, dificuldade, observacoes')
+    .eq('treino_id', treinoId)
+    .maybeSingle()
+  if (error)
+    throw new Error(semTabela(error) ? FALTA_SQL_JOGO : 'Não foi possível ler a avaliação.')
+  if (!data) return null
+  return {
+    treino: (data.nota_treino as number | null) ?? null,
+    entenderam: (data.entenderam as number | null) ?? null,
+    dificuldade: (data.dificuldade as number | null) ?? null,
+    observacoes: (data.observacoes as string | null) ?? '',
+  }
+}
+
 /** Encerra o treino; a avaliacao e opcional (R8: "Pular por agora"). */
 export async function encerrarTreino(
   treinoId: string,
   avaliacao: (Notas & { observacoes: string }) | null,
 ) {
+  // treino ja encerrado (rever a avaliacao) guarda a hora em que encerrou
   const { error } = await supabase
     .from('treinos')
     .update({ encerrado_em: new Date().toISOString() })
     .eq('id', treinoId)
+    .is('encerrado_em', null)
   if (error) throw new Error('Não foi possível encerrar o treino.')
   if (avaliacao) {
     const { error: erroNota } = await supabase.from('treino_avaliacoes').upsert({
@@ -643,6 +714,26 @@ export function tecnicoDaEscala(
   )
 }
 
+/**
+ * O responsavel que o plano mostra e grava. null no banco e "a definir"; a
+ * escala so entra como padrao num plano novo (sem treino gravado), para nao
+ * desfazer um "Deixar a definir" escolhido no dia.
+ */
+export function responsavelDoPlano(
+  plano: {
+    id: string | null
+    responsavelId: string | null
+    data: string
+    hora: string
+    turma: Turma
+  },
+  escala: LinhaEscala[],
+  unidadeId: string | null,
+) {
+  if (plano.id || plano.responsavelId) return plano.responsavelId
+  return tecnicoDaEscala(escala, unidadeId, plano.data, plano.hora, plano.turma)
+}
+
 // ─── jogos ───────────────────────────────────────────────────────────
 
 /** Os jogos do periodo do filtro (tela 11 · Jogos). */
@@ -676,7 +767,15 @@ export function useJogos() {
     }
   }, [intervalo.inicio, intervalo.fim, categoria, chave])
 
-  const recarregar = useCallback(() => buscar().then(setEstado), [buscar])
+  // so a resposta do pedido mais recente vale: uma antiga que chega depois
+  // (o filtro mudou no meio) nao pode cobrir a nova
+  const ultimo = useRef(0)
+  const recarregar = useCallback(() => {
+    const vez = ++ultimo.current
+    return buscar().then((r) => {
+      if (vez === ultimo.current) setEstado(r)
+    })
+  }, [buscar])
   useFocusEffect(
     useCallback(() => {
       recarregar()
@@ -810,28 +909,44 @@ export async function desconvocar(jogoId: string, criancaId: string) {
 }
 
 export async function salvarComissaoDoJogo(jogoId: string, usuarioIds: string[]) {
-  await supabase.from('jogo_comissao').delete().eq('jogo_id', jogoId)
-  if (usuarioIds.length) {
-    const { error } = await supabase
-      .from('jogo_comissao')
-      .insert(usuarioIds.map((usuario_id) => ({ jogo_id: jogoId, usuario_id })))
-    if (error) throw new Error('Não foi possível salvar a comissão.')
-  }
+  const ok = await trocarLigacoes(
+    'jogo_comissao',
+    'jogo_id',
+    jogoId,
+    'usuario_id',
+    usuarioIds.map((usuario_id) => ({ jogo_id: jogoId, usuario_id })),
+  )
+  if (!ok) throw new Error('Não foi possível salvar a comissão.')
 }
 
 // ─── atletas (criancas, sem dado sensivel) ───────────────────────────
 
 /** Nome, idade, unidade e posicao — a porta que treinador tambem le. */
 export function useAtletas() {
-  const [estado, setEstado] = useState<{ lista: Atleta[]; carregando: boolean }>({
+  const [estado, setEstado] = useState<{
+    lista: Atleta[]
+    carregando: boolean
+    erro: string | null
+  }>({
     lista: [],
     carregando: true,
+    erro: null,
   })
   useEffect(() => {
     let ativo = true
-    supabase.rpc('criancas_basico').then(({ data }) => {
+    supabase.rpc('criancas_basico').then(({ data, error }) => {
       if (!ativo) return
+      // lista vazia por erro nao e "ninguem elegivel": a tela mostra o erro
+      if (error) {
+        setEstado({
+          lista: [],
+          carregando: false,
+          erro: semTabela(error) ? FALTA_SQL_JOGO : 'Não foi possível carregar as crianças.',
+        })
+        return
+      }
       setEstado({
+        erro: null,
         lista: ((data ?? []) as Record<string, unknown>[]).map((c) => ({
           id: c.id as string,
           nome: c.nome as string,
@@ -903,7 +1018,14 @@ export function useTreinosDoMes(ano: number, mes: number) {
     }
   }, [ano, mes, chave])
 
-  const recarregar = useCallback(() => buscar().then(setEstado), [buscar])
+  // so a resposta do pedido mais recente vale (trocar de mes rapido)
+  const ultimo = useRef(0)
+  const recarregar = useCallback(() => {
+    const vez = ++ultimo.current
+    return buscar().then((r) => {
+      if (vez === ultimo.current) setEstado(r)
+    })
+  }, [buscar])
   useFocusEffect(
     useCallback(() => {
       recarregar()

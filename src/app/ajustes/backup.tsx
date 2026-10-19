@@ -3,7 +3,13 @@ import { ActivityIndicator } from 'react-native'
 
 import { Aviso, Bloco, Botao, Grupo, Linha, Rotulo, TelaForm } from '@/components/ui/form'
 import { mostrarRecado } from '@/components/ui/recado'
-import { baixarCopiaAqui, fazerCopiaAgora, useBackups, type RegistroBackup } from '@/data/backup'
+import {
+  avisoDeAtraso,
+  baixarCopiaAqui,
+  fazerCopiaAgora,
+  useBackups,
+  type RegistroBackup,
+} from '@/data/backup'
 import { color } from '@/theme/tokens'
 
 /**
@@ -40,12 +46,14 @@ function legenda(b: RegistroBackup) {
 }
 
 export default function CopiaDeSeguranca() {
-  const { lista, carregando, faltaSql, erro, recarregar } = useBackups()
+  const { lista, carregando, faltaSql, erro, lidoEm, recarregar } = useBackups()
   const [fazendo, setFazendo] = useState<'drive' | 'aqui' | null>(null)
   const [falha, setFalha] = useState<string | null>(null)
 
   const ultimaBoa = lista.find((b) => b.ok)
   const ultima = lista[0]
+  // a copia que falha antes de comecar nao deixa linha: so a idade da ultima boa mostra
+  const atraso = avisoDeAtraso(lista, lidoEm)
 
   const agora = async () => {
     setFalha(null)
@@ -112,13 +120,22 @@ export default function CopiaDeSeguranca() {
           <Aviso tom="ambar" titulo={falha ?? erro ?? ''} />
         </Bloco>
       ) : null}
+      {atraso ? (
+        <Bloco>
+          <Aviso
+            tom="ambar"
+            titulo={atraso}
+            texto="As cópias rodam 3 vezes por dia. Quando a cópia nem começa (variável faltando, senha do agendamento, tempo esgotado), ela não aparece na lista: o motivo fica em Vercel › projeto adam › Logs."
+          />
+        </Bloco>
+      ) : null}
 
       <Bloco>
         {carregando ? (
           <ActivityIndicator color={color.primaryCh} />
         ) : ultimaBoa ? (
           <Aviso
-            tom={ultima && !ultima.ok ? 'ambar' : 'roxo'}
+            tom={(ultima && !ultima.ok) || atraso ? 'ambar' : 'roxo'}
             titulo={`Última cópia boa: ${quando(ultimaBoa.feitoEm)}`}
             texto={
               ultima && !ultima.ok

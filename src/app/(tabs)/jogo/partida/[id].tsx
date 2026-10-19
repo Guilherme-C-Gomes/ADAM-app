@@ -41,10 +41,17 @@ export default function Escalacao() {
       </SafeAreaView>
     )
   }
-  return <Partida key={detalhe.dados.jogo.id} detalhe={detalhe.dados} />
+  // a modalidade entra na chave: trocar Campo/Society muda as formacoes possiveis
+  return (
+    <Partida
+      key={`${detalhe.dados.jogo.id}-${detalhe.dados.jogo.modalidade}`}
+      detalhe={detalhe.dados}
+      recarregar={detalhe.recarregar}
+    />
+  )
 }
 
-function Partida({ detalhe }: { detalhe: DetalheJogo }) {
+function Partida({ detalhe, recarregar }: { detalhe: DetalheJogo; recarregar: () => unknown }) {
   const { jogo, convocados, comissao } = detalhe
   const { nomes, mapa } = formacoesDe(jogo.modalidade)
   const [formacao, setFormacao] = useState(
@@ -74,6 +81,7 @@ function Partida({ detalhe }: { detalhe: DetalheJogo }) {
       await atualizarJogo(jogo.id, dados)
       mostrarRecado(recado)
       if (sair) voltar('/jogo')
+      else recarregar()
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar.')
     } finally {
@@ -108,7 +116,7 @@ function Partida({ detalhe }: { detalhe: DetalheJogo }) {
         </View>
 
         <Animated.View entering={FadeInDown.duration(motion.medium)}>
-          <Campo posicoes={mapa[formacao]} largura={larguraCampo} />
+          <Campo posicoes={mapa[formacao] ?? mapa[nomes[0]]} largura={larguraCampo} />
         </Animated.View>
 
         <View style={st.linhaTopo}>

@@ -38,13 +38,21 @@ type Fila = {
   acoes: Acao[]
   /** chamada local que ja virou do banco: local -> id real */
   resolvidas: Record<string, string>
-  /** o que o banco recusou de vez (nao e falta de sinal) */
+  /** o que o banco recusou de vez (nao e falta de sinal), em portugues para a tela */
   falhas: string[]
+  /** a mensagem crua do banco de cada falha, so para depurar */
+  brutas: string[]
   enviando: boolean
 }
 
 const CHAVE = 'adam.fila-chamada'
-const fila = criarRascunho<Fila>({ acoes: [], resolvidas: {}, falhas: [], enviando: false })
+const fila = criarRascunho<Fila>({
+  acoes: [],
+  resolvidas: {},
+  falhas: [],
+  brutas: [],
+  enviando: false,
+})
 
 // no web, a pre-renderizacao roda no Node, sem armazenamento
 const temArmazenamento = Platform.OS !== 'web' || typeof window !== 'undefined'
@@ -61,6 +69,7 @@ function carregar() {
           acoes: lido.acoes ?? [],
           resolvidas: lido.resolvidas ?? {},
           falhas: lido.falhas ?? [],
+          brutas: lido.brutas ?? [],
         })
       }
     } catch {
@@ -73,8 +82,10 @@ function carregar() {
 async function guardar(parcial: Partial<Fila>) {
   fila.definir(parcial)
   if (!temArmazenamento) return
-  const { acoes, resolvidas, falhas } = fila.ler()
-  await AsyncStorage.setItem(CHAVE, JSON.stringify({ acoes, resolvidas, falhas })).catch(() => {})
+  const { acoes, resolvidas, falhas, brutas } = fila.ler()
+  await AsyncStorage.setItem(CHAVE, JSON.stringify({ acoes, resolvidas, falhas, brutas })).catch(
+    () => {},
+  )
 }
 
 /** A acao falhou por falta de conexao (e nao porque o banco recusou)? */
@@ -87,19 +98,46 @@ export const ehLocal = (id: string) => id.startsWith('local-')
 export const idLocal = (data: string, unidadeId: string, turma: Turma) =>
   `local-${data}-${unidadeId}-${turma}`
 
+// a acao que esta indo para o banco agora: ela nao se anula na fila, porque
+// ja saiu do celular (ver enfileirar)
+let emVoo: Acao | null = null
+// a rodada de envio em curso, para quem quiser esperar ela terminar
+let rodando: Promise<void> | null = null
+
+/** Tira a acao enviada da fila DE AGORA, pela identidade (nao pela posicao). */
+const sem = (acoes: Acao[], acao: Acao) => acoes.filter((a) => a !== acao)
+
+const daChamada = (a: Acao, chamada: string, resolvidas: Record<string, string>) =>
+  (resolvidas[a.chamada] ?? a.chamada) === chamada
+
+/** Ha algo desta chamada ainda na fila do celular (pelo id local ou o do banco)? */
+export async function temNaFila(chamada: string) {
+  await carregar()
+  const { acoes, resolvidas } = fila.ler()
+  return acoes.some((a) => daChamada(a, chamada, resolvidas))
+}
+
 /** Poe uma acao na fila e ja tenta mandar (se a conexao voltou, sobe). */
 export async function enfileirar(acao: Acao) {
   await carregar()
   let acoes = [...fila.ler().acoes]
-  // marcar e desmarcar a mesma crianca antes de subir: um anula o outro
+  // marcar e desmarcar a mesma crianca antes de subir: um anula o outro.
+  // A que ja esta indo para o banco nao conta: ela chega la de qualquer
+  // jeito, entao o oposto precisa ir depois dela.
   if (acao.tipo === 'marcar' || acao.tipo === 'desmarcar') {
     const oposto = acao.tipo === 'marcar' ? 'desmarcar' : 'marcar'
-    const i = acoes.findIndex(
-      (a) =>
+    let i = -1
+    for (let j = acoes.length - 1; j >= 0 && i < 0; j--) {
+      const a = acoes[j]
+      if (
+        a !== emVoo &&
         a.tipo === oposto &&
         a.chamada === acao.chamada &&
-        (a as { criancaId: string }).criancaId === acao.criancaId,
-    )
+        a.criancaId === acao.criancaId
+      ) {
+        i = j
+      }
+    }
     if (i >= 0) {
       acoes.splice(i, 1)
       await guardar({ acoes })
@@ -117,53 +155,108 @@ export async function enfileirar(acao: Acao) {
   sincronizar()
 }
 
-/** Manda a fila, na ordem. Para no primeiro "sem conexao". */
-export async function sincronizar() {
+/** Recusa que ja nasce em portugues, pronta para a tela. */
+const recusa = (texto: string) => Object.assign(new Error(texto), { paraTela: true })
+
+const OQUE: Record<Acao['tipo'], string> = {
+  abrir: 'Abrir a chamada',
+  marcar: 'Uma marca de presença',
+  desmarcar: 'Um desmarque',
+  encerrar: 'Encerrar a chamada',
+  avulso: 'Um nome sem ficha',
+}
+
+/** A recusa do banco (em ingles, tecnica) virada em frase para a tela. */
+export function motivoEmPortugues(acao: Acao, e: unknown) {
+  const erro = (e ?? {}) as { message?: string; code?: string; paraTela?: boolean }
+  const bruta = String(erro.message ?? e ?? '')
+  if (erro.paraTela) return bruta
+  const oque = acao.tipo === 'avulso' ? `O nome "${acao.nome}"` : OQUE[acao.tipo]
+  let porque = 'o banco não aceitou.'
+  if (/so quem esta marcando encerra/i.test(bruta)) {
+    porque = 'só quem está marcando encerra uma chamada em andamento.'
+  } else if (/acesso inativo/i.test(bruta)) {
+    porque = 'seu acesso está inativo. Fale com a coordenação.'
+  } else if (erro.code === '42501' || /row-level security|permission denied/i.test(bruta)) {
+    porque = 'a chamada já foi encerrada ou você não está marcando nela.'
+  } else if (erro.code === '23503' || /foreign key/i.test(bruta)) {
+    porque = 'a criança ou a chamada não existe mais no banco.'
+  } else if (erro.code === '22P02' || /invalid input syntax/i.test(bruta)) {
+    porque = 'a chamada não foi encontrada no banco.'
+  }
+  return `${oque} não subiu: ${porque}`
+}
+
+/**
+ * Manda a fila, na ordem. Para no primeiro "sem conexao". Se ja estiver
+ * mandando, devolve a mesma rodada (quem espera, espera ela acabar).
+ */
+export async function sincronizar(): Promise<void> {
   await carregar()
-  if (fila.ler().enviando || !fila.ler().acoes.length) return
+  if (fila.ler().enviando) return rodando ?? undefined
+  if (!fila.ler().acoes.length) return
+  rodando = enviar()
+  return rodando
+}
+
+async function enviar() {
   fila.definir({ enviando: true })
   try {
     for (;;) {
-      const { acoes, resolvidas, falhas } = fila.ler()
-      const acao = acoes[0]
+      // sempre a fila de agora: enquanto uma acao vai, outras entram
+      const acao = fila.ler().acoes[0]
       if (!acao) break
-      const real = (id: string) => resolvidas[id] ?? id
+      emVoo = acao
+      const real = (id: string) => fila.ler().resolvidas[id] ?? id
       try {
         if (acao.tipo === 'abrir') {
           if (acao.data !== hojeLocal()) {
-            throw new Error(
+            throw recusa(
               'Uma chamada feita sem internet não subiu no mesmo dia. Avise a coordenação.',
             )
           }
           const id = await entrarNaChamada(acao.unidadeId, acao.turma)
+          const agora = fila.ler()
           await guardar({
-            acoes: acoes.slice(1),
-            resolvidas: { ...resolvidas, [acao.chamada]: id },
+            acoes: sem(agora.acoes, acao),
+            resolvidas: { ...agora.resolvidas, [acao.chamada]: id },
           })
           continue
         }
         const chamada = real(acao.chamada)
-        if (ehLocal(chamada)) throw new Error('A chamada desta marca ainda não abriu no banco.')
+        if (ehLocal(chamada)) throw recusa('A chamada desta marca ainda não abriu no banco.')
         if (acao.tipo === 'marcar') await marcar(chamada, acao.criancaId)
         else if (acao.tipo === 'desmarcar') await desmarcar(chamada, acao.criancaId)
         else if (acao.tipo === 'encerrar') await encerrar(chamada)
         else if (acao.tipo === 'avulso') await adicionarAvulso(chamada, acao.nome)
-        await guardar({ acoes: acoes.slice(1) })
+        await guardar({ acoes: sem(fila.ler().acoes, acao) })
       } catch (e) {
-        if (semConexao(e)) break
-        // o banco recusou de vez: anota e segue com o resto
-        const motivo =
-          e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e)
-        await guardar({ acoes: acoes.slice(1), falhas: [...falhas, motivo].slice(-10) })
+        // a recusa nossa nao e falta de sinal, mesmo dizendo "internet" no
+        // texto (senao a fila parava para sempre nela)
+        if (!(e as { paraTela?: boolean } | null)?.paraTela && semConexao(e)) break
+        // o banco recusou de vez: anota em portugues (e a crua, para depurar)
+        // e segue com o resto
+        const agora = fila.ler()
+        await guardar({
+          acoes: sem(agora.acoes, acao),
+          falhas: [...agora.falhas, motivoEmPortugues(acao, e)].slice(-10),
+          brutas: [...agora.brutas, String((e as { message?: string } | null)?.message ?? e)].slice(
+            -10,
+          ),
+        })
+      } finally {
+        emVoo = null
       }
     }
   } finally {
+    emVoo = null
+    rodando = null
     fila.definir({ enviando: false })
   }
 }
 
 export async function esquecerFalhas() {
-  await guardar({ falhas: [] })
+  await guardar({ falhas: [], brutas: [] })
 }
 
 /**
@@ -193,7 +286,7 @@ export function useFilaChamada() {
 
 /** A chamada do banco com o que ainda esta na fila por cima (a tela mostra ja). */
 export function comAFila(c: Chamada, acoes: Acao[], resolvidas: Record<string, string>): Chamada {
-  const minhas = acoes.filter((a) => (resolvidas[a.chamada] ?? a.chamada) === c.id)
+  const minhas = acoes.filter((a) => daChamada(a, c.id, resolvidas))
   if (!minhas.length) return c
   const marcas = { ...c.marcas }
   let estado = c.estado
@@ -232,6 +325,6 @@ export const avulsosNaFila = (acoes: Acao[], chamada: string, resolvidas: Record
   acoes
     .filter(
       (a): a is Extract<Acao, { tipo: 'avulso' }> =>
-        a.tipo === 'avulso' && (resolvidas[a.chamada] ?? a.chamada) === chamada,
+        a.tipo === 'avulso' && daChamada(a, chamada, resolvidas),
     )
     .map((a) => a.nome)

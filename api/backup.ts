@@ -12,9 +12,19 @@
  * 1. le TODAS as tabelas do banco, pagina por pagina;
  * 2. manda a copia completa (um .json) para a pasta do Google Drive da ADAM,
  *    pelo Apps Script em backup/apps-script.gs;
- * 3. manda as fotos e documentos que ainda nao estao no Drive (aos poucos,
- *    para caber no tempo; o que sobrar vai na proxima vez);
- * 4. anota o resultado na tabela `backups`, que o app mostra ao ADM.
+ * 3. manda as fotos e documentos que ainda nao estao no Drive, ou que
+ *    mudaram desde a ultima copia (aos poucos, para caber no tempo; o que
+ *    sobrar vai na proxima vez). A foto da ficha e os documentos sao
+ *    regravados no mesmo caminho do Storage, entao o nome no Drive nao basta:
+ *    cada arquivo do Drive leva na descricao a versao do objeto (o updated_at
+ *    do Storage). Versao diferente = manda de novo, e o Apps Script poe a
+ *    versao antiga (mesmo nome) na lixeira. O nome continua sendo so o
+ *    caminho, porque o scripts/restaurar-backup.mjs volta o arquivo para o
+ *    Storage pelo nome. Arquivos gravados antes disso nao tem versao na
+ *    descricao: contam como versao antiga e sao trocados aos poucos;
+ * 4. anota o resultado na tabela `backups`, que o app mostra ao ADM. Se o
+ *    agendamento falha antes de comecar (variavel faltando), tenta anotar a
+ *    falha mesmo assim; e o app avisa quando a ultima copia boa passa de 12h.
  *
  * Variaveis na Vercel (Settings > Environment Variables), nunca no codigo:
  * - SUPABASE_URL           endereco do projeto do ADAM
@@ -185,7 +195,7 @@ async function lerContas(admin: Admin) {
   }
 }
 
-type Arquivo = { bucket: string; caminho: string; tamanho: number; mime: string }
+type Arquivo = { bucket: string; caminho: string; tamanho: number; mime: string; versao: string }
 
 async function listarArquivos(admin: Admin, bucket: string, pasta = ''): Promise<Arquivo[]> {
   const achados: Arquivo[] = []
@@ -204,6 +214,10 @@ async function listarArquivos(admin: Admin, bucket: string, pasta = ''): Promise
           caminho,
           tamanho: Number(item.metadata?.size ?? 0),
           mime: String(item.metadata?.mimetype ?? 'application/octet-stream'),
+          // muda a cada regravacao (upsert) do mesmo caminho
+          versao: String(
+            item.updated_at ?? item.metadata?.lastModified ?? item.metadata?.eTag ?? '',
+          ).replace(/[^0-9A-Za-z]/g, ''),
         })
     }
     if (!data || data.length < PAGINA) return achados
@@ -255,6 +269,57 @@ function carimbo() {
   return agora.slice(0, 16).replace(' ', '_').replace(':', 'h')
 }
 
+type Registro = {
+  origem: 'agendado' | 'manual'
+  ok: boolean
+  tabelas: number
+  linhas: number
+  arquivos_novos: number
+  arquivos_pendentes: number
+  arquivo: string | null
+  erro: string | null
+}
+
+/** Anota o resultado (se a tabela ja existir); falha aqui nao derruba a resposta. */
+async function anotar(admin: Admin, registro: Registro) {
+  await admin
+    .from('backups')
+    .insert(registro)
+    .then(
+      () => undefined,
+      () => undefined,
+    )
+}
+
+/**
+ * O agendamento com a configuracao errada: tenta anotar a falha com o que
+ * houver de URL e chave, para o app mostrar o erro em vez de silencio. Se nem
+ * isso der (sem chave, ou a publica, que o RLS barra), o app avisa pela idade
+ * da ultima copia boa.
+ */
+async function anotarFalhaDeConfiguracao(erro: string) {
+  const url = urlDoBanco()
+  const chave = process.env.SUPABASE_SECRET_KEY?.trim()
+  if (!url || !chave) return
+  try {
+    const admin = createClient(url, chave, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+    await anotar(admin, {
+      origem: 'agendado',
+      ok: false,
+      tabelas: 0,
+      linhas: 0,
+      arquivos_novos: 0,
+      arquivos_pendentes: 0,
+      arquivo: null,
+      erro,
+    })
+  } catch {
+    // nem o cliente monta: fica so a resposta (e o aviso de 12h no app)
+  }
+}
+
 async function copiar(request: Request) {
   // 0. o despertador vem antes de qualquer conferencia
   const acordou = await despertar()
@@ -263,22 +328,27 @@ async function copiar(request: Request) {
   try {
     admin = cliente()
   } catch (e) {
-    return json({ ok: false, acordou, erro: (e as Error).message }, 500)
+    const erro = (e as Error).message
+    const segredo = process.env.CRON_SECRET
+    const eOAgendamento =
+      !!segredo && (request.headers.get('authorization') ?? '') === `Bearer ${segredo}`
+    if (eOAgendamento) await anotarFalhaDeConfiguracao(erro)
+    return json({ ok: false, acordou, erro }, 500)
   }
 
   const pedido = await quemPede(request, admin)
   if ('erro' in pedido) return json({ ok: false, acordou, erro: pedido.erro }, 401)
   const { origem } = pedido
 
-  const registro = {
+  const registro: Registro = {
     origem,
     ok: false,
     tabelas: 0,
     linhas: 0,
     arquivos_novos: 0,
     arquivos_pendentes: 0,
-    arquivo: null as string | null,
-    erro: null as string | null,
+    arquivo: null,
+    erro: null,
   }
 
   try {
@@ -314,8 +384,15 @@ async function copiar(request: Request) {
       }),
     })
 
-    // 3. fotos e documentos que ainda nao estao no Drive
-    const noDrive = new Set(((await drive('listar-arquivos')).nomes as string[]) ?? [])
+    // 3. fotos e documentos que ainda nao estao no Drive, ou que mudaram
+    const noDrive = await drive('listar-arquivos')
+    const nomes = new Set((noDrive.nomes as string[] | undefined) ?? [])
+    // nome no Drive -> versao gravada na descricao. Sem `versoes`, o Apps
+    // Script publicado ainda e o antigo (ele nao troca a versao velha):
+    // compara so pelo nome, como antes, para nao acumular copias repetidas
+    const versoes = noDrive.versoes as Record<string, string | null> | undefined
+    const precisa = (a: Arquivo) =>
+      versoes ? versoes[nomeNoDrive(a)] !== a.versao : !nomes.has(nomeNoDrive(a))
     const todos: Arquivo[] = []
     for (const b of BUCKETS) {
       try {
@@ -324,7 +401,7 @@ async function copiar(request: Request) {
         // bucket que ainda nao existe (SQL que nao rodou): segue
       }
     }
-    const faltam = todos.filter((a) => !noDrive.has(nomeNoDrive(a)))
+    const faltam = todos.filter(precisa)
     let bytes = 0
     for (const a of faltam) {
       if (registro.arquivos_novos >= MAX_ARQUIVOS) break
@@ -332,7 +409,13 @@ async function copiar(request: Request) {
       const { data, error } = await admin.storage.from(a.bucket).download(a.caminho)
       if (error || !data) continue
       const base64 = Buffer.from(await data.arrayBuffer()).toString('base64')
-      await drive('salvar-arquivo', { nome: nomeNoDrive(a), mime: a.mime, base64 })
+      // o Apps Script grava a versao na descricao e poe a antiga na lixeira
+      await drive('salvar-arquivo', {
+        nome: nomeNoDrive(a),
+        mime: a.mime,
+        versao: a.versao,
+        base64,
+      })
       registro.arquivos_novos++
       bytes += a.tamanho
     }
@@ -343,13 +426,7 @@ async function copiar(request: Request) {
   }
 
   // 4. o resultado fica anotado (se a tabela ja existir)
-  await admin
-    .from('backups')
-    .insert(registro)
-    .then(
-      () => undefined,
-      () => undefined,
-    )
+  await anotar(admin, registro)
 
   return json({ ...registro, acordou }, registro.ok ? 200 : 500)
 }

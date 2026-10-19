@@ -16,6 +16,7 @@ import {
   NOME_POSICAO,
   useAtletas,
   useDetalheJogo,
+  type DetalheJogo,
   type Situacao,
 } from '@/data/jogo-dados'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
@@ -32,8 +33,19 @@ export default function Convocados() {
   const detalhe = useDetalheJogo(id)
   const atletas = useAtletas()
   const [situacao, setSituacao] = useState<Situacao>('campo')
-  // mudancas feitas aqui, por cima do que veio do banco (aparecem na hora)
-  const [ajustes, setAjustes] = useState<Record<string, Situacao | 'fora'>>({})
+  // mudancas feitas aqui, por cima do que veio do banco (aparecem na hora).
+  // Valem so sobre a leitura em que foram feitas: quando o jogo recarrega
+  // (ex.: voltou de "Convocar"), o banco ja tem tudo e elas saem
+  const [ajustesDe, setAjustesDe] = useState<{
+    base: DetalheJogo | null
+    mapa: Record<string, Situacao | 'fora'>
+  }>({ base: null, mapa: {} })
+  const ajustes = ajustesDe.base === detalhe.dados ? ajustesDe.mapa : {}
+  const ajustar = (criancaId: string, valor: Situacao | 'fora') =>
+    setAjustesDe((a) => ({
+      base: detalhe.dados,
+      mapa: { ...(a.base === detalhe.dados ? a.mapa : {}), [criancaId]: valor },
+    }))
   const [erro, setErro] = useState<string | null>(null)
 
   const jogo = detalhe.dados?.jogo
@@ -61,23 +73,23 @@ export default function Convocados() {
 
   const remanejar = async (criancaId: string, atual: Situacao) => {
     const nova: Situacao = atual === 'campo' ? 'banco' : 'campo'
-    setAjustes((a) => ({ ...a, [criancaId]: nova }))
+    ajustar(criancaId, nova)
     setErro(null)
     try {
       await definirSituacao(jogo.id, criancaId, nova)
     } catch (e) {
-      setAjustes((a) => ({ ...a, [criancaId]: atual }))
+      ajustar(criancaId, atual)
       setErro(e instanceof Error ? e.message : 'Não foi possível mudar.')
     }
   }
 
   const tirar = async (criancaId: string, atual: Situacao) => {
-    setAjustes((a) => ({ ...a, [criancaId]: 'fora' }))
+    ajustar(criancaId, 'fora')
     setErro(null)
     try {
       await desconvocar(jogo.id, criancaId)
     } catch (e) {
-      setAjustes((a) => ({ ...a, [criancaId]: atual }))
+      ajustar(criancaId, atual)
       setErro(e instanceof Error ? e.message : 'Não foi possível tirar.')
     }
   }
@@ -94,6 +106,7 @@ export default function Convocados() {
 
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
         {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
+        {atletas.erro ? <Aviso tom="ambar" titulo={atletas.erro} /> : null}
 
         <Segmentado
           opcoes={[rotuloCampo, rotuloBanco] as const}

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useFocusEffect } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import { Platform } from 'react-native'
 
@@ -63,13 +64,22 @@ export function juntos(ids: string[], eu: string | null, equipe: Record<string, 
 
 // ─── leitura ──────────────────────────────────────────────────────────
 
-async function lerChamadas(filtro: { ids?: string[]; data?: string; unidade?: string }) {
+async function lerChamadas(filtro: {
+  ids?: string[]
+  data?: string
+  /** so as de dias anteriores a este */
+  antesDe?: string
+  unidade?: string
+  estado?: Chamada['estado']
+}) {
   let consulta = supabase
     .from('chamadas')
     .select('id, data, unidade_id, turma, estado, encerrada_em')
   if (filtro.ids) consulta = consulta.in('id', filtro.ids)
   if (filtro.data) consulta = consulta.eq('data', filtro.data)
+  if (filtro.antesDe) consulta = consulta.lt('data', filtro.antesDe)
   if (filtro.unidade) consulta = consulta.eq('unidade_id', filtro.unidade)
+  if (filtro.estado) consulta = consulta.eq('estado', filtro.estado)
   const { data: base, error } = await consulta
   if (error) throw error
   if (!base?.length) return []
@@ -136,6 +146,14 @@ function acompanhar(
 }
 
 type Estado<T> = { dados: T; carregando: boolean; erro: string | null }
+
+/**
+ * Busca que falhou (o sinal caiu) nao apaga o que ja esta na tela: fica o
+ * que havia, so com o erro anotado para o aviso.
+ */
+function mantendo<T>(erro: string) {
+  return (antes: Estado<T>): Estado<T> => ({ ...antes, carregando: false, erro })
+}
 
 // ─── o que a chamada precisa ter no celular sem internet ─────────────
 // Unidades, criancas (nome, idade, turma) e nomes da equipe ficam guardados
@@ -272,14 +290,14 @@ export function useChamadasDoDia(unidadeId: string | null) {
   const buscar = useCallback(
     () =>
       lerChamadas({ data: hojeLocal(), unidade: unidadeId ?? undefined }).then(
-        (lista) => ({
+        (lista) => (): Estado<Partial<Record<Turma, Chamada>>> => ({
           dados: Object.fromEntries(lista.map((c) => [c.turma, c])) as Partial<
             Record<Turma, Chamada>
           >,
           carregando: false,
           erro: null,
         }),
-        () => ({ dados: {}, carregando: false, erro: 'Não foi possível carregar a chamada.' }),
+        () => mantendo<Partial<Record<Turma, Chamada>>>('Não foi possível carregar a chamada.'),
       ),
     [unidadeId],
   )
@@ -312,6 +330,59 @@ export function useChamadasDoDia(unidadeId: string | null) {
   return { ...estado, recarregar }
 }
 
+/**
+ * As chamadas de dias anteriores que ficaram em andamento numa unidade. A
+ * tela do dia so mostra as de hoje; sem esta lista, quem esqueceu de
+ * encerrar nao achava mais a chamada, e ela nunca chegava nas metricas.
+ */
+export function useChamadasAbertas(unidadeId: string | null) {
+  const [estado, setEstado] = useState<Estado<Chamada[]>>({
+    dados: [],
+    carregando: true,
+    erro: null,
+  })
+
+  const buscar = useCallback(
+    () =>
+      lerChamadas({
+        antesDe: hojeLocal(),
+        unidade: unidadeId ?? undefined,
+        estado: 'andamento',
+      }).then(
+        (lista) => (): Estado<Chamada[]> => ({
+          dados: [...lista].sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : 0)),
+          carregando: false,
+          erro: null,
+        }),
+        () => mantendo<Chamada[]>('Não foi possível carregar as chamadas abertas.'),
+      ),
+    [unidadeId],
+  )
+
+  const recarregar = useCallback(() => buscar().then(setEstado), [buscar])
+
+  useEffect(() => {
+    if (!unidadeId) return
+    let ativo = true
+    const aplicar = () =>
+      buscar().then((novo) => {
+        if (ativo) setEstado(novo)
+      })
+    aplicar()
+    const parar = acompanhar(
+      'chamadas-abertas',
+      [{ tabela: 'chamadas', filtro: `unidade_id=eq.${unidadeId}` }, { tabela: 'chamada_marcas' }],
+      aplicar,
+    )
+    return () => {
+      ativo = false
+      parar()
+    }
+  }, [unidadeId, buscar])
+
+  return { ...estado, recarregar }
+}
+
 /** Uma chamada, ao vivo: as marcas de quem marca junto chegam sozinhas. */
 export function useChamada(id: string) {
   const [estado, setEstado] = useState<Estado<Chamada | null>>({
@@ -323,12 +394,13 @@ export function useChamada(id: string) {
   const buscar = useCallback(
     () =>
       lerChamadas({ ids: [id] }).then(
-        ([c]) => ({
-          dados: c ?? null,
-          carregando: false,
-          erro: c ? null : 'Chamada não encontrada.',
-        }),
-        () => ({ dados: null, carregando: false, erro: 'Não foi possível carregar a chamada.' }),
+        ([c]) =>
+          (): Estado<Chamada | null> => ({
+            dados: c ?? null,
+            carregando: false,
+            erro: c ? null : 'Chamada não encontrada.',
+          }),
+        () => mantendo<Chamada | null>('Não foi possível carregar a chamada.'),
       ),
     [id],
   )
@@ -377,16 +449,20 @@ export function useAvulsos(chamadaId: string) {
 
   const recarregar = useCallback(() => buscar().then(setLista), [buscar])
 
-  useEffect(() => {
-    if (soNoCelular(chamadaId)) return
-    let ativo = true
-    buscar().then((novos) => {
-      if (ativo) setLista(novos)
-    })
-    return () => {
-      ativo = false
-    }
-  }, [buscar, chamadaId])
+  // busca ao abrir e a cada vez que a tela volta ao foco: quem digitou um
+  // nome em "Sem ficha" volta para a lista e ve a contagem certa
+  useFocusEffect(
+    useCallback(() => {
+      if (soNoCelular(chamadaId)) return
+      let ativo = true
+      buscar().then((novos) => {
+        if (ativo) setLista(novos)
+      })
+      return () => {
+        ativo = false
+      }
+    }, [buscar, chamadaId]),
+  )
 
   return { lista, recarregar }
 }
@@ -426,6 +502,22 @@ export async function encerrar(chamadaId: string) {
   if (error) throw error
 }
 
+/**
+ * A correcao que parou no meio: `etapa` diz onde. Em 'marcas', so
+ * `aplicadas` de `total` mudancas chegaram ao banco; em 'registro', todas
+ * chegaram mas o registro de quem corrigiu nao. Repetir e seguro: marcar de
+ * novo quem ja esta marcado e desmarcar quem ja saiu nao muda nada.
+ */
+export type CorrecaoIncompleta = Error & {
+  etapa: 'marcas' | 'registro'
+  aplicadas: number
+  total: number
+  causa: unknown
+}
+
+export const correcaoIncompleta = (e: unknown): e is CorrecaoIncompleta =>
+  !!e && typeof e === 'object' && 'etapa' in e && 'aplicadas' in e
+
 /** Aplica a diferenca entre antes e depois e registra quem corrigiu. */
 export async function salvarCorrecao(
   chamadaId: string,
@@ -434,10 +526,27 @@ export async function salvarCorrecao(
 ) {
   const entraram = Object.keys(depois).filter((id) => !antes[id])
   const sairam = Object.keys(antes).filter((id) => !depois[id])
-  for (const id of entraram) await marcar(chamadaId, id)
-  for (const id of sairam) await desmarcar(chamadaId, id)
+  const total = entraram.length + sairam.length
+  let aplicadas = 0
+  const parou = (etapa: CorrecaoIncompleta['etapa'], causa: unknown): CorrecaoIncompleta =>
+    Object.assign(
+      new Error(String((causa as { message?: string } | null)?.message ?? causa ?? '')),
+      { etapa, aplicadas, total, causa },
+    )
+  try {
+    for (const id of entraram) {
+      await marcar(chamadaId, id)
+      aplicadas++
+    }
+    for (const id of sairam) {
+      await desmarcar(chamadaId, id)
+      aplicadas++
+    }
+  } catch (e) {
+    throw parou('marcas', e)
+  }
   const { error } = await supabase.rpc('registrar_correcao', { p_chamada: chamadaId })
-  if (error) throw error
+  if (error) throw parou('registro', error)
 }
 
 export async function adicionarAvulso(chamadaId: string, nome: string) {
