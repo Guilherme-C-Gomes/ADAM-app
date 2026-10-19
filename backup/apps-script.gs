@@ -66,6 +66,8 @@ function doPost(e) {
       const lista = pasta.getFiles()
       while (lista.hasNext()) {
         const arquivo = lista.next()
+        // getFiles tambem devolve o que esta na lixeira: ignorar
+        if (arquivo.isTrashed()) continue
         const nome = arquivo.getName()
         nomes.push(nome)
         versoes[nome] = versaoDe_(arquivo)
@@ -79,7 +81,10 @@ function doPost(e) {
       // nova estiver gravada
       const antigas = []
       const iguais = pasta.getFilesByName(pedido.nome)
-      while (iguais.hasNext()) antigas.push(iguais.next())
+      while (iguais.hasNext()) {
+        const igual = iguais.next()
+        if (!igual.isTrashed()) antigas.push(igual)
+      }
       const bytes = Utilities.base64Decode(pedido.base64)
       const novo = pasta.createFile(
         Utilities.newBlob(bytes, pedido.mime || 'application/octet-stream', pedido.nome),
@@ -127,6 +132,7 @@ function limparAntigos_(pasta) {
   const lista = pasta.getFiles()
   while (lista.hasNext()) {
     const arquivo = lista.next()
+    if (arquivo.isTrashed()) continue
     if (/^adam-banco-.*\.json$/.test(arquivo.getName())) copias.push(arquivo)
   }
   // mais nova primeiro

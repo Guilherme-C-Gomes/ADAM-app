@@ -443,11 +443,18 @@ export function useAvulsos(chamadaId: string) {
         .select('id, nome')
         .eq('chamada_id', chamadaId)
         .order('criado_em')
-        .then(({ data }) => data ?? []),
+        // erro (sem rede): null, e a lista que ja estava na tela fica
+        .then(({ data, error }) => (error ? null : (data ?? []))),
     [chamadaId],
   )
 
-  const recarregar = useCallback(() => buscar().then(setLista), [buscar])
+  const recarregar = useCallback(
+    () =>
+      buscar().then((novos) => {
+        if (novos) setLista(novos)
+      }),
+    [buscar],
+  )
 
   // busca ao abrir e a cada vez que a tela volta ao foco: quem digitou um
   // nome em "Sem ficha" volta para a lista e ve a contagem certa
@@ -456,7 +463,7 @@ export function useAvulsos(chamadaId: string) {
       if (soNoCelular(chamadaId)) return
       let ativo = true
       buscar().then((novos) => {
-        if (ativo) setLista(novos)
+        if (ativo && novos) setLista(novos)
       })
       return () => {
         ativo = false

@@ -137,7 +137,9 @@ function ChamadasDoBanco({ eu }: { eu: string }) {
           ))}
         </View>
       ) : null}
-      <TurmasDaUnidade unidade={unidade} eu={eu} />
+      {/* key: trocar de unidade comeca do zero (sem rede, a lista anterior
+          ficaria na tela com o nome da unidade nova) */}
+      <TurmasDaUnidade key={unidade.id} unidade={unidade} eu={eu} />
     </ScrollView>
   )
 }

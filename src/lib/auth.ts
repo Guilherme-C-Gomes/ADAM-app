@@ -53,13 +53,17 @@ export async function enderecoDaFoto(caminho: string) {
 
 /** Quando o perfil foi conferido no banco pela ultima vez (0 = so o guardado). */
 let conferidoEm = 0
+// muda a cada "Sair": uma leitura do perfil que ainda estava a caminho nao
+// pode logar a pessoa de novo depois que ela saiu
+let geracao = 0
 
 /** Monta o perfil da sessao a partir da linha de `usuarios`. */
-async function aplicarLinha(linha: LinhaUsuario, comFoto: boolean) {
+async function aplicarLinha(linha: LinhaUsuario, comFoto: boolean, desde = geracao) {
   const perfil = perfilDe(linha.funcao as Funcao | null, linha.permissao as Permissao)
   if (!perfil) return false
   let foto: string | null = null
   if (comFoto && linha.foto_path) foto = await enderecoDaFoto(linha.foto_path).catch(() => null)
+  if (desde !== geracao) return true
   sessao.definir({
     logado: true,
     usuarioId: linha.id,
@@ -81,6 +85,7 @@ async function aplicarLinha(linha: LinhaUsuario, comFoto: boolean) {
  * inativa ou inexistente) sai deste aparelho e lanca `AcessoRecusado`.
  */
 async function carregarPerfil() {
+  const desde = geracao
   const { data: auth, error: erroAuth } = await supabase.auth.getUser()
   if (ehErroDeRede(erroAuth)) throw new SemConexao()
   const usuario = auth.user
@@ -113,10 +118,13 @@ async function carregarPerfil() {
         foto_path: (data.foto_path as string | null | undefined) ?? null,
       }
     : null
-  if (!linha?.ativo || !(await aplicarLinha(linha, true))) {
+  // a pessoa saiu enquanto a resposta vinha: nao entra de novo
+  if (desde !== geracao) return
+  if (!linha?.ativo || !(await aplicarLinha(linha, true, desde))) {
     await sairDoAparelho()
     throw new AcessoRecusado('Seu acesso ainda não foi liberado. Fale com a coordenação.')
   }
+  if (desde !== geracao) return
   await guardarPerfil(linha)
   conferidoEm = Date.now()
 }
@@ -235,6 +243,7 @@ async function sairDoAparelho() {
 
 /** Sai e apaga a sessao do aparelho (Keychain inclusive). */
 export async function sair() {
+  geracao++
   await sairDoAparelho()
   conferidoEm = 0
   sessao.definir({ logado: false, usuarioId: null, perfil: 'adm', pessoa: null })
