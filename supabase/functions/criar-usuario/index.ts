@@ -49,6 +49,13 @@ function chaveSecreta() {
 
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+// A conta de suporte so e alterada por ela mesma. O banco tem a mesma regra
+// (public.conta_protegida, SQL 20261023120000_protecao_adm.sql), mas esta
+// funcao usa a chave secreta, que passa por cima dela; por isso confere aqui.
+// Se trocar o e-mail, troque nos dois lugares.
+const CONTA_SUPORTE = 'suporte.ti@adam.ong.br'
+const SO_O_SUPORTE = 'A conta de suporte só pode ser alterada por ela mesma.'
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return resposta(405, { erro: 'Use POST.' })
@@ -65,7 +72,7 @@ Deno.serve(async (req) => {
 
   const { data: perfil } = await admin
     .from('usuarios')
-    .select('permissao, ativo')
+    .select('nome, email, permissao, ativo')
     .eq('id', eu)
     .maybeSingle()
   if (!perfil?.ativo) return resposta(403, { erro: 'Seu acesso não está liberado.' })
@@ -79,6 +86,23 @@ Deno.serve(async (req) => {
   }
   const acao = String(corpo.acao ?? 'criar')
 
+  // Antes de mexer na conta de OUTRA pessoa: se for a de suporte, so ela
+  // mesma pode. Confere o e-mail de login e tambem o da linha em `usuarios`.
+  // Devolve a resposta de recusa, ou null se pode seguir.
+  async function bloqueioDoSuporte(id: string): Promise<Response | null> {
+    if (id === eu) return null
+    const { data, error } = await admin.auth.admin.getUserById(id)
+    if (error || !data.user) {
+      // 4xx: a conta nao existe (ou o id nao vale); 5xx: falha ao conferir
+      return error && (error.status ?? 500) >= 500
+        ? resposta(500, { erro: 'Não foi possível conferir a conta. Tente de novo.' })
+        : resposta(404, { erro: 'Usuário não encontrado.' })
+    }
+    const { data: linha } = await admin.from('usuarios').select('email').eq('id', id).maybeSingle()
+    const emails = [data.user.email, linha?.email].map((e) => String(e ?? '').toLowerCase())
+    return emails.includes(CONTA_SUPORTE) ? resposta(403, { erro: SO_O_SUPORTE }) : null
+  }
+
   // ── a propria pessoa: nome e e-mail (qualquer conta ativa) ─────────
   if (acao === 'meu-perfil') {
     const nome = corpo.nome === undefined ? undefined : String(corpo.nome).trim()
@@ -87,23 +111,34 @@ Deno.serve(async (req) => {
     if (email !== undefined && !EMAIL_VALIDO.test(email)) {
       return resposta(400, { erro: 'E-mail inválido.' })
     }
-    if (email !== undefined && email !== quem.user.email) {
-      // sem e-mail de confirmacao: a pessoa ja esta logada, e o envio padrao
-      // do Supabase so entrega para a equipe do projeto
-      const { error } = await admin.auth.admin.updateUserById(eu, { email, email_confirm: true })
-      if (error) {
-        const existe = error.code === 'email_exists' || /already/i.test(error.message)
-        return resposta(existe ? 409 : 400, {
-          erro: existe ? 'Já existe uma conta com esse e-mail.' : 'Não foi possível trocar o e-mail.',
-        })
-      }
-    }
+    // Primeiro a linha em `usuarios`, depois o e-mail de login. Se o login
+    // falhar, a linha volta como estava: o app e o login nunca divergem.
     const mudancas: Record<string, string> = {}
     if (nome !== undefined) mudancas.nome = nome
     if (email !== undefined) mudancas.email = email
     if (Object.keys(mudancas).length) {
       const { error } = await admin.from('usuarios').update(mudancas).eq('id', eu)
-      if (error) return resposta(500, { erro: 'Não foi possível salvar. Tente de novo.' })
+      if (error) {
+        // e-mail unico em `usuarios` (23505): outra conta ja usa
+        return error.code === '23505'
+          ? resposta(409, { erro: 'Já existe uma conta com esse e-mail.' })
+          : resposta(500, { erro: 'Não foi possível salvar. Tente de novo.' })
+      }
+    }
+    if (email !== undefined && email !== quem.user.email) {
+      // sem e-mail de confirmacao: a pessoa ja esta logada, e o envio padrao
+      // do Supabase so entrega para a equipe do projeto
+      const { error } = await admin.auth.admin.updateUserById(eu, { email, email_confirm: true })
+      if (error) {
+        const antes: Record<string, string> = {}
+        if ('nome' in mudancas) antes.nome = perfil.nome
+        antes.email = perfil.email
+        await admin.from('usuarios').update(antes).eq('id', eu)
+        const existe = error.code === 'email_exists' || /already/i.test(error.message)
+        return resposta(existe ? 409 : 400, {
+          erro: existe ? 'Já existe uma conta com esse e-mail.' : 'Não foi possível trocar o e-mail.',
+        })
+      }
     }
     return resposta(200, { ok: true })
   }
@@ -116,6 +151,8 @@ Deno.serve(async (req) => {
     const id = String(corpo.id ?? '')
     if (!id) return resposta(400, { erro: 'Qual usuário?' })
     if (id === eu) return resposta(400, { erro: 'Você não pode excluir a própria conta.' })
+    const bloqueio = await bloqueioDoSuporte(id)
+    if (bloqueio) return bloqueio
 
     const { data: alvo } = await admin
       .from('usuarios')
@@ -159,6 +196,8 @@ Deno.serve(async (req) => {
     if (!id) return resposta(400, { erro: 'Qual usuário?' })
     if (id === eu) return resposta(400, { erro: 'A sua senha você troca em Minha conta.' })
     if (senha.length < 8) return resposta(400, { erro: 'A senha precisa de pelo menos 8 caracteres.' })
+    const bloqueio = await bloqueioDoSuporte(id)
+    if (bloqueio) return bloqueio
     const { error } = await admin.auth.admin.updateUserById(id, { password: senha })
     if (error) return resposta(400, { erro: 'Não foi possível redefinir a senha.' })
     return resposta(200, { ok: true })

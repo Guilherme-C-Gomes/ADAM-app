@@ -27,13 +27,101 @@
  * redefinir a de quem pedir.
  *
  * Rodar duas vezes nao duplica nada: tudo e gravado por cima, pela chave.
+ *
+ * SO CONFERIR (nao grava nada, nao precisa de chave):
+ *
+ *      node scripts/restaurar-backup.mjs --conferir C:\caminho\adam-banco-....json
+ *
+ * Diz se a copia esta inteira: todas as tabelas, chaves sem repeticao, as
+ * ligacoes entre as tabelas (marca sem chamada, responsavel sem crianca...)
+ * e as contas da equipe. Bom para fazer de vez em quando com a copia do Drive.
  */
 import { createClient } from '@supabase/supabase-js'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-const [arquivoCopia, pastaArquivos] = process.argv.slice(2)
+const argumentos = process.argv.slice(2)
+const soConferir = argumentos[0] === '--conferir'
+const [arquivoCopia, pastaArquivos] = soConferir ? argumentos.slice(1) : argumentos
 const { SUPABASE_URL, SUPABASE_SECRET_KEY, SENHA_INICIAL } = process.env
+
+/** As tabelas que toda copia precisa ter (mesma lista de api/backup.ts). */
+const TABELAS = [
+  'unidades', 'usuarios', 'criancas', 'responsaveis', 'documentos', 'livro_tipos', 'livros',
+  'emprestimos', 'aulas', 'exercicios', 'treinos', 'treino_comissao', 'treino_exercicios',
+  'treino_avaliacoes', 'escala', 'jogos', 'jogo_convocados', 'jogo_comissao', 'chamadas',
+  'chamada_participantes', 'chamada_marcas', 'chamada_avulsos', 'chamada_correcoes',
+]
+
+/** coluna -> tabela para onde ela aponta (para achar ligacoes quebradas). */
+function alvoDa(coluna) {
+  const diretas = {
+    unidade_id: 'unidades', crianca_id: 'criancas', chamada_id: 'chamadas',
+    treino_id: 'treinos', jogo_id: 'jogos', livro_id: 'livros', exercicio_id: 'exercicios',
+    usuario_id: 'usuarios', professor_id: 'usuarios', responsavel_id: 'usuarios',
+  }
+  if (diretas[coluna]) return diretas[coluna]
+  if (/_por$/.test(coluna)) return 'usuarios'
+  return null
+}
+
+function conferir(copia) {
+  const problemas = []
+  const avisos = []
+  if (copia.sistema !== 'ADAM') problemas.push('o arquivo não é uma cópia do ADAM')
+  const ausentes = new Set(copia.tabelas_ausentes ?? [])
+  console.log(`Cópia de ${copia.feito_em} (${copia.origem ?? '?'})\n`)
+
+  for (const nome of TABELAS) {
+    const linhas = copia.tabelas?.[nome]
+    if (!Array.isArray(linhas)) {
+      if (ausentes.has(nome)) avisos.push(`${nome}: a tabela não existia no banco na hora da cópia`)
+      else problemas.push(`${nome}: falta na cópia`)
+      continue
+    }
+    const chave = copia.chaves?.[nome] ?? ['id']
+    const vistas = new Set()
+    let repetidas = 0
+    for (const l of linhas) {
+      const k = chave.map((c) => l[c]).join('|')
+      if (vistas.has(k)) repetidas++
+      vistas.add(k)
+    }
+    if (repetidas) problemas.push(`${nome}: ${repetidas} linhas com a chave repetida`)
+    console.log(`  ${nome.padEnd(24)} ${String(linhas.length).padStart(6)}`)
+  }
+
+  // ligacoes: cada *_id precisa existir na tabela para onde aponta
+  const ids = {}
+  for (const nome of TABELAS) {
+    ids[nome] = new Set((copia.tabelas?.[nome] ?? []).map((l) => l.id).filter(Boolean))
+  }
+  for (const nome of TABELAS) {
+    for (const l of copia.tabelas?.[nome] ?? []) {
+      for (const [coluna, valor] of Object.entries(l)) {
+        const alvo = alvoDa(coluna)
+        if (!alvo || valor == null || !ids[alvo]) continue
+        if (!ids[alvo].has(valor)) {
+          problemas.push(`${nome}.${coluna} aponta para um registro que não está em ${alvo}`)
+        }
+      }
+    }
+  }
+
+  const contas = copia.contas ?? []
+  const semConta = (copia.tabelas?.usuarios ?? []).filter((u) => !contas.some((c) => c.id === u.id))
+  console.log(`  ${'contas (login)'.padEnd(24)} ${String(contas.length).padStart(6)}`)
+  if (semConta.length) problemas.push(`${semConta.length} pessoas da equipe sem conta de login na cópia`)
+
+  for (const a of avisos) console.log(`\n⚠ ${a}`)
+  const unicos = [...new Set(problemas)]
+  if (unicos.length) {
+    console.error(`\n✖ A cópia tem ${unicos.length} problema(s):`)
+    for (const p of unicos.slice(0, 30)) console.error(`  - ${p}`)
+    process.exit(1)
+  }
+  console.log('\n✔ Cópia inteira: todas as tabelas, sem chave repetida e sem ligação quebrada.')
+}
 
 function parar(mensagem) {
   console.error(`\n✖ ${mensagem}\n`)
@@ -41,6 +129,10 @@ function parar(mensagem) {
 }
 
 if (!arquivoCopia) parar('Diga qual .json restaurar: node scripts/restaurar-backup.mjs <copia.json> [pasta-arquivos]')
+if (soConferir) {
+  conferir(JSON.parse(readFileSync(arquivoCopia, 'utf8')))
+  process.exit(0)
+}
 if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) parar('Defina SUPABASE_URL e SUPABASE_SECRET_KEY do projeto de DESTINO.')
 if (!SENHA_INICIAL || SENHA_INICIAL.length < 8) parar('Defina SENHA_INICIAL (8 caracteres ou mais) para as contas.')
 if (SUPABASE_URL.includes('jmaztlceuandkyraazty')) {
