@@ -16,7 +16,14 @@ import { color, radius, space, type } from '@/theme/tokens'
  * gravando no banco. Exemplares e contagem fisica — e por ela que a estante
  * fecha, por isso nao da para ter menos exemplares que os emprestados.
  */
-export function LivroForm({ livro }: { livro?: Livro }) {
+export function LivroForm({
+  livro,
+  fim,
+}: {
+  livro?: Livro
+  /** o que vem depois do formulario (ex.: o excluir da tela 13k) */
+  fim?: React.ReactNode
+}) {
   const escolha = rascunhoLivro.useValor()
   const { emprestimos } = useBiblioteca()
 
@@ -159,6 +166,8 @@ export function LivroForm({ livro }: { livro?: Livro }) {
           />
         </Bloco>
       )}
+
+      {fim}
     </TelaForm>
   )
 }

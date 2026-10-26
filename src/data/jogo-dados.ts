@@ -26,6 +26,39 @@ const semTabela = (e: unknown) => {
   return codigo === '42P01' || codigo === 'PGRST200' || codigo === 'PGRST205'
 }
 
+/** O banco recusou a exclusao: so quem administra o setor (administra_jogo()). */
+export const SO_COORDENACAO_JOGO = 'Só a coordenação do Jogo pode excluir.'
+
+/**
+ * Exclui uma linha do Jogo. O banco apaga junto o que pende dela (on delete
+ * cascade) e confere de novo quem pode (administra_jogo() na politica de
+ * DELETE). Sem erro e sem linha apagada: ou o banco recusou (RLS nao da
+ * erro, so nao apaga) ou alguem ja tinha excluido — a releitura separa os
+ * dois casos.
+ */
+async function excluirDoJogo(
+  tabela: string,
+  coluna: string,
+  valor: string,
+  msg: { falhou: string; emUso: string; sumiu: string },
+) {
+  const { error, count } = await supabase.from(tabela).delete({ count: 'exact' }).eq(coluna, valor)
+  if (error) {
+    throw new Error(
+      error.code === '23503'
+        ? msg.emUso
+        : error.code === '42501'
+          ? SO_COORDENACAO_JOGO
+          : semTabela(error)
+            ? FALTA_SQL_JOGO
+            : msg.falhou,
+    )
+  }
+  if (count) return
+  const { data } = await supabase.from(tabela).select(coluna).eq(coluna, valor).limit(1)
+  throw new Error(data?.length ? SO_COORDENACAO_JOGO : msg.sumiu)
+}
+
 // ─── tipos ───────────────────────────────────────────────────────────
 
 export type PessoaEquipe = { id: string; nome: string; iniciais: string; funcao: string | null }
@@ -533,6 +566,37 @@ export async function salvarTreino(editaEscala: boolean) {
   return id
 }
 
+/**
+ * Exclui o treino. O banco apaga junto a lista de exercicios, a comissao e
+ * a avaliacao; ele deixa de contar em toda metrica do Jogo.
+ */
+export async function excluirTreino(id: string) {
+  try {
+    await excluirDoJogo('treinos', 'id', id, {
+      falhou: 'Não foi possível excluir o treino.',
+      emUso: 'O treino ainda está ligado a outro registro e não pôde sair.',
+      sumiu: 'Esse treino já tinha sido excluído.',
+    })
+  } finally {
+    await carregarJogo()
+  }
+  // o plano aberto era deste treino: salvar de novo o recriaria
+  if (rascunhoTreino.ler().id === id) abrirPlano()
+}
+
+/** Apaga so a avaliacao (as notas); o treino continua encerrado, sem avaliacao. */
+export async function excluirAvaliacao(treinoId: string) {
+  try {
+    await excluirDoJogo('treino_avaliacoes', 'treino_id', treinoId, {
+      falhou: 'Não foi possível excluir a avaliação.',
+      emUso: 'A avaliação ainda está ligada a outro registro e não pôde sair.',
+      sumiu: 'Essa avaliação já tinha sido excluída.',
+    })
+  } finally {
+    await carregarJogo()
+  }
+}
+
 export async function marcarExercicio(treinoId: string, exercicioId: string, feito: boolean) {
   const { error } = await supabase
     .from('treino_exercicios')
@@ -655,6 +719,36 @@ export async function salvarExercicio(dados: {
   return data.id as string
 }
 
+/** Em quantos treinos (de qualquer data) o exercicio aparece; null se nao deu para contar. */
+export async function contarTreinosComExercicio(exercicioId: string) {
+  const { count, error } = await supabase
+    .from('treino_exercicios')
+    .select('treino_id', { count: 'exact', head: true })
+    .eq('exercicio_id', exercicioId)
+  return error ? null : (count ?? 0)
+}
+
+/**
+ * Exclui o exercicio da biblioteca. O banco tira ele junto da lista de
+ * todos os treinos em que estava (inclusive os ja dados), e o plano em
+ * edicao tambem deixa de te-lo.
+ */
+export async function excluirExercicio(id: string) {
+  try {
+    await excluirDoJogo('exercicios', 'id', id, {
+      falhou: 'Não foi possível excluir o exercício.',
+      emUso: 'O exercício ainda está na lista de algum treino e não pôde sair.',
+      sumiu: 'Esse exercício já tinha sido excluído.',
+    })
+  } finally {
+    await carregarJogo()
+  }
+  const plano = rascunhoTreino.ler()
+  if (plano.exercicios.some((e) => e.exercicioId === id)) {
+    rascunhoTreino.definir({ exercicios: plano.exercicios.filter((e) => e.exercicioId !== id) })
+  }
+}
+
 // ─── escala semanal ──────────────────────────────────────────────────
 
 export async function adicionarHorario(dados: {
@@ -690,10 +784,17 @@ export async function definirTecnico(linhaId: string, tecnicoId: string | null) 
   await carregarJogo()
 }
 
+/** Tira um horario da escala semanal. Os treinos ja marcados continuam. */
 export async function removerHorario(linhaId: string) {
-  const { error } = await supabase.from('escala').delete().eq('id', linhaId)
-  if (error) throw new Error('Não foi possível tirar o horário.')
-  await carregarJogo()
+  try {
+    await excluirDoJogo('escala', 'id', linhaId, {
+      falhou: 'Não foi possível tirar o horário.',
+      emUso: 'O horário ainda está ligado a outro registro e não pôde sair.',
+      sumiu: 'Esse horário já tinha saído da escala.',
+    })
+  } finally {
+    await carregarJogo()
+  }
 }
 
 /** Quem a escala diz que cobre esse dia, hora e turma na unidade. */
@@ -879,6 +980,17 @@ export async function atualizarJogo(
   if (dados.golsAdversario !== undefined) linha.gols_adversario = dados.golsAdversario
   const { error } = await supabase.from('jogos').update(linha).eq('id', id)
   if (error) throw new Error('Não foi possível salvar.')
+}
+
+/** Exclui o jogo. O banco apaga junto a convocacao e a comissao. */
+export async function excluirJogo(id: string) {
+  await excluirDoJogo('jogos', 'id', id, {
+    falhou: 'Não foi possível excluir o jogo.',
+    emUso: 'O jogo ainda está ligado a outro registro e não pôde sair.',
+    sumiu: 'Esse jogo já tinha sido excluído.',
+  })
+  // o formulario de edicao era deste jogo: salvar de novo o recriaria
+  if (rascunhoJogo.ler().id === id) novoJogo()
 }
 
 export async function convocar(jogoId: string, criancaIds: string[]) {

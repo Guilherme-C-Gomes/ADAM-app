@@ -18,6 +18,7 @@ import {
   correcaoIncompleta,
   desmarcar,
   encerrar,
+  excluirChamada,
   hojeLocal,
   horaDe,
   HORARIO,
@@ -35,6 +36,7 @@ import {
   avulsosNaFila,
   chamadaLocal,
   comAFila,
+  descartarDaFila,
   ehLocal,
   enfileirar,
   semConexao,
@@ -42,8 +44,9 @@ import {
   temNaFila,
   useFilaChamada,
 } from '@/data/chamada-offline'
+import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { mostrarRecado } from '@/components/ui/recado'
-import { sessao } from '@/data/perfis'
+import { sessao, usePerfil } from '@/data/perfis'
 import { iniciaisDe } from '@/data/jogo'
 import { color, space, target, type } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
@@ -93,6 +96,8 @@ const diaMes = (data: string) => {
 export default function ListaDaChamada() {
   const { id: idDaRota } = useLocalSearchParams<{ id: string }>()
   const { usuarioId: eu } = sessao.useValor()
+  // excluir a chamada e so de quem administra a Chamada (o banco confere de novo)
+  const { administraChamada } = usePerfil()
   const fila = useFilaChamada()
   // a chamada feita sem sinal que ja subiu: passa a ser a do banco
   const id = fila.resolvidas[idDaRota] ?? idDaRota
@@ -114,6 +119,7 @@ export default function ListaDaChamada() {
   const [rascunho, setRascunho] = useState<Record<string, string> | null>(null)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const [excluindo, setExcluindo] = useState(false)
 
   // a do banco com a fila por cima, ou a que so existe no celular
   const c =
@@ -257,6 +263,41 @@ export default function ListaDaChamada() {
     }
   }
 
+  // A chamada que so existe no celular nunca chegou ao banco: "excluir" e
+  // descartar a fila dela. A do banco e excluida la, com as marcas junto.
+  const excluir = async () => {
+    const certeza = await pedirConfirmacao(
+      local
+        ? {
+            titulo: `Descartar a chamada dos ${turma}?`,
+            texto:
+              'Ela só existe neste celular: as marcas guardadas nela são descartadas e nada sobe para o banco. Não dá para desfazer.',
+            confirmar: 'Descartar chamada',
+            perigo: true,
+          }
+        : {
+            titulo: `Excluir a chamada dos ${turma} de ${diaMes(c.data)}?`,
+            texto:
+              'As presenças marcadas nela saem junto e deixam de contar na frequência. Não dá para desfazer.',
+            confirmar: 'Excluir chamada',
+            perigo: true,
+          },
+    )
+    if (!certeza) return
+    setErro(null)
+    setExcluindo(true)
+    try {
+      if (!local) await excluirChamada(c.id)
+      // o que ainda estava na fila desta chamada seria recusado: sai junto
+      await descartarDaFila(c.id)
+      mostrarRecado(local ? 'Chamada descartada' : 'Chamada excluída')
+      voltar('/chamada')
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível excluir a chamada.')
+      setExcluindo(false)
+    }
+  }
+
   return (
     <TelaForm
       titulo={`Chamada dos ${turma}`}
@@ -357,6 +398,25 @@ export default function ListaDaChamada() {
           />
         </Grupo>
       </Bloco>
+
+      {administraChamada ? (
+        <Bloco ordem={3}>
+          <Botao
+            rotulo={
+              excluindo
+                ? local
+                  ? 'Descartando…'
+                  : 'Excluindo…'
+                : local
+                  ? 'Descartar chamada'
+                  : 'Excluir chamada'
+            }
+            variante="perigo"
+            desabilitado={excluindo || salvando}
+            onPress={excluir}
+          />
+        </Bloco>
+      ) : null}
     </TelaForm>
   )
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native'
 
 import { Avatar } from '@/components/ui'
+import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import {
   Aviso,
   Bloco,
@@ -16,8 +17,17 @@ import {
   TelaForm,
 } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
-import { diaMes, lerContatos, useBiblioteca, type Contato } from '@/data/estudo'
+import { mostrarRecado } from '@/components/ui/recado'
+import {
+  carregarBiblioteca,
+  diaMes,
+  excluirEmprestimo,
+  lerContatos,
+  useBiblioteca,
+  type Contato,
+} from '@/data/estudo'
 import { usePerfil } from '@/data/perfis'
+import { voltar } from '@/lib/navegacao'
 import { color, radius, space, type } from '@/theme/tokens'
 
 /**
@@ -38,7 +48,9 @@ function numeroWhatsApp(telefone: string) {
 export default function ContatoDoLivro() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { livros, emprestimos, criancas, carregando } = useBiblioteca()
-  const { veDadosSensiveis } = usePerfil()
+  const { veDadosSensiveis, administraEstudo } = usePerfil()
+  const [excluindo, setExcluindo] = useState(false)
+  const [erroExcluir, setErroExcluir] = useState<string | null>(null)
 
   const emprestimo = emprestimos.find((e) => e.id === id)
   const livro = livros.find((l) => l.id === emprestimo?.livroId)
@@ -87,6 +99,28 @@ export default function ContatoDoLivro() {
   }
 
   const principal = contatos.lista.find((c) => c.principal) ?? contatos.lista[0]
+
+  // emprestimo registrado por engano: some de vez (devolver guarda a volta)
+  const excluir = async () => {
+    const certeza = await pedirConfirmacao({
+      titulo: 'Excluir este empréstimo?',
+      texto: `Use só se ele foi registrado por engano: “${livro.titulo}” volta para a estante e o empréstimo some, sem contar nos números. Se o livro voltou, use a devolução. Não dá para desfazer.`,
+      confirmar: 'Excluir empréstimo',
+      perigo: true,
+    })
+    if (!certeza) return
+    setErroExcluir(null)
+    setExcluindo(true)
+    try {
+      await excluirEmprestimo(emprestimo.id)
+      mostrarRecado('Empréstimo excluído')
+      voltar('/estudo')
+      carregarBiblioteca()
+    } catch (e) {
+      setErroExcluir(e instanceof Error ? e.message : 'Não foi possível excluir o empréstimo.')
+      setExcluindo(false)
+    }
+  }
 
   const abrirWhatsApp = (telefone: string) =>
     Linking.openURL(
@@ -172,6 +206,18 @@ export default function ContatoDoLivro() {
         <Entrada value={mensagem} onChangeText={setEditada} multiline />
         <Selo rotulo="Some da lista quando o livro voltar" tom="neutro" />
       </Bloco>
+
+      {administraEstudo ? (
+        <Bloco ordem={3} style={st.excluir}>
+          {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
+          <Botao
+            rotulo={excluindo ? 'Excluindo…' : 'Excluir empréstimo'}
+            variante="perigo"
+            desabilitado={excluindo}
+            onPress={excluir}
+          />
+        </Bloco>
+      ) : null}
     </TelaForm>
   )
 }
@@ -210,4 +256,5 @@ const st = StyleSheet.create({
   texto: { flex: 1, gap: 2 },
   titulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
+  excluir: { gap: space.sm, marginTop: space.lg },
 })

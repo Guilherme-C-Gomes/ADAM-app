@@ -13,11 +13,15 @@ import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Barra, Card, Overline } from '@/components/ui'
-import { Aviso } from '@/components/ui/form'
+import { pedirConfirmacao } from '@/components/ui/confirmacao'
+import { Aviso, Botao } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
 import { NOME_TURMA } from '@/data/chamada'
-import { horaCurta, marcarExercicio, nomeNaEquipe, useJogo } from '@/data/jogo-dados'
+import { excluirTreino, horaCurta, marcarExercicio, nomeNaEquipe, useJogo } from '@/data/jogo-dados'
+import { usePerfil } from '@/data/perfis'
+import { voltar } from '@/lib/navegacao'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
 /**
@@ -30,8 +34,14 @@ export default function TreinoExercicios() {
   const { treinos, exercicios, equipe, carregando } = useJogo()
   const [aberto, setAberto] = useState<string | null>(null)
   const [erro, setErro] = useState<string | null>(null)
+  // excluir e so de quem administra o Jogo (o banco tambem recusa os outros)
+  const { administraJogo } = usePerfil()
+  const [excluindo, setExcluindo] = useState(false)
+  const [erroExcluir, setErroExcluir] = useState<string | null>(null)
   const treino = treinos.find((t) => t.id === id)
 
+  // excluindo, o treino some da memoria antes de a tela sair: nada de "nao encontrado"
+  if (!treino && excluindo) return <SafeAreaView style={st.screen} edges={['top']} />
   if (!treino) {
     return (
       <SafeAreaView style={st.screen} edges={['top']}>
@@ -165,6 +175,39 @@ export default function TreinoExercicios() {
             </Text>
           </Pressable>
         </Animated.View>
+
+        {administraJogo ? (
+          <Animated.View
+            entering={FadeInDown.duration(motion.medium).delay(120)}
+            style={st.excluir}>
+            {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
+            <Botao
+              rotulo={excluindo ? 'Excluindo…' : 'Excluir treino'}
+              variante="perigo"
+              desabilitado={excluindo}
+              onPress={async () => {
+                const certeza = await pedirConfirmacao({
+                  titulo: 'Excluir este treino?',
+                  texto:
+                    'A lista de exercícios, a comissão e a avaliação saem junto, e o treino deixa de contar nos números do Jogo. Não dá para desfazer.',
+                  confirmar: 'Excluir treino',
+                  perigo: true,
+                })
+                if (!certeza) return
+                setErroExcluir(null)
+                setExcluindo(true)
+                try {
+                  await excluirTreino(treino.id)
+                  mostrarRecado('Treino excluído')
+                  voltar('/jogo')
+                } catch (e) {
+                  setErroExcluir(e instanceof Error ? e.message : 'Não foi possível excluir.')
+                  setExcluindo(false)
+                }
+              }}
+            />
+          </Animated.View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   )
@@ -175,6 +218,7 @@ const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
   conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
   secao: { gap: space.md },
+  excluir: { gap: space.sm, marginTop: space.lg },
 
   linhaTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cardTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },

@@ -665,6 +665,79 @@ export async function salvarAula(dados: {
   return id
 }
 
+// ─── excluir (so a coordenacao do Estudo) ────────────────────────────
+
+const SO_COORDENACAO = 'Só a coordenação do Estudo pode excluir.'
+
+/**
+ * Apaga uma linha. O banco so deixa quem administra o Estudo
+ * (`administra_estudo()`): para os outros ele nao apaga nada, sem erro — por
+ * isso a contagem. A linha some de vez e deixa de contar em qualquer numero.
+ */
+async function apagarLinha(
+  tabela: 'livros' | 'livro_tipos' | 'emprestimos' | 'aulas',
+  coluna: string,
+  valor: string,
+  erros: { geral: string; emUso?: string },
+) {
+  const { count, error } = await supabase.from(tabela).delete({ count: 'exact' }).eq(coluna, valor)
+  if (error) {
+    // 23503: outra tabela ainda aponta para a linha
+    if (error.code === '23503') {
+      throw new Error(erros.emUso ?? 'Falta rodar o SQL de exclusão do Estudo no Supabase.')
+    }
+    throw new Error(error.code === '42501' ? SO_COORDENACAO : erros.geral)
+  }
+  if (!count) throw new Error(SO_COORDENACAO)
+}
+
+/** Tira arquivos de um bucket. Se falhar, sobra so o arquivo: nao e erro. */
+async function apagarArquivos(bucket: string, pasta: string, conhecidos: string[]) {
+  try {
+    const { data } = await supabase.storage.from(bucket).list(pasta)
+    const caminhos = new Set(conhecidos)
+    for (const f of data ?? []) if (f.id) caminhos.add(`${pasta}/${f.name}`)
+    if (caminhos.size) await supabase.storage.from(bucket).remove([...caminhos])
+  } catch {
+    // o registro ja saiu; o arquivo solto nao aparece em lugar nenhum
+  }
+}
+
+/**
+ * Exclui o titulo do acervo. Os emprestimos dele saem junto (no banco, em
+ * cascata) e a capa sai do armazenamento depois. A tela recarrega a
+ * biblioteca depois de voltar.
+ */
+export async function excluirLivro(livro: { id: string; capaPath: string | null }) {
+  await apagarLinha('livros', 'id', livro.id, { geral: 'Não foi possível excluir o livro.' })
+  await apagarArquivos('capas', `livros/${livro.id}`, livro.capaPath ? [livro.capaPath] : [])
+}
+
+/** Exclui um tipo de livro. Tipo que ainda tem livro o banco recusa. */
+export async function excluirTipo(nome: string) {
+  await apagarLinha('livro_tipos', 'nome', nome, {
+    geral: 'Não foi possível excluir o tipo.',
+    emUso: 'Esse tipo ainda tem livros. Mude o tipo deles antes.',
+  })
+}
+
+/** Exclui um emprestimo registrado por engano (devolver e outra coisa). */
+export async function excluirEmprestimo(emprestimoId: string) {
+  await apagarLinha('emprestimos', 'id', emprestimoId, {
+    geral: 'Não foi possível excluir o empréstimo.',
+  })
+}
+
+/** Exclui a aula e os arquivos de material dela. */
+export async function excluirAula(aula: { id: string; material: Material[] }) {
+  await apagarLinha('aulas', 'id', aula.id, { geral: 'Não foi possível excluir a aula.' })
+  await apagarArquivos(
+    'materiais',
+    `aulas/${aula.id}`,
+    aula.material.map((m) => m.path),
+  )
+}
+
 /** Abre o PDF (ou a foto) da aula por um endereco temporario. */
 export async function abrirMaterial(path: string) {
   const { data, error } = await supabase.storage.from('materiais').createSignedUrl(path, 600)

@@ -38,7 +38,8 @@ const horaValida = (h: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(h)
 export default function EditarEscala() {
   const { escala, equipe } = useJogo()
   const unidades = useUnidades()
-  const { editaEscala } = usePerfil()
+  // tirar horario e excluir: so quem administra o Jogo (o banco tambem recusa os outros)
+  const { editaEscala, administraJogo } = usePerfil()
 
   const [dia, setDia] = useState(6)
   const [turma, setTurma] = useState<Turma>('pequenos')
@@ -77,6 +78,7 @@ export default function EditarEscala() {
       perigo: true,
     })
     if (!certeza) return
+    setErro(null)
     try {
       await removerHorario(id)
       mostrarRecado('Horário retirado')
@@ -124,13 +126,15 @@ export default function EditarEscala() {
                   }
                   selo={tecnico ? undefined : { rotulo: 'a definir', tom: 'ambar' }}
                   direita={
-                    <Pressable
-                      onPress={() => tirar(l.id, rotulo)}
-                      hitSlop={space.md}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Tirar ${rotulo} da escala`}>
-                      <Icone nome="lixeira" cor={color.muted} />
-                    </Pressable>
+                    administraJogo ? (
+                      <Pressable
+                        onPress={() => tirar(l.id, rotulo)}
+                        hitSlop={space.md}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Tirar ${rotulo} da escala`}>
+                        <Icone nome="lixeira" cor={color.muted} />
+                      </Pressable>
+                    ) : undefined
                   }
                   onPress={() =>
                     router.push({ pathname: '/jogo/treinador', params: { linha: l.id } })

@@ -177,6 +177,20 @@ async function lembrado<T>(chave: string): Promise<T | null> {
   }
 }
 
+/**
+ * Tira um item excluido (ou desativado) da lista guardada no celular. Sem
+ * isto, a crianca ou a unidade apagada voltava na proxima vez que a tela
+ * caisse no guardado por falta de sinal. A proxima busca com sinal grava a
+ * lista inteira de novo.
+ */
+export async function esquecerNoCelular(chave: 'criancas' | 'unidades', id: string) {
+  const lista = await lembrado<{ id: string }[]>(chave)
+  if (!lista) return
+  const resto = lista.filter((item) => item.id !== id)
+  if (resto.length === lista.length || !podeGuardar) return
+  await AsyncStorage.setItem(`adam.guardado.${chave}`, JSON.stringify(resto)).catch(() => {})
+}
+
 /** Chamada que so existe no celular (feita sem sinal) — nao se busca no banco. */
 const soNoCelular = (id: string) => id.startsWith('local-')
 
@@ -208,38 +222,52 @@ export function useEquipe() {
   return equipe
 }
 
+/**
+ * As unidades. `recarregar` (a tela volta ao foco) busca de novo: a unidade
+ * excluida em Ajustes some das outras abas sem precisar fechar o app.
+ */
 export function useUnidades() {
   const [estado, setEstado] = useState<Estado<Unidade[]>>({
     dados: [],
     carregando: true,
     erro: null,
   })
+
+  const buscar = useCallback(
+    () =>
+      supabase
+        .from('unidades')
+        .select('id, nome')
+        .order('nome')
+        .then(async ({ data, error }): Promise<(antes: Estado<Unidade[]>) => Estado<Unidade[]>> => {
+          if (!error) {
+            lembrar('unidades', data ?? [])
+            return () => ({ dados: data ?? [], carregando: false, erro: null })
+          }
+          const guardadas = await lembrado<Unidade[]>('unidades')
+          if (guardadas) return () => ({ dados: guardadas, carregando: false, erro: null })
+          // sem sinal e sem nada guardado: o que ja estava na tela fica
+          return (antes) =>
+            antes.dados.length
+              ? { ...antes, carregando: false }
+              : { dados: [], carregando: false, erro: 'Não foi possível carregar as unidades.' }
+        }),
+    [],
+  )
+
+  const recarregar = useCallback(() => buscar().then(setEstado), [buscar])
+
   useEffect(() => {
     let ativo = true
-    supabase
-      .from('unidades')
-      .select('id, nome')
-      .order('nome')
-      .then(async ({ data, error }) => {
-        if (!ativo) return
-        if (!error) {
-          lembrar('unidades', data ?? [])
-          setEstado({ dados: data ?? [], carregando: false, erro: null })
-          return
-        }
-        const guardadas = await lembrado<Unidade[]>('unidades')
-        if (!ativo) return
-        setEstado(
-          guardadas
-            ? { dados: guardadas, carregando: false, erro: null }
-            : { dados: [], carregando: false, erro: 'Não foi possível carregar as unidades.' },
-        )
-      })
+    buscar().then((novo) => {
+      if (ativo) setEstado(novo)
+    })
     return () => {
       ativo = false
     }
-  }, [])
-  return estado
+  }, [buscar])
+
+  return { ...estado, recarregar }
 }
 
 /**
@@ -252,29 +280,45 @@ export function useCriancas() {
     carregando: true,
     erro: null,
   })
+
+  // `recarregar` na volta ao foco: crianca excluida ou desativada na
+  // Secretaria sai da chamada sem precisar fechar o app
+  const buscar = useCallback(
+    () =>
+      supabase
+        .rpc('criancas_basico')
+        .then(async ({ data, error }): Promise<(antes: Estado<Crianca[]>) => Estado<Crianca[]>> => {
+          if (!error) {
+            const dados = ((data ?? []) as Crianca[]).map((c) => ({
+              ...c,
+              turma: c.turma as Turma,
+            }))
+            lembrar('criancas', dados)
+            return () => ({ dados, carregando: false, erro: null })
+          }
+          const guardadas = await lembrado<Crianca[]>('criancas')
+          if (guardadas) return () => ({ dados: guardadas, carregando: false, erro: null })
+          return (antes) =>
+            antes.dados.length
+              ? { ...antes, carregando: false }
+              : { dados: [], carregando: false, erro: 'Não foi possível carregar as crianças.' }
+        }),
+    [],
+  )
+
+  const recarregar = useCallback(() => buscar().then(setEstado), [buscar])
+
   useEffect(() => {
     let ativo = true
-    supabase.rpc('criancas_basico').then(async ({ data, error }) => {
-      if (!ativo) return
-      if (!error) {
-        const dados = (data ?? []).map((c: Crianca) => ({ ...c, turma: c.turma as Turma }))
-        lembrar('criancas', dados)
-        setEstado({ dados, carregando: false, erro: null })
-        return
-      }
-      const guardadas = await lembrado<Crianca[]>('criancas')
-      if (!ativo) return
-      setEstado(
-        guardadas
-          ? { dados: guardadas, carregando: false, erro: null }
-          : { dados: [], carregando: false, erro: 'Não foi possível carregar as crianças.' },
-      )
+    buscar().then((novo) => {
+      if (ativo) setEstado(novo)
     })
     return () => {
       ativo = false
     }
-  }, [])
-  return estado
+  }, [buscar])
+
+  return { ...estado, recarregar }
 }
 
 /** As chamadas de hoje de uma unidade, por turma, ao vivo. */
@@ -564,4 +608,30 @@ export async function adicionarAvulso(chamadaId: string, nome: string) {
 export async function removerAvulso(id: string) {
   const { error } = await supabase.from('chamada_avulsos').delete().eq('id', id)
   if (error) throw error
+}
+
+/**
+ * Exclui a chamada do banco: as marcas, quem marcou, as correcoes e os nomes
+ * sem ficha vao junto (o banco apaga em cascata), e ela deixa de contar na
+ * frequencia e nas metricas. So quem administra a Chamada (ADM ou qualquer
+ * "Coordenar setor"); o banco confere de novo e, para os outros, nao apaga
+ * nada.
+ */
+export async function excluirChamada(id: string) {
+  const { count, error } = await supabase.from('chamadas').delete({ count: 'exact' }).eq('id', id)
+  if (error) {
+    // a mesma conta de "sem conexao" da fila (data/chamada-offline.ts)
+    const semSinal = /network|fetch|internet|timed? ?out|load failed|connection|offline/i.test(
+      error.message ?? '',
+    )
+    throw new Error(
+      semSinal
+        ? 'Excluir a chamada precisa de internet. Tente de novo quando a conexão voltar.'
+        : error.code === '23503'
+          ? 'Falta rodar o SQL de exclusão da chamada no Supabase.'
+          : 'Não foi possível excluir a chamada.',
+    )
+  }
+  // o banco nao apagou nada: quem pediu nao administra a Chamada
+  if (!count) throw new Error('Só a coordenação pode excluir uma chamada.')
 }

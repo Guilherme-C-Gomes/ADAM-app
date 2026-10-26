@@ -13,14 +13,24 @@ import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Overline } from '@/components/ui'
-import { Aviso } from '@/components/ui/form'
+import { pedirConfirmacao } from '@/components/ui/confirmacao'
+import { Aviso, Botao } from '@/components/ui/form'
 import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
 import { rotuloCurto } from '@/data/calendario'
 import { NOME_TURMA } from '@/data/chamada'
-import { encerrarTreino, horaCurta, lerAvaliacao, useJogo, type Notas } from '@/data/jogo-dados'
+import {
+  encerrarTreino,
+  excluirAvaliacao,
+  horaCurta,
+  lerAvaliacao,
+  useJogo,
+  type Notas,
+} from '@/data/jogo-dados'
 import { deISO } from '@/data/metricas'
+import { usePerfil } from '@/data/perfis'
 import { COR_FOCO, useFoco } from '@/hooks/use-foco'
+import { voltar } from '@/lib/navegacao'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
 /**
@@ -104,6 +114,31 @@ function Formulario({
   const [observacoes, setObservacoes] = useState(inicial?.observacoes ?? '')
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  // excluir a avaliacao ja gravada e so de quem administra o Jogo
+  const { administraJogo } = usePerfil()
+  const [excluindo, setExcluindo] = useState(false)
+  const [erroExcluir, setErroExcluir] = useState<string | null>(null)
+
+  const excluir = async () => {
+    const certeza = await pedirConfirmacao({
+      titulo: 'Excluir esta avaliação?',
+      texto:
+        'As notas e as observações deste treino saem, e ele deixa de contar nas avaliações do Jogo. O treino continua encerrado. Não dá para desfazer.',
+      confirmar: 'Excluir avaliação',
+      perigo: true,
+    })
+    if (!certeza) return
+    setErroExcluir(null)
+    setExcluindo(true)
+    try {
+      await excluirAvaliacao(id)
+      mostrarRecado('Avaliação excluída')
+      voltar('/jogo')
+    } catch (e) {
+      setErroExcluir(e instanceof Error ? e.message : 'Não foi possível excluir.')
+      setExcluindo(false)
+    }
+  }
 
   const terminar = async (comNotas: boolean) => {
     setErro(null)
@@ -190,6 +225,18 @@ function Formulario({
             <Text style={st.link}>Encerrar sem avaliar</Text>
           </Pressable>
         </Animated.View>
+
+        {inicial && administraJogo ? (
+          <Animated.View entering={FadeInDown.duration(motion.medium).delay(200)} style={st.fim}>
+            {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
+            <Botao
+              rotulo={excluindo ? 'Excluindo…' : 'Excluir avaliação'}
+              variante="perigo"
+              desabilitado={excluindo || salvando}
+              onPress={excluir}
+            />
+          </Animated.View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   )

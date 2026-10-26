@@ -1,9 +1,10 @@
 import * as DocumentPicker from 'expo-document-picker'
-import { useLocalSearchParams } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { useRef, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
 
 import { Chip } from '@/components/ui'
+import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import {
   Aviso,
   Bloco,
@@ -22,6 +23,8 @@ import { mostrarRecado } from '@/components/ui/recado'
 import { rotuloLongo } from '@/data/calendario'
 import { HORARIO, NOME_TURMA, TURMAS, useUnidades, type Turma } from '@/data/chamada'
 import {
+  carregarAulas,
+  excluirAula,
   proximoSabado,
   salvarAula,
   useAulas,
@@ -31,6 +34,7 @@ import {
   type ProgressoAula,
 } from '@/data/estudo'
 import { deISO, hojeISO, paraISO } from '@/data/metricas'
+import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
 import { color, space } from '@/theme/tokens'
 
@@ -89,6 +93,8 @@ function Formulario({ aula }: { aula?: Aula }) {
   const [novos, setNovos] = useState<ArquivoNovo[]>([])
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const { administraEstudo } = usePerfil()
+  const [excluindo, setExcluindo] = useState(false)
   // o que uma tentativa que falhou ja gravou: a proxima continua dali
   const progresso = useRef<ProgressoAula>({ enviados: {} })
 
@@ -138,6 +144,29 @@ function Formulario({ aula }: { aula?: Aula }) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar a aula.')
     } finally {
       setSalvando(false)
+    }
+  }
+
+  // aula sem professor abre direto aqui (nao na 13b): o excluir mora nas duas
+  const excluir = async (marcada: Aula) => {
+    const certeza = await pedirConfirmacao({
+      titulo: 'Excluir esta aula?',
+      texto: `A aula dos ${NOME_TURMA[marcada.turma]} de ${rotuloLongo(deISO(marcada.data))} sai da escala${marcada.material.length ? ' e o material anexado é apagado' : ''}. Não dá para desfazer.`,
+      confirmar: 'Excluir aula',
+      perigo: true,
+    })
+    if (!certeza) return
+    setErro(null)
+    setExcluindo(true)
+    try {
+      await excluirAula(marcada)
+      mostrarRecado('Aula excluída')
+      // a 13b desta aula (se veio dela) nao existe mais: volta ao Estudo
+      router.dismissTo({ pathname: '/estudo', params: { aba: 'Devocional' } })
+      carregarAulas()
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível excluir a aula.')
+      setExcluindo(false)
     }
   }
 
@@ -334,6 +363,18 @@ function Formulario({ aula }: { aula?: Aula }) {
           ]}
         </Grupo>
       </Bloco>
+
+      {/* so a coordenacao do Estudo ve (e o banco so deixa ela) */}
+      {aula && administraEstudo ? (
+        <Bloco ordem={5} style={{ marginTop: space.lg }}>
+          <Botao
+            rotulo={excluindo ? 'Excluindo…' : 'Excluir aula'}
+            variante="perigo"
+            desabilitado={excluindo || salvando}
+            onPress={() => excluir(aula)}
+          />
+        </Bloco>
+      ) : null}
     </TelaForm>
   )
 }

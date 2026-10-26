@@ -5,13 +5,17 @@ import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Card, Overline } from '@/components/ui'
+import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Botao, Grupo, Linha, Selo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
 import { rotuloCurto } from '@/data/calendario'
 import { NOME_TURMA, useUnidades } from '@/data/chamada'
-import { abrirMaterial, horaCurta, useAulas } from '@/data/estudo'
+import { abrirMaterial, carregarAulas, excluirAula, horaCurta, useAulas } from '@/data/estudo'
 import { deISO } from '@/data/metricas'
+import { usePerfil } from '@/data/perfis'
+import { voltar } from '@/lib/navegacao'
 import { color, motion, space, type } from '@/theme/tokens'
 
 /**
@@ -22,7 +26,10 @@ export default function AulaDoDia() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { aulas, professores, carregando } = useAulas()
   const unidades = useUnidades()
+  const { administraEstudo } = usePerfil()
   const [erro, setErro] = useState<string | null>(null)
+  const [excluindo, setExcluindo] = useState(false)
+  const [erroExcluir, setErroExcluir] = useState<string | null>(null)
   const aula = aulas.find((a) => a.id === id)
 
   if (!aula) {
@@ -47,6 +54,27 @@ export default function AulaDoDia() {
       await abrirMaterial(path)
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível abrir o arquivo.')
+    }
+  }
+
+  const excluir = async () => {
+    const certeza = await pedirConfirmacao({
+      titulo: 'Excluir esta aula?',
+      texto: `A aula dos ${NOME_TURMA[aula.turma]} de ${rotuloCurto(deISO(aula.data))} sai da escala${aula.material.length ? ' e o material anexado é apagado' : ''}. Não dá para desfazer.`,
+      confirmar: 'Excluir aula',
+      perigo: true,
+    })
+    if (!certeza) return
+    setErroExcluir(null)
+    setExcluindo(true)
+    try {
+      await excluirAula(aula)
+      mostrarRecado('Aula excluída')
+      voltar('/estudo')
+      carregarAulas()
+    } catch (e) {
+      setErroExcluir(e instanceof Error ? e.message : 'Não foi possível excluir a aula.')
+      setExcluindo(false)
     }
   }
 
@@ -121,6 +149,21 @@ export default function AulaDoDia() {
         <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
           <Botao rotulo="Fazer chamada" onPress={() => router.navigate('/chamada')} />
         </Animated.View>
+
+        {/* so a coordenacao do Estudo ve (e o banco so deixa ela) */}
+        {administraEstudo ? (
+          <Animated.View
+            entering={FadeInDown.duration(motion.medium).delay(160)}
+            style={st.excluir}>
+            {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
+            <Botao
+              rotulo={excluindo ? 'Excluindo…' : 'Excluir aula'}
+              variante="perigo"
+              desabilitado={excluindo}
+              onPress={excluir}
+            />
+          </Animated.View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   )
@@ -139,4 +182,5 @@ const st = StyleSheet.create({
   arquivo: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   arquivoNome: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
   ponto: { ...type.body, color: color.primaryCh },
+  excluir: { gap: space.sm, marginTop: space.lg },
 })

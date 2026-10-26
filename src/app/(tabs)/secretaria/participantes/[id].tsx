@@ -36,8 +36,9 @@ export default function PerfilParticipante() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { lista, carregando, erro, recarregar } = useParticipantes(id)
   const p = lista[0]
-  // excluir a ficha e so do ADM (o banco tambem recusa os outros)
-  const { perfil } = usePerfil()
+  // excluir a ficha e so de quem administra a Secretaria (o banco tambem
+  // recusa os outros)
+  const { administraSecretaria } = usePerfil()
   const [excluindo, setExcluindo] = useState(false)
   const [erroExcluir, setErroExcluir] = useState<string | null>(null)
 
@@ -200,7 +201,7 @@ export default function PerfilParticipante() {
           <Saida key={`${p.id}-${p.ativa}`} p={p} aoMudar={recarregar} />
         </Animated.View>
 
-        {perfil === 'adm' ? (
+        {administraSecretaria ? (
           <Animated.View
             entering={FadeInDown.duration(motion.medium).delay(120)}
             style={st.excluir}>
@@ -213,7 +214,7 @@ export default function PerfilParticipante() {
                 const certeza = await pedirConfirmacao({
                   titulo: `Excluir a ficha de ${p.nome.split(' ')[0]}?`,
                   texto:
-                    'Some a ficha inteira: responsáveis, documentos, fotos, presenças nas chamadas e livros emprestados. Os números da Secretaria deixam de contar esta criança. Não dá para desfazer.',
+                    'Some a ficha inteira: responsáveis, documentos, fotos, presenças nas chamadas, livros emprestados e convocações. Os números da Secretaria deixam de contar esta criança. Não dá para desfazer.',
                   confirmar: 'Excluir ficha',
                   perigo: true,
                 })

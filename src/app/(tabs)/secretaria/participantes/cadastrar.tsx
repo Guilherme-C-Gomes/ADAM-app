@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
 
 import { Avatar, Chip } from '@/components/ui'
+import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Icone } from '@/components/ui/icone'
 import {
   Aviso,
@@ -16,18 +17,25 @@ import {
   Selo,
   TelaForm,
 } from '@/components/ui/form'
+import { mostrarRecado } from '@/components/ui/recado'
 import { useUnidades } from '@/data/chamada'
 import { turmaDaIdade } from '@/data/estudo'
 import {
   abrirFicha,
+  desativarFicha,
   DOCUMENTOS,
   idadeDe,
+  MOTIVO_DESATIVADA,
   novaFicha,
+  paraBR,
   paraISO,
+  reativarFicha,
   salvarFicha,
   useFotoFicha,
+  useSituacaoFicha,
 } from '@/data/fichas'
 import { iniciaisDe } from '@/data/jogo'
+import { usePerfil } from '@/data/perfis'
 import { rascunhoFicha } from '@/data/rascunhos'
 import { color, radius, space, type } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
@@ -52,6 +60,10 @@ export default function FichaDaCrianca() {
   // rascunho pela metade apagaria responsaveis e documentos)
   const [erroAoAbrir, setErroAoAbrir] = useState<string | null>(null)
   const [tentativa, setTentativa] = useState(0)
+  // desativar e reativar: quem edita a ficha (RLS de update em `criancas`:
+  // ADM e Secretaria)
+  const { perfil, administraSecretaria } = usePerfil()
+  const editaFicha = administraSecretaria || perfil === 'secretaria'
 
   // Ao entrar: ficha existente vem do banco; ficha nova comeca vazia. Voltar
   // das telas de foto e responsaveis nao passa por aqui de novo.
@@ -262,7 +274,101 @@ export default function FichaDaCrianca() {
           multiline
         />
       </Bloco>
+
+      {ficha.id && editaFicha ? (
+        <Bloco ordem={6}>
+          <Situacao id={ficha.id} nome={ficha.nome} />
+        </Bloco>
+      ) : null}
     </TelaForm>
+  )
+}
+
+/**
+ * Desativar / reativar a crianca. E a mesma saida do perfil (ativa = false,
+ * saiu_em = hoje, com o motivo): ela some das listas, da chamada e da
+ * convocacao e deixa de contar como ativa a partir de hoje. O historico fica.
+ */
+function Situacao({ id, nome }: { id: string; nome: string }) {
+  const { situacao, carregando, recarregar } = useSituacaoFicha(id)
+  const [motivo, setMotivo] = useState('')
+  const [salvando, setSalvando] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
+  const primeiro = nome.trim().split(' ')[0] || 'a criança'
+
+  if (carregando) return <ActivityIndicator color={color.primaryCh} />
+  if (!situacao) {
+    return (
+      <Aviso
+        tom="ambar"
+        titulo="Não foi possível ler se a ficha está ativa"
+        texto="Toque para tentar de novo"
+        onPress={recarregar}
+      />
+    )
+  }
+
+  const executar = async (acao: () => Promise<void>, recado: string) => {
+    setErro(null)
+    setSalvando(true)
+    try {
+      await acao()
+      mostrarRecado(recado)
+      voltar()
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível salvar.')
+      setSalvando(false)
+    }
+  }
+
+  const desativar = async () => {
+    const certeza = await pedirConfirmacao({
+      titulo: `Desativar ${primeiro}?`,
+      texto:
+        'A criança sai das listas e da chamada e deixa de contar nas métricas a partir de hoje. O histórico fica, e dá para reativar.',
+      confirmar: 'Desativar criança',
+      perigo: true,
+    })
+    if (certeza) executar(() => desativarFicha(id, motivo), 'Criança desativada')
+  }
+
+  if (!situacao.ativa) {
+    return (
+      <>
+        <Rotulo>Situação</Rotulo>
+        <Aviso
+          tom="ambar"
+          titulo={situacao.saiuEm ? `Desativada desde ${paraBR(situacao.saiuEm)}` : 'Ficha inativa'}
+          texto={situacao.motivo ?? 'Sem motivo anotado.'}
+        />
+        {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
+        <Botao
+          rotulo={salvando ? 'Reativando…' : 'Reativar criança'}
+          variante="secundario"
+          desabilitado={salvando}
+          onPress={() => executar(() => reativarFicha(id), 'Criança reativada')}
+        />
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Rotulo>Situação</Rotulo>
+      <Entrada
+        rotulo="Motivo para desativar (opcional)"
+        value={motivo}
+        onChangeText={setMotivo}
+        placeholder={MOTIVO_DESATIVADA}
+      />
+      {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
+      <Botao
+        rotulo={salvando ? 'Desativando…' : 'Desativar criança'}
+        variante="perigo"
+        desabilitado={salvando}
+        onPress={desativar}
+      />
+    </>
   )
 }
 

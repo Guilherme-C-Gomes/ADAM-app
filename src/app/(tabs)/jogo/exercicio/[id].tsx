@@ -1,9 +1,19 @@
 import { router, useLocalSearchParams } from 'expo-router'
+import { useState } from 'react'
 import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native'
 
-import { Bloco, Botao, Link, Rotulo, TelaForm } from '@/components/ui/form'
+import { pedirConfirmacao } from '@/components/ui/confirmacao'
+import { Aviso, Bloco, Botao, Link, Rotulo, TelaForm } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
-import { rascunhoExercicio, rascunhoTreino, useJogo } from '@/data/jogo-dados'
+import { mostrarRecado } from '@/components/ui/recado'
+import {
+  contarTreinosComExercicio,
+  excluirExercicio,
+  rascunhoExercicio,
+  rascunhoTreino,
+  useJogo,
+} from '@/data/jogo-dados'
+import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
 import { color, onDark, radius, space, type } from '@/theme/tokens'
 
@@ -16,7 +26,18 @@ export default function DetalheExercicio() {
   const plano = rascunhoTreino.useValor()
   const { exercicios, carregando } = useJogo()
   const ex = exercicios.find((e) => e.id === id)
+  // excluir e so de quem administra o Jogo (o banco tambem recusa os outros)
+  const { administraJogo } = usePerfil()
+  const [excluindo, setExcluindo] = useState(false)
+  const [erroExcluir, setErroExcluir] = useState<string | null>(null)
 
+  // excluindo, o exercicio some da memoria antes de a tela sair: nada de "nao encontrado"
+  if (!ex && excluindo)
+    return (
+      <TelaForm titulo="Excluindo…" subtitulo="" voltarPara="/jogo/biblioteca">
+        {null}
+      </TelaForm>
+    )
   if (!ex) {
     return (
       <TelaForm
@@ -29,6 +50,34 @@ export default function DetalheExercicio() {
   }
 
   const noTreino = plano.exercicios.some((x) => x.exercicioId === ex.id)
+
+  const excluir = async () => {
+    setErroExcluir(null)
+    // quantos treinos perdem o exercicio: a confirmacao diz o numero do banco
+    const usos = await contarTreinosComExercicio(ex.id)
+    const certeza = await pedirConfirmacao({
+      titulo: 'Excluir este exercício?',
+      texto: `${
+        usos === null
+          ? 'Ele sai também da lista de exercícios de todos os treinos em que aparece, inclusive os que já aconteceram.'
+          : usos === 0
+            ? 'Ele não está em nenhum treino; sai só da biblioteca.'
+            : `Ele está em ${usos} ${usos === 1 ? 'treino' : 'treinos'} e sai da lista de exercícios ${usos === 1 ? 'dele' : 'deles'} também, inclusive dos que já aconteceram.`
+      } Não dá para desfazer.`,
+      confirmar: 'Excluir exercício',
+      perigo: true,
+    })
+    if (!certeza) return
+    setExcluindo(true)
+    try {
+      await excluirExercicio(ex.id)
+      mostrarRecado('Exercício excluído')
+      voltar('/jogo/biblioteca')
+    } catch (e) {
+      setErroExcluir(e instanceof Error ? e.message : 'Não foi possível excluir.')
+      setExcluindo(false)
+    }
+  }
 
   return (
     <TelaForm
@@ -90,6 +139,18 @@ export default function DetalheExercicio() {
           <Text style={st.texto}>{ex.material ?? 'Nenhum material'}</Text>
         </View>
       </Bloco>
+
+      {administraJogo ? (
+        <Bloco ordem={3} style={st.excluir}>
+          {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
+          <Botao
+            rotulo={excluindo ? 'Excluindo…' : 'Excluir exercício'}
+            variante="perigo"
+            desabilitado={excluindo}
+            onPress={excluir}
+          />
+        </Bloco>
+      ) : null}
     </TelaForm>
   )
 }
@@ -126,4 +187,5 @@ const st = StyleSheet.create({
   },
   texto: { ...type.small, fontFamily: 'Inter_400Regular', color: color.text, lineHeight: 21 },
   pressed: { opacity: 0.85 },
+  excluir: { marginTop: space.lg },
 })

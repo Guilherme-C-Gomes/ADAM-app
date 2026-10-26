@@ -1,5 +1,5 @@
-import { router } from 'expo-router'
-import { useState } from 'react'
+import { router, useFocusEffect } from 'expo-router'
+import { useCallback, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -104,6 +104,14 @@ export default function ChamadaDeHoje() {
 function ChamadasDoBanco({ eu }: { eu: string }) {
   const unidades = useUnidades()
   const [escolhida, setEscolhida] = useState<string | null>(unidadeLembrada)
+  const recarregarUnidades = unidades.recarregar
+
+  // a aba fica montada: unidade excluida em Ajustes sai daqui na volta
+  useFocusEffect(
+    useCallback(() => {
+      recarregarUnidades()
+    }, [recarregarUnidades]),
+  )
   const unidade = unidades.dados.find((u) => u.id === escolhida) ?? unidades.dados[0] ?? null
 
   if (unidades.carregando) return <Carregando />
@@ -150,6 +158,20 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
   const criancas = useCriancas()
   const equipe = useEquipe()
   const fila = useFilaChamada()
+  const recarregarChamadas = chamadas.recarregar
+  const recarregarAbertas = abertas.recarregar
+  const recarregarCriancas = criancas.recarregar
+
+  // Voltar para a aba busca tudo de novo: a chamada excluida sai dos cards
+  // (a exclusao nem sempre chega pelo Realtime) e a crianca excluida ou
+  // desativada na Secretaria sai da contagem da turma.
+  useFocusEffect(
+    useCallback(() => {
+      recarregarChamadas()
+      recarregarAbertas()
+      recarregarCriancas()
+    }, [recarregarChamadas, recarregarAbertas, recarregarCriancas]),
+  )
 
   if (chamadas.carregando || criancas.carregando) return <Carregando />
   // sem a lista de criancas (nem a guardada no celular) nao ha chamada

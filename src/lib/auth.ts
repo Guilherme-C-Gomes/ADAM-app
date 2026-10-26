@@ -68,6 +68,8 @@ async function aplicarLinha(linha: LinhaUsuario, comFoto: boolean, desde = gerac
     logado: true,
     usuarioId: linha.id,
     perfil,
+    funcao: linha.funcao as Funcao | null,
+    permissao: linha.permissao as Permissao,
     pessoa: {
       nome: linha.nome,
       email: linha.email,
@@ -246,5 +248,12 @@ export async function sair() {
   geracao++
   await sairDoAparelho()
   conferidoEm = 0
-  sessao.definir({ logado: false, usuarioId: null, perfil: 'adm', pessoa: null })
+  sessao.definir({
+    logado: false,
+    usuarioId: null,
+    perfil: 'adm',
+    funcao: null,
+    permissao: 'ver_registrar',
+    pessoa: null,
+  })
 }

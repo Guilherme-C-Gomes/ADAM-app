@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Card, Chip } from '@/components/ui'
 import { Campo } from '@/components/ui/campo'
+import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Botao, Entrada, Selo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
 import { mostrarRecado } from '@/components/ui/recado'
@@ -15,12 +16,14 @@ import { formacoesDe } from '@/data/jogo'
 import {
   atualizarJogo,
   diaMes,
+  excluirJogo,
   horaCurta,
   rascunhoJogo,
   useDetalheJogo,
   type DetalheJogo,
 } from '@/data/jogo-dados'
 import { deISO, hojeISO } from '@/data/metricas'
+import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
 import { canvas, color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
@@ -63,6 +66,10 @@ function Partida({ detalhe, recarregar }: { detalhe: DetalheJogo; recarregar: ()
   )
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  // excluir e so de quem administra o Jogo (o banco tambem recusa os outros)
+  const { administraJogo } = usePerfil()
+  const [excluindo, setExcluindo] = useState(false)
+  const [erroExcluir, setErroExcluir] = useState<string | null>(null)
 
   const emCampo = convocados.filter((c) => c.situacao === 'campo').length
   const noBanco = convocados.length - emCampo
@@ -86,6 +93,27 @@ function Partida({ detalhe, recarregar }: { detalhe: DetalheJogo; recarregar: ()
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar.')
     } finally {
       setSalvando(false)
+    }
+  }
+
+  const excluir = async () => {
+    const certeza = await pedirConfirmacao({
+      titulo: `Excluir o jogo contra ${jogo.adversario}?`,
+      texto:
+        'A convocação, a comissão, a tática e o placar saem junto, e o jogo deixa de contar nos números do Jogo. Não dá para desfazer.',
+      confirmar: 'Excluir jogo',
+      perigo: true,
+    })
+    if (!certeza) return
+    setErroExcluir(null)
+    setExcluindo(true)
+    try {
+      await excluirJogo(jogo.id)
+      mostrarRecado('Jogo excluído')
+      voltar('/jogo')
+    } catch (e) {
+      setErroExcluir(e instanceof Error ? e.message : 'Não foi possível excluir.')
+      setExcluindo(false)
     }
   }
 
@@ -246,6 +274,20 @@ function Partida({ detalhe, recarregar }: { detalhe: DetalheJogo; recarregar: ()
             <Text style={st.link}>Editar dados do jogo</Text>
           </Pressable>
         </Animated.View>
+
+        {administraJogo ? (
+          <Animated.View
+            entering={FadeInDown.duration(motion.medium).delay(120)}
+            style={st.excluir}>
+            {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
+            <Botao
+              rotulo={excluindo ? 'Excluindo…' : 'Excluir jogo'}
+              variante="perigo"
+              desabilitado={excluindo || salvando}
+              onPress={excluir}
+            />
+          </Animated.View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   )
@@ -256,6 +298,7 @@ const st = StyleSheet.create({
   placarLado: { flex: 1 },
   placarX: { ...type.h2, fontFamily: 'Inter_700Bold', color: color.muted, paddingBottom: space.md },
   editar: { alignSelf: 'center', paddingTop: space.base },
+  excluir: { gap: space.sm, marginTop: space.lg },
   screen: { flex: 1, backgroundColor: color.bg },
   conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
   formacoes: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },

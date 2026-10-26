@@ -1,10 +1,15 @@
 import { useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
+import { ActivityIndicator, Pressable } from 'react-native'
 
+import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Bloco, Botao, Entrada, Grupo, Linha, Rotulo, TelaForm } from '@/components/ui/form'
+import { Icone } from '@/components/ui/icone'
 import { mostrarRecado } from '@/components/ui/recado'
-import { HORARIO, NOME_TURMA, TURMAS, type Unidade } from '@/data/chamada'
+import { esquecerNoCelular, HORARIO, NOME_TURMA, TURMAS, type Unidade } from '@/data/chamada'
+import { rascunhoFiltroSecretaria } from '@/data/rascunhos'
 import { supabase } from '@/lib/supabase'
+import { color, space } from '@/theme/tokens'
 
 /**
  * Unidades e turmas, a base de tudo: treino, aula e chamada se organizam
@@ -33,11 +38,35 @@ async function lerUnidades() {
   return (unidades.data as Unidade[]).map((u) => ({ ...u, criancas: porUnidade.get(u.id) ?? 0 }))
 }
 
+/**
+ * Exclui a unidade. O banco so deixa o ADM, e so se nada depende dela:
+ * crianca (ativa ou nao), chamada ou treino ainda ligados a ela fazem o
+ * banco recusar (23503) — e o historico dessas coisas nao some.
+ */
+async function excluirUnidade(id: string) {
+  const { count, error } = await supabase.from('unidades').delete({ count: 'exact' }).eq('id', id)
+  if (error) {
+    throw new Error(
+      error.code === '23503'
+        ? 'Essa unidade ainda tem crianças, chamadas ou treinos. Ela não pode ser excluída.'
+        : 'Não foi possível excluir a unidade.',
+    )
+  }
+  if (!count) throw new Error('Só a coordenação (acesso total) pode excluir unidades.')
+  // some tambem da lista guardada para a chamada sem internet e do filtro
+  // da Secretaria, que senao ficava preso numa unidade que nao existe
+  await esquecerNoCelular('unidades', id)
+  if (rascunhoFiltroSecretaria.ler().unidadeId === id) {
+    rascunhoFiltroSecretaria.definir({ unidadeId: null })
+  }
+}
+
 export default function UnidadesETurmas() {
   const [lista, setLista] = useState<(Unidade & { criancas: number })[] | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [nova, setNova] = useState('')
   const [salvando, setSalvando] = useState(false)
+  const [excluindo, setExcluindo] = useState<string | null>(null)
 
   const recarregar = useCallback(
     () =>
@@ -77,6 +106,32 @@ export default function UnidadesETurmas() {
     recarregar()
   }
 
+  // a ultima unidade nao sai: sem unidade nao ha cadastro nem chamada
+  const podeExcluir = (lista?.length ?? 0) > 1
+
+  const excluir = async (u: Unidade) => {
+    if (!podeExcluir) return
+    const certeza = await pedirConfirmacao({
+      titulo: `Excluir a unidade “${u.nome}”?`,
+      texto:
+        'Só dá para excluir uma unidade sem crianças, chamadas nem treinos ligados a ela. Não dá para desfazer.',
+      confirmar: 'Excluir unidade',
+      perigo: true,
+    })
+    if (!certeza) return
+    setErro(null)
+    setExcluindo(u.id)
+    try {
+      await excluirUnidade(u.id)
+      mostrarRecado(`Unidade “${u.nome}” excluída`)
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível excluir a unidade.')
+    } finally {
+      setExcluindo(null)
+      recarregar()
+    }
+  }
+
   return (
     <TelaForm
       titulo="Unidades e turmas"
@@ -98,6 +153,20 @@ export default function UnidadesETurmas() {
                 titulo={u.nome}
                 legenda={`${u.criancas} ${u.criancas === 1 ? 'criança ativa' : 'crianças ativas'}`}
                 semSeta
+                direita={
+                  !podeExcluir ? null : excluindo === u.id ? (
+                    <ActivityIndicator color={color.faint} />
+                  ) : (
+                    <Pressable
+                      onPress={() => excluir(u)}
+                      disabled={!!excluindo}
+                      hitSlop={space.md}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Excluir a unidade ${u.nome}`}>
+                      <Icone nome="lixeira" cor={color.muted} />
+                    </Pressable>
+                  )
+                }
               />
             ))}
           </Grupo>
@@ -106,6 +175,12 @@ export default function UnidadesETurmas() {
             tom="ambar"
             titulo="Nenhuma unidade ainda"
             texto="Sem unidade não dá para cadastrar criança nem abrir chamada. Adicione a primeira abaixo."
+          />
+        ) : null}
+        {lista?.length === 1 ? (
+          <Aviso
+            titulo="A última unidade não pode ser excluída"
+            texto="Sem unidade não dá para cadastrar criança nem abrir chamada."
           />
         ) : null}
       </Bloco>

@@ -103,11 +103,36 @@ export const sessao = criarRascunho({
   /** O id da conta no Supabase (auth.uid). E ele que assina as marcas da chamada. */
   usuarioId: null as string | null,
   perfil: 'adm' as Perfil,
+  /** funcao e permissao da conta, cruas: dizem quem administra cada setor */
+  funcao: null as Funcao | null,
+  permissao: 'ver_registrar' as Permissao,
   pessoa: null as Pessoa | null,
 })
 
+/**
+ * Quem administra cada setor: o ADM (acesso total) e quem tem "Coordenar
+ * setor" na funcao daquele setor. A Chamada e de todos os setores: qualquer
+ * coordenador administra. So quem administra EXCLUI (o banco confere de novo:
+ * administra_jogo(), administra_estudo()... no SQL de exclusao por setor).
+ */
+export function administracaoDe(funcao: Funcao | null, permissao: Permissao) {
+  const total = permissao === 'acesso_total'
+  const coordena = permissao === 'coordenar_setor'
+  return {
+    administraJogo: total || (coordena && funcao === 'treinador'),
+    administraEstudo: total || (coordena && funcao === 'professor'),
+    administraSecretaria: total || (coordena && funcao === 'secretaria'),
+    administraChamada: total || coordena,
+  }
+}
+
 export function usePerfil() {
-  const { perfil, pessoa } = sessao.useValor()
+  const { perfil, pessoa, funcao, permissao } = sessao.useValor()
   const config = PERFIS[perfil]
-  return { perfil, ...config, pessoa: pessoa ?? SEM_PESSOA }
+  return {
+    perfil,
+    ...config,
+    ...administracaoDe(funcao, permissao),
+    pessoa: pessoa ?? SEM_PESSOA,
+  }
 }

@@ -117,6 +117,20 @@ export async function temNaFila(chamada: string) {
   return acoes.some((a) => daChamada(a, chamada, resolvidas))
 }
 
+/**
+ * Tira da fila tudo o que e desta chamada (pelo id local ou o do banco).
+ * Serve a chamada que so existe no celular e e descartada, e a chamada do
+ * banco que acabou de ser excluida (o que sobrasse na fila seria recusado).
+ * A acao que ja esta indo para o banco nao volta: ela sai da fila sozinha
+ * quando chegar.
+ */
+export async function descartarDaFila(chamada: string) {
+  await carregar()
+  const { acoes, resolvidas } = fila.ler()
+  const ficam = acoes.filter((a) => a === emVoo || !daChamada(a, chamada, resolvidas))
+  if (ficam.length !== acoes.length) await guardar({ acoes: ficam })
+}
+
 /** Poe uma acao na fila e ja tenta mandar (se a conexao voltou, sobe). */
 export async function enfileirar(acao: Acao) {
   await carregar()

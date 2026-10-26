@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { turmaDaIdade, type TurmaEstudo } from '@/data/estudo'
 import { iniciaisDe } from '@/data/jogo'
 import { FICHA_VAZIA, rascunhoFicha, type Anexo, type Contato } from '@/data/rascunhos'
+import { esquecerNoCelular } from '@/data/chamada'
 import { deISO, paraISO as dataParaISO } from '@/data/metricas'
 import { porLotes, todasAsLinhas } from '@/lib/consulta'
 import { supabase } from '@/lib/supabase'
@@ -222,12 +223,13 @@ async function lerParticipantes(id?: string, saidas = false): Promise<Participan
     // registrada nunca some), ou se era a chamada dela naquele dia: a
     // unidade dela e a turma da idade que ela tinha NA DATA da chamada
     // (quem fez 12 anos no meio das 8 semanas muda de turma ali). Antes do
-    // `desde` e depois da saida a falta nao conta: ela nao estava na ADAM.
+    // `desde` e a partir do dia da saida a falta nao conta: ela nao estava
+    // mais na ADAM (quem e desativada hoje nao leva falta pela chamada de hoje).
     const daTurma = chamadas.filter(
       (ch) =>
         presente.has(`${ch.id}:${c.id}`) ||
         (ch.data >= c.desde &&
-          (!c.saiu_em || ch.data <= c.saiu_em) &&
+          (!c.saiu_em || ch.data < c.saiu_em) &&
           ch.unidade_id === c.unidade_id &&
           ch.turma === turmaNaData(c.nascimento, ch.data)),
     )
@@ -582,12 +584,13 @@ export function useFotoFicha(caminho: string | null | undefined) {
 }
 
 /**
- * Exclui a ficha de vez: a crianca, responsaveis, documentos, presencas e
- * emprestimos (o banco apaga junto), e os arquivos dela no Storage. So o
- * ADM — o banco recusa os outros, mesmo a Secretaria.
+ * Exclui a ficha de vez: a crianca, responsaveis, documentos, presencas,
+ * emprestimos e convocacoes (o banco apaga junto), e os arquivos dela no
+ * Storage. So quem administra a Secretaria (ADM ou Secretaria com
+ * "Coordenar setor") — o banco recusa os outros.
  */
 export async function excluirFicha(id: string) {
-  const { data, error } = await supabase.from('criancas').delete().eq('id', id).select('id')
+  const { count, error } = await supabase.from('criancas').delete({ count: 'exact' }).eq('id', id)
   if (error) {
     throw new Error(
       error.code === '23503'
@@ -595,31 +598,47 @@ export async function excluirFicha(id: string) {
         : 'Não foi possível excluir a ficha.',
     )
   }
-  // o banco nao apagou nada: quem pediu nao e ADM
-  if (!data?.length) throw new Error('Só a coordenação (acesso total) exclui fichas.')
+  // o banco nao apagou nada: quem pediu nao administra a Secretaria
+  if (!count) throw new Error('Só a coordenação da Secretaria pode excluir.')
 
-  const pasta = `criancas/${id}`
-  const [raiz, docs] = await Promise.all([
-    supabase.storage.from('fichas').list(pasta),
-    supabase.storage.from('fichas').list(`${pasta}/documentos`),
-  ])
-  const arquivos = [
-    ...(raiz.data ?? []).filter((f) => f.id).map((f) => `${pasta}/${f.name}`),
-    ...(docs.data ?? []).map((f) => `${pasta}/documentos/${f.name}`),
-  ]
-  if (arquivos.length) await supabase.storage.from('fichas').remove(arquivos)
+  // a crianca saiu do banco: sai tambem da lista guardada para a chamada
+  // sem internet, senao ela voltaria na proxima chamada sem sinal
+  await esquecerNoCelular('criancas', id)
+
+  // A linha ja foi: arquivo que nao sai agora nao desfaz a exclusao (fica
+  // orfao no bucket privado, sem ninguem que aponte para ele).
+  try {
+    const pasta = `criancas/${id}`
+    const [raiz, docs] = await Promise.all([
+      supabase.storage.from('fichas').list(pasta),
+      supabase.storage.from('fichas').list(`${pasta}/documentos`),
+    ])
+    const arquivos = [
+      ...(raiz.data ?? []).filter((f) => f.id).map((f) => `${pasta}/${f.name}`),
+      ...(docs.data ?? []).filter((f) => f.id).map((f) => `${pasta}/documentos/${f.name}`),
+    ]
+    if (arquivos.length) await supabase.storage.from('fichas').remove(arquivos)
+  } catch {
+    // sem rede no meio: a ficha ja saiu, os arquivos ficam sem dono
+  }
 }
+
+/** Quem pode mexer na ficha e a Secretaria e o ADM (RLS `ve_dados_sensiveis`). */
+const SO_SECRETARIA = 'Só a Secretaria e a coordenação podem mudar a ficha.'
 
 /**
  * A crianca saiu da ADAM: a ficha fica inativa (some da chamada, da
  * convocacao e do emprestimo), com a data e o motivo. Presencas e
  * emprestimos continuam contando no periodo em que ela estava. ADM e
- * Secretaria fazem; excluir de vez continua so do ADM.
+ * Secretaria fazem; excluir de vez e so de quem administra a Secretaria.
  */
 export async function marcarSaida(id: string, saiuEm: string, motivo: string) {
-  const { error } = await supabase
+  const { count, error } = await supabase
     .from('criancas')
-    .update({ ativa: false, saiu_em: saiuEm, motivo_saida: motivo.trim() || null })
+    .update(
+      { ativa: false, saiu_em: saiuEm, motivo_saida: motivo.trim() || null },
+      { count: 'exact' },
+    )
     .eq('id', id)
   if (error) {
     throw new Error(
@@ -628,13 +647,81 @@ export async function marcarSaida(id: string, saiuEm: string, motivo: string) {
         : 'Não foi possível registrar a saída.',
     )
   }
+  // RLS que recusa um update nao da erro: so nao muda nenhuma linha
+  if (!count) throw new Error(SO_SECRETARIA)
+  // inativa nao entra mais na chamada, nem na guardada para quando cair o sinal
+  await esquecerNoCelular('criancas', id)
+}
+
+/** O motivo que fica quando a ficha e desativada sem ninguem escrever um. */
+export const MOTIVO_DESATIVADA = 'Desativada no cadastro'
+
+/**
+ * "Desativar crianca" do cadastro: e a mesma saida, com a data de hoje. Ela
+ * deixa as listas, a chamada e as contagens de ativas a partir de hoje; o
+ * historico fica e reativar desfaz.
+ */
+export function desativarFicha(id: string, motivo: string) {
+  return marcarSaida(id, hojeISO(), motivo.trim() || MOTIVO_DESATIVADA)
 }
 
 /** Voltou para a ADAM: a ficha volta a valer, sem a data de saida. */
 export async function reativarFicha(id: string) {
-  const { error } = await supabase
+  const { count, error } = await supabase
     .from('criancas')
-    .update({ ativa: true, saiu_em: null, motivo_saida: null })
+    .update({ ativa: true, saiu_em: null, motivo_saida: null }, { count: 'exact' })
     .eq('id', id)
   if (error) throw new Error('Não foi possível reativar a ficha.')
+  if (!count) throw new Error(SO_SECRETARIA)
+}
+
+export type SituacaoFicha = { ativa: boolean; saiuEm: string | null; motivo: string | null }
+
+/**
+ * Ativa ou nao, para o "Desativar / Reativar" do cadastro. `*` pelo mesmo
+ * motivo de `lerParticipantes`: saiu_em so existe depois do SQL das saidas.
+ */
+export function useSituacaoFicha(id: string | null | undefined) {
+  const [estado, setEstado] = useState<{ id: string; situacao: SituacaoFicha | null } | null>(null)
+
+  const buscar = useCallback(
+    () =>
+      id
+        ? supabase
+            .from('criancas')
+            .select('*')
+            .eq('id', id)
+            .maybeSingle()
+            .then(({ data, error }) => ({
+              id,
+              situacao:
+                error || !data
+                  ? null
+                  : {
+                      ativa: !!data.ativa,
+                      saiuEm: (data.saiu_em as string | null | undefined) ?? null,
+                      motivo: (data.motivo_saida as string | null | undefined) ?? null,
+                    },
+            }))
+        : Promise.resolve(null),
+    [id],
+  )
+  const recarregar = useCallback(() => buscar().then(setEstado), [buscar])
+
+  useEffect(() => {
+    let ativo = true
+    buscar().then((novo) => {
+      if (ativo) setEstado(novo)
+    })
+    return () => {
+      ativo = false
+    }
+  }, [buscar])
+
+  const valeAgora = !!id && estado?.id === id
+  return {
+    situacao: valeAgora ? estado.situacao : null,
+    carregando: !!id && !valeAgora,
+    recarregar,
+  }
 }
