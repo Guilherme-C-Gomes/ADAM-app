@@ -1,11 +1,13 @@
 import { router, type Href } from 'expo-router'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { AdamSymbol, AdamWordmark } from '@/components/brand/adam-mark'
 import { Avatar } from '@/components/ui'
 import { usePerfil } from '@/data/perfis'
 import type { NomeIcone } from '@/components/ui/icone'
 import { Icone } from '@/components/ui/icone'
+import { usePilulaDeslizante } from '@/components/ui/movimento'
 import { voltar } from '@/lib/navegacao'
 import { color, onDark, radius, space, target, type } from '@/theme/tokens'
 
@@ -136,7 +138,10 @@ export function HeroPerfil({
   )
 }
 
-/** Abas internas de um setor (Treinos · Jogos · Escala). */
+/**
+ * Abas internas de um setor (Treinos · Jogos · Escala). A pilula roxa
+ * desliza ate a aba escolhida, em vez de trocar de lugar num piscar.
+ */
 export function Segmentado<T extends string>({
   opcoes,
   valor,
@@ -146,21 +151,46 @@ export function Segmentado<T extends string>({
   valor: T
   onChange: (v: T) => void
 }) {
+  const pilula = usePilulaDeslizante(valor)
   return (
     <View style={s.segmentado}>
-      {opcoes.map((o) => {
-        const ativo = o === valor
-        return (
-          <Pressable
-            key={o}
-            onPress={() => onChange(o)}
-            style={({ pressed }) => [s.segmento, ativo && s.segmentoAtivo, pressed && s.pressed]}
-            accessibilityRole="button"
-            accessibilityState={{ selected: ativo }}>
-            <Text style={[s.segmentoRotulo, ativo && s.segmentoRotuloAtivo]}>{o}</Text>
-          </Pressable>
-        )
-      })}
+      {/* trilho sem padding nem borda: a medida de cada aba vale para a
+          pilula absoluta */}
+      <View style={s.segmentoTrilho}>
+        {pilula.medida ? (
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              s.segmentoPilula,
+              {
+                top: pilula.medida.y,
+                width: pilula.medida.largura,
+                height: pilula.medida.altura,
+              },
+              pilula.estilo,
+            ]}
+          />
+        ) : null}
+        {opcoes.map((o) => {
+          const ativo = o === valor
+          return (
+            <Pressable
+              key={o}
+              onLayout={pilula.medir(o)}
+              onPress={() => onChange(o)}
+              style={({ pressed }) => [
+                s.segmento,
+                // ate a pilula ser medida, a aba ativa pinta o proprio fundo
+                ativo && !pilula.medida && s.segmentoAtivo,
+                pressed && s.pressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: ativo }}>
+              <Text style={[s.segmentoRotulo, ativo && s.segmentoRotuloAtivo]}>{o}</Text>
+            </Pressable>
+          )
+        })}
+      </View>
     </View>
   )
 }
@@ -232,6 +262,14 @@ const s = StyleSheet.create({
     backgroundColor: color.surface,
     borderWidth: 1,
     borderColor: color.border,
+  },
+  segmentoTrilho: { flex: 1, flexDirection: 'row' },
+  segmentoPilula: {
+    position: 'absolute',
+    left: 0,
+    borderRadius: radius.chip,
+    borderCurve: 'continuous',
+    backgroundColor: onDark.fill,
   },
   segmento: {
     flex: 1,

@@ -1,15 +1,8 @@
 import { Image } from 'expo-image'
-import { memo, useEffect, useState } from 'react'
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  type TextStyle,
-  type ViewStyle,
-} from 'react-native'
+import { memo, useEffect, useRef } from 'react'
+import { Pressable, StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native'
 import Animated, {
-  Easing,
+  ReduceMotion,
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
@@ -19,11 +12,8 @@ import Animated, {
 import Svg, { Circle } from 'react-native-svg'
 
 import { Icone, type NomeIcone } from '@/components/ui/icone'
-import { useMovimentoReduzido } from '@/hooks/use-movimento-reduzido'
-import { color, onDark, radius, space, target, type } from '@/theme/tokens'
-
-/** Curva de entrada do design system. */
-const SAIDA = Easing.bezier(0, 0, 0.2, 1)
+import { NumeroAnimado } from '@/components/ui/movimento'
+import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 
 const CirculoAnimado = Animated.createAnimatedComponent(Circle)
 
@@ -80,13 +70,7 @@ export const Chip = memo(function Chip({
   )
 })
 
-export function Card({
-  children,
-  style,
-}: {
-  children: React.ReactNode
-  style?: ViewStyle
-}) {
+export function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   return <View style={[s.card, style]}>{children}</View>
 }
 
@@ -97,36 +81,51 @@ export function Overline({ children }: { children: string }) {
 /**
  * Barra horizontal de proporcao. `pct` de 0 a 100.
  *
- * Cresce da esquerda quando o card entra (700ms, ease-out). Anima
- * scaleX e nao width: width forca recalculo de layout a cada quadro.
+ * Cresce da esquerda quando entra (de 0) e anda do valor antigo ao novo
+ * quando muda (600ms, expoOut). O preenchimento tem a largura do trilho
+ * e desliza por translateX — sem animar width, que recalcula o layout a
+ * cada quadro, e sem achatar a ponta arredondada como faria um scaleX.
  */
 export function Barra({ pct, cor = onDark.fill }: { pct: number; cor?: string }) {
   const alvo = Math.min(100, Math.max(0, pct))
-  const reduzido = useMovimentoReduzido()
-  const progresso = useSharedValue(reduzido ? 1 : 0)
+  const valor = useAnimarAte(alvo)
 
-  useEffect(() => {
-    progresso.set(
-      reduzido ? 1 : withDelay(120, withTiming(1, { duration: 700, easing: SAIDA })),
-    )
-  }, [alvo, reduzido, progresso])
-
-  const animado = useAnimatedStyle(() => ({ transform: [{ scaleX: progresso.get() }] }))
+  const animado = useAnimatedStyle(() => ({
+    transform: [{ translateX: `${valor.get() - 100}%` }],
+  }))
 
   return (
     <View style={s.barraTrilho}>
-      <Animated.View
-        style={[
-          s.barraFill,
-          { width: `${alvo}%`, backgroundColor: cor },
-          animado,
-        ]}
-      />
+      <Animated.View style={[s.barraFill, { backgroundColor: cor }, animado]} />
     </View>
   )
 }
 
-/** Numero que sobe de 0 ate o valor quando entra na tela (600ms). */
+/**
+ * Valor compartilhado que vai de 0 ate `alvo` na entrada (com um respiro
+ * de 120ms) e do valor atual ao novo quando `alvo` muda.
+ */
+function useAnimarAte(alvo: number, duracao = 600) {
+  const valor = useSharedValue(0)
+  const montado = useRef(false)
+
+  useEffect(() => {
+    const curva = {
+      duration: duracao,
+      easing: motion.expoOut,
+      reduceMotion: ReduceMotion.System,
+    }
+    valor.set(montado.current ? withTiming(alvo, curva) : withDelay(120, withTiming(alvo, curva)))
+    montado.current = true
+  }, [alvo, duracao, valor])
+
+  return valor
+}
+
+/**
+ * Numero que sobe de 0 ate o valor quando entra na tela e conta do valor
+ * antigo ao novo quando muda, acendendo em roxo (600ms).
+ */
 export function Contador({
   valor,
   sufixo = '',
@@ -136,29 +135,7 @@ export function Contador({
   sufixo?: string
   style?: TextStyle | TextStyle[]
 }) {
-  const reduzido = useMovimentoReduzido()
-  const [progresso, setProgresso] = useState(0)
-
-  useEffect(() => {
-    if (reduzido) return
-    const inicio = Date.now()
-    const id = setInterval(() => {
-      const t = Math.min(1, (Date.now() - inicio) / 600)
-      // mesma curva do ease-out usado nas barras
-      setProgresso(1 - Math.pow(1 - t, 3))
-      if (t >= 1) clearInterval(id)
-    }, 16)
-    return () => clearInterval(id)
-  }, [valor, reduzido])
-
-  const mostrado = reduzido ? valor : Math.round(valor * progresso)
-
-  return (
-    <Text style={style}>
-      {mostrado}
-      {sufixo}
-    </Text>
-  )
+  return <NumeroAnimado valor={valor} formato={(n) => `${Math.round(n)}${sufixo}`} style={style} />
 }
 
 /** Anel de progresso (tela 04 do Figma: "Presença no último treino"). */
@@ -176,20 +153,11 @@ export function Anel({
   const raio = (size - espessura) / 2
   const circunferencia = 2 * Math.PI * raio
   const preenchido = Math.min(100, Math.max(0, pct))
-  const offset = circunferencia * (1 - preenchido / 100)
+  const valor = useAnimarAte(preenchido, 800)
 
-  const reduzido = useMovimentoReduzido()
-  const progresso = useSharedValue(reduzido ? 1 : 0)
-
-  useEffect(() => {
-    progresso.set(
-      reduzido ? 1 : withDelay(120, withTiming(1, { duration: 800, easing: SAIDA })),
-    )
-  }, [offset, reduzido, progresso])
-
-  // O traco corre do circulo inteiro vazio ate o valor.
+  // O traco corre do circulo vazio (ou do valor antigo) ate o valor.
   const tracoAnimado = useAnimatedProps(() => ({
-    strokeDashoffset: circunferencia - (circunferencia - offset) * progresso.get(),
+    strokeDashoffset: circunferencia * (1 - valor.get() / 100),
   }))
 
   return (
@@ -316,8 +284,8 @@ const s = StyleSheet.create({
     backgroundColor: color.surface2,
     overflow: 'hidden',
   },
-  // A origem a esquerda e o que faz a barra crescer em vez de inflar.
-  barraFill: { height: '100%', borderRadius: 4, transformOrigin: 'left' },
+  // Largura do trilho; quanto aparece e decidido pelo translateX.
+  barraFill: { width: '100%', height: '100%', borderRadius: 4 },
 
   avatar: {
     overflow: 'hidden',

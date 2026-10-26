@@ -1,26 +1,38 @@
-import { useEffect } from 'react'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { useEffect, useRef } from 'react'
+import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native'
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg'
 
 import { IconeChamada, IconeEstudo, IconeJogo, IconeSecretaria } from '@/components/ui/icones'
+import { molaPop, usePilulaDeslizante } from '@/components/ui/movimento'
 import { criarRascunho } from '@/hooks/use-rascunho'
 import { color, onDark, radius, space, target } from '@/theme/tokens'
 
 const ALTURA_BARRA = 60
 
+/** Folga entre o fim da tela e a pilula, no alto da faixa da barra. */
+const FOLGA_TOPO = space.sm
+
 /** A barra esta na tela agora? (some dentro dos formularios) */
 const barraNaTela = criarRascunho({ visivel: false })
 
 /**
- * Quanto do fim da tela a barra flutuante ocupa (0 quando ela nao aparece).
- * As telas somam isso ao espaco do fim do conteudo e do rodape, para o
- * ultimo item e o botao fixo nunca ficarem por baixo da barra.
+ * Altura exata da faixa da barra no fim da tela (0 quando ela nao
+ * aparece): folga de cima + pilula + margem de baixo do iPhone. O layout
+ * das abas usa isso como paddingBottom da cena, entao o conteudo termina
+ * acima da barra e nunca passa por baixo dela.
  */
 export function useEspacoDaBarra() {
   const { visivel } = barraNaTela.useValor()
   const insets = useSafeAreaInsets()
-  return visivel ? ALTURA_BARRA + Math.max(insets.bottom, space.base) + space.base : 0
+  return visivel ? FOLGA_TOPO + ALTURA_BARRA + Math.max(insets.bottom, space.base) : 0
 }
 
 /**
@@ -30,9 +42,10 @@ export function useEspacoDaBarra() {
  * nem chegam aqui: o layout das abas os protege (`Tabs.Protected`), e rota
  * protegida sai do estado do navegador.
  *
- * E flutuante e nao nativa de proposito: o design pede pilula de vidro
- * com raio 24 sobre o conteudo, que a UITabBar do sistema nao faz. O
- * setor ativo ganha a pilula roxa cheia.
+ * Nao e nativa de proposito: o design pede uma pilula de raio 24, que a
+ * UITabBar do sistema nao faz. Ela mora numa faixa propria no fim da
+ * tela (o conteudo termina acima, nunca passa por baixo) e o setor ativo
+ * ganha uma pilula roxa que desliza ate ele.
  *
  * Ajustes nao mora aqui: chega pelo perfil no topo das telas.
  */
@@ -100,6 +113,11 @@ export function TabBar({ state, navigation }: PropsBarra) {
   const dentroDoSetor = caminhoFocado(state).slice(1)
   const visivel = !dentroDoSetor.some((nome) => !COM_BARRA.has(nome))
 
+  // uma pilula so, que desliza ate o setor ativo
+  const rotaAtiva = state.routes[state.index]
+  const chaveAtiva = rotaAtiva ? (rotaAtiva.key ?? rotaAtiva.name) : ''
+  const pilula = usePilulaDeslizante(chaveAtiva)
+
   useEffect(() => {
     barraNaTela.definir({ visivel })
   }, [visivel])
@@ -108,55 +126,105 @@ export function TabBar({ state, navigation }: PropsBarra) {
 
   const baixo = Math.max(insets.bottom, space.base)
   return (
+    // faixa propria no fim da tela, no fundo liso da tela: a cena termina
+    // acima dela (paddingBottom no layout das abas), sem sobrepor nem degrade
     <View style={[s.wrapper, { paddingBottom: baixo }]} pointerEvents="box-none">
-      {/* o conteudo some num degrade antes da barra, em vez de passar por
-          baixo dela "cortado" */}
-      <Svg
-        pointerEvents="none"
-        style={[s.degrade, { height: ALTURA_BARRA + baixo + space.xl }]}
-        width="100%"
-        height="100%"
-        preserveAspectRatio="none">
-        <Defs>
-          <LinearGradient id="fimDaTela" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={color.bg} stopOpacity={0} />
-            <Stop offset="0.45" stopColor={color.bg} stopOpacity={0.92} />
-            <Stop offset="1" stopColor={color.bg} stopOpacity={1} />
-          </LinearGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#fimDaTela)" />
-      </Svg>
       <View style={s.barra}>
-        {state.routes.map((route, i) => {
-          const nome = route.name as keyof typeof ICONES
-          const Icone = ICONES[nome]
-          if (!Icone) return null
-
-          const ativo = state.index === i
-
-          return (
-            <Pressable
-              key={route.key}
-              onPress={() => {
-                const evento = navigation.emit({
-                  type: 'tabPress',
-                  target: route.key ?? route.name,
-                  canPreventDefault: true,
-                })
-                if (!ativo && !evento.defaultPrevented) {
-                  navigation.navigate(route.name)
-                }
-              }}
-              style={({ pressed }) => [s.item, ativo && s.itemAtivo, pressed && s.pressed]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: ativo }}
-              accessibilityLabel={ROTULOS[nome]}>
-              <Icone cor={ativo ? color.text : color.muted} />
-            </Pressable>
-          )
-        })}
+        {/* trilho sem borda nem padding: a posicao medida de cada item e
+            a mesma que a pilula absoluta usa */}
+        <View style={s.trilho}>
+          {pilula.medida ? (
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                s.pilula,
+                {
+                  top: pilula.medida.y,
+                  width: pilula.medida.largura,
+                  height: pilula.medida.altura,
+                },
+                pilula.estilo,
+              ]}
+            />
+          ) : null}
+          {state.routes.map((route, i) => {
+            const nome = route.name as keyof typeof ICONES
+            if (!ICONES[nome]) return null
+            const ativo = state.index === i
+            return (
+              <ItemBarra
+                key={route.key}
+                nome={nome}
+                ativo={ativo}
+                // ate a pilula ser medida, o item ativo pinta o proprio fundo
+                fundo={ativo && !pilula.medida}
+                onLayout={pilula.medir(route.key ?? route.name)}
+                onPress={() => {
+                  const evento = navigation.emit({
+                    type: 'tabPress',
+                    target: route.key ?? route.name,
+                    canPreventDefault: true,
+                  })
+                  if (!ativo && !evento.defaultPrevented) {
+                    navigation.navigate(route.name)
+                  }
+                }}
+              />
+            )
+          })}
+        </View>
       </View>
     </View>
+  )
+}
+
+/** Um icone da barra. Ao virar o ativo, da um pulinho (escala 1.15 e volta). */
+function ItemBarra({
+  nome,
+  ativo,
+  fundo,
+  onLayout,
+  onPress,
+}: {
+  nome: keyof typeof ICONES
+  ativo: boolean
+  fundo: boolean
+  onLayout: (e: LayoutChangeEvent) => void
+  onPress: () => void
+}) {
+  const Icone = ICONES[nome]
+  const escala = useSharedValue(1)
+  const primeiro = useRef(true)
+
+  useEffect(() => {
+    // na abertura do app nao pula: so quando o setor muda
+    if (primeiro.current) {
+      primeiro.current = false
+      return
+    }
+    if (!ativo) return
+    escala.set(
+      withSequence(
+        withTiming(1.15, { duration: 110, reduceMotion: ReduceMotion.System }),
+        withSpring(1, molaPop),
+      ),
+    )
+  }, [ativo, escala])
+
+  const pulo = useAnimatedStyle(() => ({ transform: [{ scale: escala.get() }] }))
+
+  return (
+    <Pressable
+      onLayout={onLayout}
+      onPress={onPress}
+      style={({ pressed }) => [s.item, fundo && s.itemAtivo, pressed && s.pressed]}
+      accessibilityRole="button"
+      accessibilityState={{ selected: ativo }}
+      accessibilityLabel={ROTULOS[nome]}>
+      <Animated.View style={pulo}>
+        <Icone cor={ativo ? color.text : color.muted} />
+      </Animated.View>
+    </Pressable>
   )
 }
 
@@ -167,9 +235,10 @@ const s = StyleSheet.create({
     right: 0,
     bottom: 0,
     alignItems: 'center',
+    paddingTop: FOLGA_TOPO,
     paddingHorizontal: space.lg,
+    backgroundColor: color.bg,
   },
-  degrade: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   barra: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -182,6 +251,20 @@ const s = StyleSheet.create({
     backgroundColor: color.surface2,
     borderWidth: 1,
     borderColor: color.border,
+  },
+  trilho: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    alignSelf: 'stretch',
+  },
+  pilula: {
+    position: 'absolute',
+    left: 0,
+    borderRadius: radius.chip,
+    borderCurve: 'continuous',
+    backgroundColor: onDark.fill,
   },
   item: {
     width: target.minimo,

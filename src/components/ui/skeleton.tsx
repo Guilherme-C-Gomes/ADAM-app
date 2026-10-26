@@ -1,7 +1,6 @@
 import { useEffect, useId } from 'react'
 import { StyleSheet, View, type DimensionValue, type ViewStyle } from 'react-native'
 import Animated, {
-  Easing,
   FadeIn,
   FadeOut,
   useAnimatedStyle,
@@ -12,7 +11,7 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg'
 
 import { useMovimentoReduzido } from '@/hooks/use-movimento-reduzido'
-import { color, radius, space, target } from '@/theme/tokens'
+import { color, motion, radius, space, target } from '@/theme/tokens'
 
 /**
  * Bloco de carregamento com brilho varrendo (tela 03 do Figma).
@@ -47,7 +46,7 @@ export function Skeleton({
       withRepeat(
         withTiming(1, {
           duration: reduzido ? 800 : DURACAO_BRILHO,
-          easing: Easing.inOut(Easing.quad),
+          easing: motion.inOut,
         }),
         -1,
         reduzido,
@@ -89,10 +88,7 @@ export function Skeleton({
  */
 export function Esqueleto({ children }: { children: React.ReactNode }) {
   return (
-    <Animated.View
-      entering={FadeIn.duration(150)}
-      exiting={FadeOut.duration(200)}
-      style={s.grupo}>
+    <Animated.View entering={FadeIn.duration(150)} exiting={FadeOut.duration(200)} style={s.grupo}>
       {children}
     </Animated.View>
   )

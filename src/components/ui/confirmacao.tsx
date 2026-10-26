@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeIn, FadeOut, ZoomIn } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 
 import { Botao } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { cartaoEntra, cartaoSai, fundoEntra, fundoSai } from '@/components/ui/movimento'
 import { criarRascunho } from '@/hooks/use-rascunho'
 import { color, radius, space, type } from '@/theme/tokens'
 
@@ -48,8 +49,8 @@ export function Confirmacao() {
 
   return (
     <Animated.View
-      entering={FadeIn.duration(150)}
-      exiting={FadeOut.duration(150)}
+      entering={fundoEntra}
+      exiting={fundoSai}
       style={st.fundo}
       accessibilityViewIsModal>
       {/* tocar fora cancela */}
@@ -58,7 +59,11 @@ export function Confirmacao() {
         onPress={() => atual.responder(false)}
         accessibilityLabel="Cancelar"
       />
-      <Animated.View entering={ZoomIn.duration(180)} style={st.cartao} accessibilityRole="alert">
+      <Animated.View
+        entering={cartaoEntra}
+        exiting={cartaoSai}
+        style={st.cartao}
+        accessibilityRole="alert">
         <View style={[st.selo, atual.perigo && st.seloPerigo]}>
           <Icone nome="alerta" cor={atual.perigo ? color.danger : color.warn} tamanho={22} />
         </View>

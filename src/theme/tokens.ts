@@ -1,3 +1,5 @@
+import { Easing } from 'react-native-reanimated'
+
 /**
  * Tokens de design do ADAM.
  *
@@ -54,11 +56,11 @@ export const space = {
 } as const
 
 /**
- * Espaco livre no fim das telas que tem a barra de menu flutuante: a barra
- * (60) + a margem de baixo do iPhone (ate 34) + folga, para o ultimo card e
- * o ultimo botao nunca ficarem por baixo dela.
+ * Respiro no fim do conteudo rolavel das telas. A barra de menu nao
+ * sobrepoe mais a tela (a cena termina acima dela), entao isto e so folga
+ * para o ultimo card nao colar no fim.
  */
-export const ESPACO_FIM_DA_TELA = 150
+export const ESPACO_FIM_DA_TELA = 40 // space.xxxl
 
 export const radius = {
   campo: 12,
@@ -73,13 +75,26 @@ export const target = {
   minimo: 44,
 } as const
 
-/** Duracoes de animacao em milissegundos. */
+/**
+ * Movimento: duracoes em milissegundos, curvas e o passo da cascata.
+ *
+ * As curvas sao Easing.bezier do Reanimated: rodam na thread de UI no
+ * celular e viram cubic-bezier do CSS na web.
+ * - expoOut: chega rapido e assenta devagar — entradas, barras, numeros.
+ * - backOut: passa um pouco do ponto e volta — pop-ups e selos.
+ * - inOut: simetrica — vai e volta (brilho do esqueleto).
+ */
 export const motion = {
   instant: 100,
   fast: 150,
   base: 200,
   medium: 300,
   slow: 400,
+  /** atraso entre um item e o proximo numa entrada em cascata */
+  stagger: 25,
+  expoOut: Easing.bezier(0.16, 1, 0.3, 1),
+  backOut: Easing.bezier(0.34, 1.56, 0.64, 1),
+  inOut: Easing.bezier(0.65, 0, 0.35, 1),
 } as const
 
 /**

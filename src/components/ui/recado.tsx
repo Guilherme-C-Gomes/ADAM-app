@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeIn, FadeOut, ZoomIn } from 'react-native-reanimated'
+import { Pressable, StyleSheet, Text } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { Icone } from '@/components/ui/icone'
+import { cartaoEntra, cartaoSai, fundoEntra, fundoSai, seloEntra } from '@/components/ui/movimento'
 import { criarRascunho } from '@/hooks/use-rascunho'
 import { color, radius, space, type } from '@/theme/tokens'
 
@@ -39,8 +40,8 @@ export function Recado() {
   return (
     <Animated.View
       key={vez}
-      entering={FadeIn.duration(150)}
-      exiting={FadeOut.duration(150)}
+      entering={fundoEntra}
+      exiting={fundoSai}
       style={st.fundo}
       pointerEvents="box-none">
       <Pressable
@@ -49,10 +50,11 @@ export function Recado() {
         accessibilityLiveRegion="polite"
         accessibilityLabel={texto}
         accessibilityHint="Toque para fechar">
-        <Animated.View entering={ZoomIn.duration(180)} style={st.cartao}>
-          <View style={st.selo}>
+        <Animated.View entering={cartaoEntra} exiting={cartaoSai} style={st.cartao}>
+          {/* o check estoura logo depois do cartao assentar */}
+          <Animated.View entering={seloEntra} style={st.selo}>
             <Icone nome="check" cor={color.success} tamanho={22} traco={2.4} />
-          </View>
+          </Animated.View>
           <Text style={st.texto}>{texto}</Text>
         </Animated.View>
       </Pressable>

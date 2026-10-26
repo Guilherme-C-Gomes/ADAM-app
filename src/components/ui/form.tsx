@@ -1,21 +1,28 @@
-import { type Href } from 'expo-router'
-import { Fragment, useState } from 'react'
+import { useSegments, type Href } from 'expo-router'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
   type TextInputProps,
   type ViewStyle,
 } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar } from '@/components/ui'
 import { HeroVoltar } from '@/components/ui/setor'
+import { entrada, molaDeslize, molaPop, Pressionavel } from '@/components/ui/movimento'
 import { useEspacoDaBarra } from '@/components/ui/tab-bar'
 import { MESES } from '@/data/calendario'
 import type { NomeIcone } from '@/components/ui/icone'
@@ -49,27 +56,26 @@ export function TelaForm({
   rodape?: React.ReactNode
   children: React.ReactNode
 }) {
-  // nas telas em que a barra de menu aparece, o fim fica livre para ela
-  const insets = useSafeAreaInsets()
-  const barra = useEspacoDaBarra()
-  const acima = barra ? Math.max(barra - insets.bottom, 0) : 0
+  // Dentro das abas com a barra de menu na tela, a cena ja termina acima
+  // da barra (que ocupa a margem de baixo do iPhone): aplicar a margem de
+  // baixo de novo deixaria um vao. Ajustes mora fora das abas e sempre a usa.
+  const segmentos = useSegments()
+  const comBarra = useEspacoDaBarra() > 0 && segmentos[0] === '(tabs)'
   return (
-    <SafeAreaView style={s.tela} edges={['top', 'bottom']}>
+    <SafeAreaView style={s.tela} edges={comBarra ? ['top'] : ['top', 'bottom']}>
       <HeroVoltar titulo={titulo} subtitulo={subtitulo} acao={acao} voltarPara={voltarPara} />
       <ScrollView
-        contentContainerStyle={[s.conteudo, !rodape && acima ? { paddingBottom: acima } : null]}
+        contentContainerStyle={s.conteudo}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
         {children}
       </ScrollView>
-      {rodape ? (
-        <View style={[s.rodape, acima ? { paddingBottom: space.sm + acima } : null]}>{rodape}</View>
-      ) : null}
+      {rodape ? <View style={s.rodape}>{rodape}</View> : null}
     </SafeAreaView>
   )
 }
 
-/** Entrada em cascata: cada bloco 40ms depois do anterior. */
+/** Entrada em cascata: cada bloco 25ms depois do anterior, subindo 8px. */
 export function Bloco({
   ordem = 0,
   children,
@@ -80,9 +86,7 @@ export function Bloco({
   style?: ViewStyle
 }) {
   return (
-    <Animated.View
-      entering={FadeInDown.duration(motion.medium).delay(ordem * 40)}
-      style={[s.bloco, style]}>
+    <Animated.View entering={entrada(ordem)} style={[s.bloco, style]}>
       {children}
     </Animated.View>
   )
@@ -100,14 +104,13 @@ export function Botao({
   desabilitado?: boolean
 }) {
   return (
-    <Pressable
+    <Pressionavel
       onPress={onPress}
       disabled={desabilitado}
-      style={({ pressed }) => [
+      style={[
         s.botao,
         variante === 'secundario' && s.botaoSecundario,
         variante === 'perigo' && s.botaoPerigo,
-        pressed && s.pressed,
         desabilitado && s.desabilitado,
       ]}
       accessibilityRole="button"
@@ -120,7 +123,7 @@ export function Botao({
         ]}>
         {rotulo}
       </Text>
-    </Pressable>
+    </Pressionavel>
   )
 }
 
@@ -290,13 +293,15 @@ export function Linha({
   if (!onPress) return <View style={s.linha}>{conteudo}</View>
 
   return (
-    <Pressable
+    <Pressionavel
       onPress={onPress}
-      style={({ pressed }) => [s.linha, pressed && s.pressedLinha]}
+      escala={0.98}
+      opacidade={0.7}
+      style={s.linha}
       accessibilityRole="button"
       accessibilityLabel={titulo}>
       {conteudo}
-    </Pressable>
+    </Pressionavel>
   )
 }
 
@@ -313,9 +318,11 @@ export function CampoSeletor({
   vazio?: boolean
 }) {
   return (
-    <Pressable
+    <Pressionavel
       onPress={onPress}
-      style={({ pressed }) => [s.campoSeletor, pressed && s.pressedLinha]}
+      escala={0.98}
+      opacidade={0.7}
+      style={s.campoSeletor}
       accessibilityRole="button"
       accessibilityLabel={`${rotulo}: ${valor}`}>
       <Text style={s.rotulo}>{rotulo}</Text>
@@ -325,7 +332,7 @@ export function CampoSeletor({
         </Text>
         <Icone nome="seta" cor={color.faint} />
       </View>
-    </Pressable>
+    </Pressionavel>
   )
 }
 
@@ -348,18 +355,39 @@ export function LinhaValor({
   )
 }
 
+/** Marca de selecao. Quando acende, da um "pop" (encolhe e volta com mola). */
 export function Marca({ ativa, tipo = 'check' }: { ativa: boolean; tipo?: 'check' | 'radio' }) {
+  const escala = useSharedValue(1)
+  const primeiro = useRef(true)
+
+  useEffect(() => {
+    // na abertura da tela as marcas ja aparecem prontas, sem pular
+    if (primeiro.current) {
+      primeiro.current = false
+      return
+    }
+    if (!ativa) return
+    escala.set(
+      withSequence(
+        withTiming(0.8, { duration: motion.instant, reduceMotion: ReduceMotion.System }),
+        withSpring(1, molaPop),
+      ),
+    )
+  }, [ativa, escala])
+
+  const pop = useAnimatedStyle(() => ({ transform: [{ scale: escala.get() }] }))
+
   if (tipo === 'radio') {
     return (
-      <View style={[s.radio, ativa && s.radioAtivo]}>
+      <Animated.View style={[s.radio, ativa && s.radioAtivo, pop]}>
         {ativa ? <View style={s.radioMiolo} /> : null}
-      </View>
+      </Animated.View>
     )
   }
   return (
-    <View style={[s.check, ativa && s.checkAtivo]}>
+    <Animated.View style={[s.check, ativa && s.checkAtivo, pop]}>
       {ativa ? <Icone nome="check" cor={color.bg} tamanho={14} /> : null}
-    </View>
+    </Animated.View>
   )
 }
 
@@ -384,9 +412,11 @@ export function Opcao({
   selo?: { rotulo: string; tom?: Tom }
 }) {
   return (
-    <Pressable
+    <Pressionavel
       onPress={onPress}
-      style={({ pressed }) => [s.linha, pressed && s.pressedLinha]}
+      escala={0.98}
+      opacidade={0.7}
+      style={s.linha}
       accessibilityRole={tipo === 'radio' ? 'radio' : 'checkbox'}
       accessibilityState={{ checked: ativa }}
       accessibilityLabel={titulo}>
@@ -398,10 +428,15 @@ export function Opcao({
       </View>
       {valor ? <Text style={s.legenda}>{valor}</Text> : null}
       {selo ? <Selo rotulo={selo.rotulo} tom={selo.tom} /> : null}
-    </Pressable>
+    </Pressionavel>
   )
 }
 
+/**
+ * Linha com chave liga/desliga. A chave e desenhada aqui (e nao o Switch
+ * do sistema) para o polegar deslizar com mola igual no iPhone e na web;
+ * o fundo roxo acende por opacidade. A linha inteira e o alvo de toque.
+ */
 export function Interruptor({
   titulo,
   legenda,
@@ -413,22 +448,41 @@ export function Interruptor({
   valor: boolean
   onChange: (v: boolean) => void
 }) {
+  const ligado = useSharedValue(valor ? 1 : 0)
+
+  useEffect(() => {
+    ligado.set(withSpring(valor ? 1 : 0, molaDeslize))
+  }, [valor, ligado])
+
+  const polegar = useAnimatedStyle(() => ({
+    transform: [{ translateX: ligado.get() * (CHAVE.largura - CHAVE.polegar - 4) }],
+  }))
+  const aceso = useAnimatedStyle(() => ({
+    opacity: Math.min(1, Math.max(0, ligado.get())),
+  }))
+
   return (
-    <View style={s.linha}>
+    <Pressable
+      onPress={() => onChange(!valor)}
+      style={s.linha}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: valor }}
+      accessibilityLabel={titulo}
+      accessibilityHint={legenda}>
       <View style={s.linhaTexto}>
         <Text style={s.linhaTitulo}>{titulo}</Text>
         <Text style={s.legenda}>{legenda}</Text>
       </View>
-      <Switch
-        value={valor}
-        onValueChange={onChange}
-        trackColor={{ false: color.surface2, true: onDark.fill }}
-        thumbColor={color.text}
-        ios_backgroundColor={color.surface2}
-      />
-    </View>
+      <View style={s.chave}>
+        <Animated.View style={[StyleSheet.absoluteFill, s.chaveAcesa, aceso]} />
+        <Animated.View style={[s.chavePolegar, polegar]} />
+      </View>
+    </Pressable>
   )
 }
+
+/** Medidas da chave, as mesmas do Switch do iOS. */
+const CHAVE = { largura: 51, altura: 31, polegar: 27 }
 
 /** Card de aviso com "i": explica a regra em vez de esconder o motivo. */
 export function Aviso({
@@ -582,12 +636,8 @@ export function Calendario({
                       : undefined
                   }
                   accessibilityState={{ selected: ativo || !!ponta }}>
-                  <View
-                    style={[
-                      s.diaMiolo,
-                      dia !== null && dia === hoje && s.diaHoje,
-                      (ativo || ponta) && s.diaAtivo,
-                    ]}>
+                  <View style={[s.diaMiolo, dia !== null && dia === hoje && s.diaHoje]}>
+                    <FundoDia ativo={!!(ativo || ponta)} />
                     <Text style={[s.diaTexto, (ativo || ponta) && s.diaTextoAtivo]}>
                       {dia ?? ''}
                     </Text>
@@ -608,6 +658,38 @@ export function Calendario({
       </View>
     </View>
   )
+}
+
+/**
+ * O circulo roxo do dia escolhido. Quando a escolha muda, ele cresce no
+ * dia novo passando um pouco do ponto (backOut); o antigo some rapido.
+ */
+function FundoDia({ ativo }: { ativo: boolean }) {
+  const aceso = useSharedValue(ativo ? 1 : 0)
+  const primeiro = useRef(true)
+
+  useEffect(() => {
+    if (primeiro.current) {
+      primeiro.current = false
+      return
+    }
+    aceso.set(
+      ativo
+        ? withTiming(1, {
+            duration: motion.medium,
+            easing: motion.backOut,
+            reduceMotion: ReduceMotion.System,
+          })
+        : withTiming(0, { duration: motion.instant, reduceMotion: ReduceMotion.System }),
+    )
+  }, [ativo, aceso])
+
+  const estilo = useAnimatedStyle(() => ({
+    opacity: Math.min(1, Math.max(0, aceso.get() * 2)),
+    transform: [{ scale: 0.5 + 0.5 * aceso.get() }],
+  }))
+
+  return <Animated.View pointerEvents="none" style={[s.diaAtivo, estilo]} />
 }
 
 /** Hook de rascunho de formulario salvo: mostra "Salvo" e volta. */
@@ -772,6 +854,23 @@ const s = StyleSheet.create({
     borderColor: color.border,
   },
   radioAtivo: { borderColor: color.primaryLt },
+  chave: {
+    width: CHAVE.largura,
+    height: CHAVE.altura,
+    borderRadius: CHAVE.altura / 2,
+    backgroundColor: color.surface2,
+    overflow: 'hidden',
+  },
+  chaveAcesa: { backgroundColor: onDark.fill },
+  chavePolegar: {
+    position: 'absolute',
+    top: 2,
+    left: 2,
+    width: CHAVE.polegar,
+    height: CHAVE.polegar,
+    borderRadius: CHAVE.polegar / 2,
+    backgroundColor: color.text,
+  },
   radioMiolo: { width: 12, height: 12, borderRadius: 6, backgroundColor: color.primaryLt },
 
   aviso: {
@@ -841,7 +940,15 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  diaAtivo: { backgroundColor: onDark.fill },
+  diaAtivo: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderRadius: 17,
+    backgroundColor: onDark.fill,
+  },
   diaTexto: { ...type.small, fontFamily: 'Inter_400Regular', color: color.text },
   diaTextoAtivo: { fontFamily: 'Inter_700Bold' },
   diaHoje: { borderWidth: 1, borderColor: color.primaryLt },
