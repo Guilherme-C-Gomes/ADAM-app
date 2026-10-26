@@ -7,6 +7,7 @@ import {
 import { Stack } from 'expo-router'
 import Head from 'expo-router/head'
 import * as SplashScreen from 'expo-splash-screen'
+import * as SystemUI from 'expo-system-ui'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { Platform } from 'react-native'
@@ -16,6 +17,10 @@ import { Recado } from '@/components/ui/recado'
 import { color } from '@/theme/tokens'
 
 SplashScreen.preventAutoHideAsync()
+
+// O fundo da janela, que aparece por tras das telas no gesto de voltar
+// (deslizar da borda): sem isto ele e branco e "pisca" na lateral.
+SystemUI.setBackgroundColorAsync(color.bg).catch(() => {})
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
