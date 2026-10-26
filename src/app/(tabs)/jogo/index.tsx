@@ -26,7 +26,16 @@ import {
 } from '@/data/jogo-dados'
 import { deISO, hojeISO, paraISO } from '@/data/metricas'
 import { usePerfil } from '@/data/perfis'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import {
+  color,
+  motion,
+  onDark,
+  radius,
+  space,
+  target,
+  type,
+  ESPACO_FIM_DA_TELA,
+} from '@/theme/tokens'
 
 /**
  * Tela 11. O setor Jogo em tres abas: os treinos (o de hoje, os proximos e
@@ -459,7 +468,7 @@ const st = StyleSheet.create({
   pontoLegenda: { width: 8, height: 8, borderRadius: 4 },
   quando: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   secao: { gap: space.md },
 
   cardTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },

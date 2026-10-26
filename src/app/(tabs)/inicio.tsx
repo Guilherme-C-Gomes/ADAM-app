@@ -15,7 +15,7 @@ import { useUnidades } from '@/data/chamada'
 import { emQueda, useParticipantes } from '@/data/fichas'
 import { deISO, useTreinosDeHoje } from '@/data/metricas'
 import { usePerfil } from '@/data/perfis'
-import { color, motion, onDark, radius, space, type } from '@/theme/tokens'
+import { color, motion, onDark, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /** Uma cor por unidade, na ordem do banco. */
 const CORES_UNIDADE = [color.primary, color.primaryLt, color.primaryDk]
@@ -227,7 +227,7 @@ export default function Home() {
 
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: space.xxxl },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
 
   header: { gap: space.xs, paddingBottom: space.sm },
   topoLinha: {

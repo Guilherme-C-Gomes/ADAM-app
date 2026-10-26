@@ -19,7 +19,16 @@ import {
   type DetalheJogo,
   type Situacao,
 } from '@/data/jogo-dados'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import {
+  color,
+  motion,
+  onDark,
+  radius,
+  space,
+  target,
+  type,
+  ESPACO_FIM_DA_TELA,
+} from '@/theme/tokens'
 
 /**
  * Telas 11o e 11o2. Duas situacoes, uma lista: quem esta em campo e quem
@@ -189,7 +198,7 @@ export default function Convocados() {
 const st = StyleSheet.create({
   linhaToque: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.md },
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
 
   cardLista: { paddingVertical: space.xs, gap: 0 },
   linha: {

@@ -16,7 +16,7 @@ import { abrirMaterial, carregarAulas, excluirAula, horaCurta, useAulas } from '
 import { deISO } from '@/data/metricas'
 import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
-import { color, motion, space, type } from '@/theme/tokens'
+import { color, motion, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Tela 13b. O que o professor precisa ter na mao no dia: quem da a aula,
@@ -171,7 +171,7 @@ export default function AulaDoDia() {
 
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   secao: { gap: space.md },
   professor: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   texto: { flex: 1, gap: 2 },

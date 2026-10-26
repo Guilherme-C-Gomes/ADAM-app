@@ -22,7 +22,7 @@ import { HeroVoltar } from '@/components/ui/setor'
 import { DIAS_SEMANA } from '@/data/calendario'
 import { diaMes, horaCurta, useAtletas, useDetalheJogo } from '@/data/jogo-dados'
 import { deISO } from '@/data/metricas'
-import { color, motion, space, type } from '@/theme/tokens'
+import { color, motion, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Tela 11r. Gera a convocacao para mandar no grupo das familias. Nao
@@ -165,7 +165,7 @@ export default function Compartilhar() {
 
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   secao: { gap: space.md },
 
   previa: { gap: space.lg },

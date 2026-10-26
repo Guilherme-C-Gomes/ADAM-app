@@ -42,7 +42,7 @@ import {
   useFilaChamada,
 } from '@/data/chamada-offline'
 import { sessao, usePerfil } from '@/data/perfis'
-import { color, motion, space, type } from '@/theme/tokens'
+import { color, motion, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Tela 18. A aba Chamada: as turmas do dia, uma embaixo da outra. O dia vem
@@ -566,7 +566,7 @@ function capitalizar(s: string) {
 const st = StyleSheet.create({
   fila: { gap: space.xs },
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.md, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.md, paddingBottom: ESPACO_FIM_DA_TELA },
   centro: { padding: space.xxl, alignItems: 'center' },
   chips: { flexDirection: 'row', gap: space.sm },
   linhaTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

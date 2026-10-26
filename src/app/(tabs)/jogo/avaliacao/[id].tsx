@@ -31,7 +31,16 @@ import { deISO } from '@/data/metricas'
 import { usePerfil } from '@/data/perfis'
 import { COR_FOCO, useFoco } from '@/hooks/use-foco'
 import { voltar } from '@/lib/navegacao'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import {
+  color,
+  motion,
+  onDark,
+  radius,
+  space,
+  target,
+  type,
+  ESPACO_FIM_DA_TELA,
+} from '@/theme/tokens'
 
 /**
  * Tela 11m. Nada aqui e obrigatorio (R8): existe "Pular por agora", e
@@ -281,7 +290,7 @@ function Escala({
 
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.lg, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.lg, paddingBottom: ESPACO_FIM_DA_TELA },
   secao: { gap: space.md },
   fim: { gap: space.base, alignItems: 'stretch' },
   pressed: { opacity: 0.7 },

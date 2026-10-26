@@ -25,7 +25,17 @@ import {
 import { deISO, hojeISO } from '@/data/metricas'
 import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
-import { canvas, color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import {
+  canvas,
+  color,
+  motion,
+  onDark,
+  radius,
+  space,
+  target,
+  type,
+  ESPACO_FIM_DA_TELA,
+} from '@/theme/tokens'
 
 /** Telas 11c e 11n: a escalacao muda de formacoes conforme a modalidade (R3). */
 export default function Escalacao() {
@@ -300,7 +310,7 @@ const st = StyleSheet.create({
   editar: { alignSelf: 'center', paddingTop: space.base },
   excluir: { gap: space.sm, marginTop: space.lg },
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   formacoes: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
   grupo: { paddingVertical: space.xs, gap: 0 },
   divisoria: { height: 1, backgroundColor: color.divider },

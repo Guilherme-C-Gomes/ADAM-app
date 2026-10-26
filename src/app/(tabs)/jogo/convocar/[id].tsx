@@ -13,7 +13,16 @@ import { HeroVoltar } from '@/components/ui/setor'
 import { idadesDaCategoria } from '@/data/jogo'
 import { convocar, NOME_POSICAO, useAtletas, useDetalheJogo, type Atleta } from '@/data/jogo-dados'
 import { voltar } from '@/lib/navegacao'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import {
+  color,
+  motion,
+  onDark,
+  radius,
+  space,
+  target,
+  type,
+  ESPACO_FIM_DA_TELA,
+} from '@/theme/tokens'
 
 /**
  * Tela 11q. A lista de elegiveis sai da idade da categoria (R2) — nao existe
@@ -185,7 +194,7 @@ export default function Convocar() {
 
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   filtros: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
 
   cardLista: { paddingVertical: space.xs, gap: 0 },

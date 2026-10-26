@@ -12,7 +12,7 @@ import { Esqueleto, SkeletonCard, SkeletonFaixa } from '@/components/ui/skeleton
 import { emQueda, useParticipantes } from '@/data/fichas'
 import { useFiltroSecretaria } from '@/data/filtro-secretaria'
 import { useMetricas } from '@/data/metricas'
-import { color, motion, onDark, radius, space, type } from '@/theme/tokens'
+import { color, motion, onDark, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Telas 07, 07b, 07d, 07p e 07q. Quatro recortes do mesmo periodo:
@@ -425,7 +425,7 @@ function Placar({
 const st = StyleSheet.create({
   tituloComSeta: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   secao: { gap: space.md },
   abas: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
 

@@ -24,7 +24,16 @@ import {
   type Participante,
 } from '@/data/fichas'
 import { usePerfil } from '@/data/perfis'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import {
+  color,
+  motion,
+  onDark,
+  radius,
+  space,
+  target,
+  type,
+  ESPACO_FIM_DA_TELA,
+} from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
 
 /**
@@ -344,7 +353,7 @@ function Saida({ p, aoMudar }: { p: Participante; aoMudar: () => void }) {
 
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: space.xxxl },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   excluir: { gap: space.sm, marginTop: space.lg },
 
   linhaTopo: {

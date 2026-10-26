@@ -23,7 +23,16 @@ import {
   type AbaEstudo,
 } from '@/data/estudo'
 import { deISO, hojeISO } from '@/data/metricas'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import {
+  color,
+  motion,
+  onDark,
+  radius,
+  space,
+  target,
+  type,
+  ESPACO_FIM_DA_TELA,
+} from '@/theme/tokens'
 
 /**
  * Tela 13. As duas frentes do Estudo em abas: Biblioteca (o livro que a
@@ -324,7 +333,7 @@ function Devocional() {
 
 const st = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   secao: { gap: space.md },
 
   linhaTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

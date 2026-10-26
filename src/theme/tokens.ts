@@ -53,6 +53,13 @@ export const space = {
   xxxl: 40,
 } as const
 
+/**
+ * Espaco livre no fim das telas que tem a barra de menu flutuante: a barra
+ * (60) + a margem de baixo do iPhone (ate 34) + folga, para o ultimo card e
+ * o ultimo botao nunca ficarem por baixo dela.
+ */
+export const ESPACO_FIM_DA_TELA = 150
+
 export const radius = {
   campo: 12,
   botao: 16,

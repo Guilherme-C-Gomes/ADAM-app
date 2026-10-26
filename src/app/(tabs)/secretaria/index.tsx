@@ -13,7 +13,7 @@ import { Esqueleto, SkeletonCard, SkeletonFaixa, SkeletonLista } from '@/compone
 import { DOCUMENTOS, emQueda, useParticipantes } from '@/data/fichas'
 import { useFiltroSecretaria } from '@/data/filtro-secretaria'
 import { useMetricas } from '@/data/metricas'
-import { color, motion, onDark, radius, space, type } from '@/theme/tokens'
+import { color, motion, onDark, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Tela 12. A Secretaria e quem responde "quanto no conjunto": toda
@@ -233,7 +233,7 @@ function Mini({ valor, rotulo, destaque }: { valor: number; rotulo: string; dest
 const st = StyleSheet.create({
   tituloComSeta: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   secao: { gap: space.md },
 
   cardTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },

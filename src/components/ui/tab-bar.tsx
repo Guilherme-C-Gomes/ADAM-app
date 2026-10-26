@@ -1,8 +1,27 @@
+import { useEffect } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg'
 
 import { IconeChamada, IconeEstudo, IconeJogo, IconeSecretaria } from '@/components/ui/icones'
+import { criarRascunho } from '@/hooks/use-rascunho'
 import { color, onDark, radius, space, target } from '@/theme/tokens'
+
+const ALTURA_BARRA = 60
+
+/** A barra esta na tela agora? (some dentro dos formularios) */
+const barraNaTela = criarRascunho({ visivel: false })
+
+/**
+ * Quanto do fim da tela a barra flutuante ocupa (0 quando ela nao aparece).
+ * As telas somam isso ao espaco do fim do conteudo e do rodape, para o
+ * ultimo item e o botao fixo nunca ficarem por baixo da barra.
+ */
+export function useEspacoDaBarra() {
+  const { visivel } = barraNaTela.useValor()
+  const insets = useSafeAreaInsets()
+  return visivel ? ALTURA_BARRA + Math.max(insets.bottom, space.base) + space.base : 0
+}
 
 /**
  * Barra da Chamada e dos setores do perfil.
@@ -44,11 +63,9 @@ type EstadoRota = {
 type PropsBarra = {
   state: EstadoRota & { index: number; routes: { key: string; name: string }[] }
   navigation: {
-    emit: (e: {
-      type: 'tabPress'
-      target: string
-      canPreventDefault: true
-    }) => { defaultPrevented: boolean }
+    emit: (e: { type: 'tabPress'; target: string; canPreventDefault: true }) => {
+      defaultPrevented: boolean
+    }
     navigate: (nome: string) => void
   }
 }
@@ -81,10 +98,34 @@ export function TabBar({ state, navigation }: PropsBarra) {
 
   // O primeiro segmento e o setor; do segundo em diante e a pilha dele.
   const dentroDoSetor = caminhoFocado(state).slice(1)
-  if (dentroDoSetor.some((nome) => !COM_BARRA.has(nome))) return null
+  const visivel = !dentroDoSetor.some((nome) => !COM_BARRA.has(nome))
 
+  useEffect(() => {
+    barraNaTela.definir({ visivel })
+  }, [visivel])
+
+  if (!visivel) return null
+
+  const baixo = Math.max(insets.bottom, space.base)
   return (
-    <View style={[s.wrapper, { paddingBottom: Math.max(insets.bottom, space.base) }]}>
+    <View style={[s.wrapper, { paddingBottom: baixo }]} pointerEvents="box-none">
+      {/* o conteudo some num degrade antes da barra, em vez de passar por
+          baixo dela "cortado" */}
+      <Svg
+        pointerEvents="none"
+        style={[s.degrade, { height: ALTURA_BARRA + baixo + space.xl }]}
+        width="100%"
+        height="100%"
+        preserveAspectRatio="none">
+        <Defs>
+          <LinearGradient id="fimDaTela" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={color.bg} stopOpacity={0} />
+            <Stop offset="0.45" stopColor={color.bg} stopOpacity={0.92} />
+            <Stop offset="1" stopColor={color.bg} stopOpacity={1} />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#fimDaTela)" />
+      </Svg>
       <View style={s.barra}>
         {state.routes.map((route, i) => {
           const nome = route.name as keyof typeof ICONES
@@ -128,12 +169,13 @@ const s = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: space.lg,
   },
+  degrade: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   barra: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     alignSelf: 'stretch',
-    height: 60,
+    height: ALTURA_BARRA,
     paddingHorizontal: space.sm,
     borderRadius: radius.nav,
     borderCurve: 'continuous',

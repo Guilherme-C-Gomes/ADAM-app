@@ -22,7 +22,16 @@ import { NOME_TURMA } from '@/data/chamada'
 import { excluirTreino, horaCurta, marcarExercicio, nomeNaEquipe, useJogo } from '@/data/jogo-dados'
 import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
-import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
+import {
+  color,
+  motion,
+  onDark,
+  radius,
+  space,
+  target,
+  type,
+  ESPACO_FIM_DA_TELA,
+} from '@/theme/tokens'
 
 /**
  * Tela 11d. A lista aqui e a MESMA que foi montada em "Planejar treino"
@@ -216,7 +225,7 @@ export default function TreinoExercicios() {
 const st = StyleSheet.create({
   videoLinha: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   secao: { gap: space.md },
   excluir: { gap: space.sm, marginTop: space.lg },
 

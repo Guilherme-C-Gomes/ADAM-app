@@ -12,10 +12,11 @@ import {
   type ViewStyle,
 } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Avatar } from '@/components/ui'
 import { HeroVoltar } from '@/components/ui/setor'
+import { useEspacoDaBarra } from '@/components/ui/tab-bar'
 import { MESES } from '@/data/calendario'
 import type { NomeIcone } from '@/components/ui/icone'
 import { Icone } from '@/components/ui/icone'
@@ -48,16 +49,22 @@ export function TelaForm({
   rodape?: React.ReactNode
   children: React.ReactNode
 }) {
+  // nas telas em que a barra de menu aparece, o fim fica livre para ela
+  const insets = useSafeAreaInsets()
+  const barra = useEspacoDaBarra()
+  const acima = barra ? Math.max(barra - insets.bottom, 0) : 0
   return (
     <SafeAreaView style={s.tela} edges={['top', 'bottom']}>
       <HeroVoltar titulo={titulo} subtitulo={subtitulo} acao={acao} voltarPara={voltarPara} />
       <ScrollView
-        contentContainerStyle={s.conteudo}
+        contentContainerStyle={[s.conteudo, !rodape && acima ? { paddingBottom: acima } : null]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
         {children}
       </ScrollView>
-      {rodape ? <View style={s.rodape}>{rodape}</View> : null}
+      {rodape ? (
+        <View style={[s.rodape, acima ? { paddingBottom: space.sm + acima } : null]}>{rodape}</View>
+      ) : null}
     </SafeAreaView>
   )
 }
@@ -623,7 +630,12 @@ export const estilosForm = StyleSheet.create({
 const s = StyleSheet.create({
   tela: { flex: 1, backgroundColor: color.bg },
   conteudo: { padding: space.lg, gap: space.lg, paddingBottom: space.xxxl },
-  rodape: { paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: space.sm, gap: space.sm },
+  rodape: {
+    paddingHorizontal: space.lg,
+    paddingTop: space.sm,
+    paddingBottom: space.sm,
+    gap: space.sm,
+  },
   bloco: { gap: space.sm },
   centro: { alignSelf: 'center' },
 
@@ -822,7 +834,13 @@ const s = StyleSheet.create({
   },
   dia: { flex: 1, height: 42, alignItems: 'center', justifyContent: 'center' },
   diaFaixa: { backgroundColor: color.primaryDk },
-  diaMiolo: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  diaMiolo: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   diaAtivo: { backgroundColor: onDark.fill },
   diaTexto: { ...type.small, fontFamily: 'Inter_400Regular', color: color.text },
   diaTextoAtivo: { fontFamily: 'Inter_700Bold' },

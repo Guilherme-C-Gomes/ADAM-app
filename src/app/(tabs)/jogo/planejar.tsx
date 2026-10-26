@@ -24,7 +24,7 @@ import {
 import { deISO } from '@/data/metricas'
 import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
-import { color, motion, space, target, type } from '@/theme/tokens'
+import { color, motion, space, target, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Telas 11f e 11f2. O que se monta aqui e exatamente o que o tecnico
@@ -231,7 +231,7 @@ const st = StyleSheet.create({
   chips: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
   aviso: { color: color.warn },
   screen: { flex: 1, backgroundColor: color.bg },
-  conteudo: { padding: space.lg, gap: space.base, paddingBottom: 120 },
+  conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   secao: { gap: space.md },
   excluir: { gap: space.sm, marginTop: space.lg },
 
