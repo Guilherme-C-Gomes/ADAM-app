@@ -21,7 +21,8 @@ import { supabase } from '@/lib/supabase'
 export type Turma = 'pequenos' | 'maiores'
 export const TURMAS: readonly Turma[] = ['pequenos', 'maiores']
 export const NOME_TURMA: Record<Turma, string> = { pequenos: 'Pequenos', maiores: 'Maiores' }
-// O horario ainda e fixo: vira dado quando os treinos forem para o banco.
+// Horario de cada turma quando a escala da unidade ainda nao foi montada (a
+// chamada do dia segue a escala: useEscalaDaChamada e treinosDoDia, abaixo).
 export const HORARIO: Record<Turma, string> = { pequenos: '08h', maiores: '10h' }
 
 export type Unidade = { id: string; nome: string }
@@ -35,6 +36,12 @@ export type Chamada = {
   turma: Turma
   estado: 'andamento' | 'encerrada'
   encerrada_em: string | null
+  /**
+   * id de quem encerrou. Nulo numa encerrada: foi o banco, no fim do dia
+   * (encerrar_chamadas_abertas), ou a conta de quem encerrou foi excluida.
+   * Ausente na chamada que so existe no celular.
+   */
+  encerrada_por?: string | null
   /** id de quem esta marcando (ou marcou) */
   participantes: string[]
   /** id da crianca -> id de quem marcou */
@@ -57,6 +64,18 @@ export function horaDe(iso: string | null) {
   return `${String(d.getHours()).padStart(2, '0')}h${String(d.getMinutes()).padStart(2, '0')}`
 }
 
+/**
+ * Encerrada pelo banco ao fim do dia (ficou aberta): sem quem encerrou e
+ * encerrada num dia depois do dela. A encerrada so no celular (fila) ainda
+ * nao tem hora de encerramento, entao nao entra aqui.
+ */
+export function encerradaSozinha(c: Chamada) {
+  if (c.estado !== 'encerrada' || c.encerrada_por !== null || !c.encerrada_em) return false
+  const d = new Date(c.encerrada_em)
+  const dia = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return dia > c.data
+}
+
 /** "você e Rafael", a partir dos ids. */
 export function juntos(ids: string[], eu: string | null, equipe: Record<string, Pessoa>) {
   return ids.map((id) => (id === eu ? 'você' : (equipe[id]?.nome.split(' ')[0] ?? '…'))).join(' e ')
@@ -74,7 +93,7 @@ async function lerChamadas(filtro: {
 }) {
   let consulta = supabase
     .from('chamadas')
-    .select('id, data, unidade_id, turma, estado, encerrada_em')
+    .select('id, data, unidade_id, turma, estado, encerrada_em, encerrada_por')
   if (filtro.ids) consulta = consulta.in('id', filtro.ids)
   if (filtro.data) consulta = consulta.eq('data', filtro.data)
   if (filtro.antesDe) consulta = consulta.lt('data', filtro.antesDe)
@@ -321,6 +340,135 @@ export function useCriancas() {
   return { ...estado, recarregar }
 }
 
+// ─── dias de treino (a escala semanal, montada em Jogo › Escala) ──────
+
+/** Um horario da escala: 0 = domingo ... 6 = sabado; hora "08:00:00". */
+export type HorarioDaEscala = { unidade_id: string; dia_semana: number; hora: string; turma: Turma }
+
+const DIAS_DA_SEMANA = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
+
+/** "08:00:00" -> "08h"; "08:30:00" -> "08h30" (sem Intl). */
+export function horaDaEscala(hora: string) {
+  const [h = '', m = '00'] = hora.split(':')
+  return m === '00' ? `${h.padStart(2, '0')}h` : `${h.padStart(2, '0')}h${m}`
+}
+
+/**
+ * A escala de todas as unidades, guardada no celular a cada vez que chega do
+ * banco: sem sinal, a chamada ainda sabe se hoje tem treino. `dados` nulo =
+ * nao se sabe (sem sinal e nada guardado): a tela mostra as duas turmas.
+ */
+export function useEscalaDaChamada() {
+  const [estado, setEstado] = useState<Estado<HorarioDaEscala[] | null>>({
+    dados: null,
+    carregando: true,
+    erro: null,
+  })
+
+  const buscar = useCallback(
+    () =>
+      supabase
+        .from('escala')
+        .select('unidade_id, dia_semana, hora, turma')
+        .order('dia_semana')
+        .order('hora')
+        .then(
+          async ({
+            data,
+            error,
+          }): Promise<
+            (antes: Estado<HorarioDaEscala[] | null>) => Estado<HorarioDaEscala[] | null>
+          > => {
+            if (!error) {
+              const dados = (data ?? []).map((l) => ({
+                unidade_id: l.unidade_id as string,
+                dia_semana: l.dia_semana as number,
+                hora: String(l.hora ?? ''),
+                turma: l.turma as Turma,
+              }))
+              lembrar('escala', dados)
+              return () => ({ dados, carregando: false, erro: null })
+            }
+            const guardada = await lembrado<HorarioDaEscala[]>('escala')
+            if (guardada) return () => ({ dados: guardada, carregando: false, erro: null })
+            // sem sinal e nada guardado: fica o que ja estava (ou "nao se sabe")
+            return (antes) => ({ ...antes, carregando: false, erro: 'Sem a escala.' })
+          },
+        ),
+    [],
+  )
+
+  // na volta ao foco: horario incluido ou tirado em Jogo › Escala ja vale aqui
+  const recarregar = useCallback(() => buscar().then(setEstado), [buscar])
+
+  useEffect(() => {
+    let ativo = true
+    buscar().then((novo) => {
+      if (ativo) setEstado(novo)
+    })
+    return () => {
+      ativo = false
+    }
+  }, [buscar])
+
+  return { ...estado, recarregar }
+}
+
+export type TreinoDoDia = { turma: Turma; hora: string }
+
+/**
+ * O que a escala diz sobre hoje numa unidade:
+ * - 'desconhecida': sem escala no celular nem sinal -> as duas turmas;
+ * - 'sem-escala': a unidade ainda nao tem nenhum horario -> as duas turmas,
+ *   no horario fixo (HORARIO), com a dica de montar a escala;
+ * - 'treino': as turmas de hoje, cada uma no seu primeiro horario do dia;
+ * - 'folga': hoje nao tem treino; `proximo` e o proximo dia da escala.
+ */
+export function treinosDoDia(
+  escala: HorarioDaEscala[] | null,
+  unidadeId: string,
+  diaSemana: number,
+):
+  | { tipo: 'desconhecida' | 'sem-escala'; turmas: TreinoDoDia[] }
+  | { tipo: 'treino'; turmas: TreinoDoDia[] }
+  | { tipo: 'folga'; turmas: TreinoDoDia[]; proximo: string | null } {
+  const fixas = TURMAS.map((turma) => ({ turma, hora: HORARIO[turma] }))
+  if (!escala) return { tipo: 'desconhecida', turmas: fixas }
+  const daUnidade = escala.filter((l) => l.unidade_id === unidadeId)
+  if (!daUnidade.length) return { tipo: 'sem-escala', turmas: fixas }
+
+  // o primeiro horario de cada turma num dia, em ordem de hora
+  const doDia = (dia: number) => {
+    const primeiro = new Map<Turma, string>()
+    for (const l of daUnidade) {
+      if (l.dia_semana !== dia) continue
+      const antes = primeiro.get(l.turma)
+      if (antes === undefined || l.hora < antes) primeiro.set(l.turma, l.hora)
+    }
+    return [...primeiro]
+      .sort(([ta, a], [tb, b]) =>
+        a !== b ? (a < b ? -1 : 1) : TURMAS.indexOf(ta) - TURMAS.indexOf(tb),
+      )
+      .map(([turma, hora]) => ({ turma, hora }))
+  }
+
+  const hoje = doDia(diaSemana)
+  if (hoje.length) {
+    return { tipo: 'treino', turmas: hoje.map((t) => ({ ...t, hora: horaDaEscala(t.hora) })) }
+  }
+
+  let proximo: string | null = null
+  for (let n = 1; n <= 7 && !proximo; n++) {
+    const dia = (diaSemana + n) % 7
+    const treinos = doDia(dia)
+    if (!treinos.length) continue
+    const hora = treinos[0].hora
+    const turmas = treinos.filter((t) => t.hora === hora).map((t) => NOME_TURMA[t.turma])
+    proximo = `${DIAS_DA_SEMANA[dia]}, ${horaDaEscala(hora)} — ${turmas.join(' e ')}`
+  }
+  return { tipo: 'folga', turmas: [], proximo }
+}
+
 /** As chamadas de hoje de uma unidade, por turma, ao vivo. */
 export function useChamadasDoDia(unidadeId: string | null) {
   const [estado, setEstado] = useState<Estado<Partial<Record<Turma, Chamada>>>>({
@@ -375,6 +523,27 @@ export function useChamadasDoDia(unidadeId: string | null) {
 }
 
 /**
+ * Encerra no banco as chamadas de dias anteriores que ficaram abertas (a
+ * mesma funcao que o pg_cron roda 00h05). Reforco para quando o cron nao
+ * rodou: quem abre o app ja fecha as que sobraram. Erro (sem sinal, ou o SQL
+ * 20261026140000 ainda nao rodou) e ignorado. Uma vez por dia por app aberto;
+ * depois de erro, tenta de novo no maximo a cada minuto.
+ */
+let fechouNoDia: string | null = null
+let tentouEm = 0
+function fecharAsQueFicaramAbertas(): Promise<void> {
+  const dia = hojeLocal()
+  if (fechouNoDia === dia || Date.now() - tentouEm < 60_000) return Promise.resolve()
+  tentouEm = Date.now()
+  return Promise.resolve(supabase.rpc('encerrar_chamadas_abertas')).then(
+    ({ error }) => {
+      if (!error) fechouNoDia = dia
+    },
+    () => {},
+  )
+}
+
+/**
  * As chamadas de dias anteriores que ficaram em andamento numa unidade. A
  * tela do dia so mostra as de hoje; sem esta lista, quem esqueceu de
  * encerrar nao achava mais a chamada, e ela nunca chegava nas metricas.
@@ -388,18 +557,22 @@ export function useChamadasAbertas(unidadeId: string | null) {
 
   const buscar = useCallback(
     () =>
-      lerChamadas({
-        antesDe: hojeLocal(),
-        unidade: unidadeId ?? undefined,
-        estado: 'andamento',
-      }).then(
-        (lista) => (): Estado<Chamada[]> => ({
-          dados: [...lista].sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : 0)),
-          carregando: false,
-          erro: null,
-        }),
-        () => mantendo<Chamada[]>('Não foi possível carregar as chamadas abertas.'),
-      ),
+      fecharAsQueFicaramAbertas()
+        .then(() =>
+          lerChamadas({
+            antesDe: hojeLocal(),
+            unidade: unidadeId ?? undefined,
+            estado: 'andamento',
+          }),
+        )
+        .then(
+          (lista) => (): Estado<Chamada[]> => ({
+            dados: [...lista].sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : 0)),
+            carregando: false,
+            erro: null,
+          }),
+          () => mantendo<Chamada[]>('Não foi possível carregar as chamadas abertas.'),
+        ),
     [unidadeId],
   )
 

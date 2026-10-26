@@ -9,18 +9,21 @@ import { Aviso, Botao, Link, Selo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
 import { HeroSetor } from '@/components/ui/setor'
 import {
+  encerradaSozinha,
   entrarNaChamada,
   hojeLocal,
   horaDe,
-  HORARIO,
   juntos,
   NOME_TURMA,
+  treinosDoDia,
   TURMAS,
   useChamadasAbertas,
   useChamadasDoDia,
   useCriancas,
   useEquipe,
+  useEscalaDaChamada,
   useUnidades,
+  type TreinoDoDia,
   type Chamada,
   type Crianca,
   type Pessoa,
@@ -38,11 +41,14 @@ import {
   sincronizar,
   useFilaChamada,
 } from '@/data/chamada-offline'
-import { sessao } from '@/data/perfis'
+import { sessao, usePerfil } from '@/data/perfis'
 import { color, motion, space, type } from '@/theme/tokens'
 
 /**
- * Tela 18. A aba Chamada: as duas turmas do dia, uma embaixo da outra.
+ * Tela 18. A aba Chamada: as turmas do dia, uma embaixo da outra. O dia vem
+ * da escala semanal da unidade (Jogo › Escala): sem treino hoje, nao ha card
+ * (a coordenacao ainda pode fazer a chamada de um treino extra). Unidade sem
+ * escala montada mostra as duas turmas, como antes.
  *
  * E a primeira aba de todos os perfis e a mesma para todos: o ADM, o
  * treinador e a professora veem o mesmo estado, porque a chamada e uma so
@@ -158,9 +164,14 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
   const criancas = useCriancas()
   const equipe = useEquipe()
   const fila = useFilaChamada()
+  const escala = useEscalaDaChamada()
+  const { administraChamada } = usePerfil()
+  // dia sem treino na escala: a coordenacao abre as turmas para um treino extra
+  const [mesmoAssim, setMesmoAssim] = useState(false)
   const recarregarChamadas = chamadas.recarregar
   const recarregarAbertas = abertas.recarregar
   const recarregarCriancas = criancas.recarregar
+  const recarregarEscala = escala.recarregar
 
   // Voltar para a aba busca tudo de novo: a chamada excluida sai dos cards
   // (a exclusao nem sempre chega pelo Realtime) e a crianca excluida ou
@@ -170,10 +181,11 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
       recarregarChamadas()
       recarregarAbertas()
       recarregarCriancas()
-    }, [recarregarChamadas, recarregarAbertas, recarregarCriancas]),
+      recarregarEscala()
+    }, [recarregarChamadas, recarregarAbertas, recarregarCriancas, recarregarEscala]),
   )
 
-  if (chamadas.carregando || criancas.carregando) return <Carregando />
+  if (chamadas.carregando || criancas.carregando || escala.carregando) return <Carregando />
   // sem a lista de criancas (nem a guardada no celular) nao ha chamada
   if (criancas.erro) return <Erro texto={criancas.erro} />
   // sem conexao com o banco: segue com o que esta no celular
@@ -186,7 +198,16 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
     if (doBanco) return comAFila(doBanco, fila.acoes, fila.resolvidas)
     return chamadaLocal(idLocal(hojeLocal(), unidade.id, turma), fila.acoes, eu)
   }
-  const encerradas = TURMAS.filter((t) => deHoje(t)?.estado === 'encerrada').length
+  // as turmas de hoje: as da escala (ou as duas, sem escala ou no treino
+  // extra) e, sempre, as que ja tem chamada hoje
+  const dia = treinosDoDia(escala.dados, unidade.id, new Date().getDay())
+  const extra = (turma: Turma): TreinoDoDia => ({ turma, hora: 'Treino extra' })
+  const previstas = dia.tipo === 'folga' && mesmoAssim ? TURMAS.map(extra) : dia.turmas
+  const doDia = [
+    ...previstas,
+    ...TURMAS.filter((t) => !previstas.some((p) => p.turma === t) && deHoje(t)).map(extra),
+  ]
+  const encerradas = doDia.filter((t) => deHoje(t.turma)?.estado === 'encerrada').length
   // a mesma lista da tela da turma: ativas, desta turma e desta unidade
   const daTurma = (turma: Turma) =>
     criancas.dados.filter((c) => c.turma === turma && c.unidade_id === unidade.id)
@@ -260,15 +281,41 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
 
       <View style={st.linhaTopo}>
         <Overline>Chamadas de hoje</Overline>
-        <Text style={st.contagem}>
-          {encerradas} de {TURMAS.length} encerradas
-        </Text>
+        {doDia.length ? (
+          <Text style={st.contagem}>
+            {encerradas} de {doDia.length} encerradas
+          </Text>
+        ) : null}
       </View>
 
-      {TURMAS.map((turma, i) => (
+      {dia.tipo === 'sem-escala' ? (
+        <Text style={st.dica}>
+          A escala desta unidade ainda não foi montada. Monte em Jogo › Escala para a chamada
+          aparecer só nos dias de treino.
+        </Text>
+      ) : null}
+
+      {dia.tipo === 'folga' ? (
+        <>
+          <Aviso
+            titulo={`Hoje não tem treino em ${unidade.nome}.`}
+            texto={dia.proximo ? `Próximo treino: ${dia.proximo}` : undefined}
+          />
+          {administraChamada && !mesmoAssim ? (
+            <Botao
+              rotulo="Fazer chamada mesmo assim"
+              variante="secundario"
+              onPress={() => setMesmoAssim(true)}
+            />
+          ) : null}
+        </>
+      ) : null}
+
+      {doDia.map(({ turma, hora }, i) => (
         <Animated.View key={turma} entering={FadeInDown.duration(motion.medium).delay(i * 40)}>
           <CardTurma
             turma={turma}
+            hora={hora}
             unidade={unidade}
             chamada={deHoje(turma)}
             total={daTurma(turma).length}
@@ -279,12 +326,14 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
         </Animated.View>
       ))}
 
-      <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-        <Aviso
-          titulo="Mais de uma pessoa pode marcar"
-          texto="Cada marca aparece na hora para os outros. Qualquer um encerra, e a chamada sobe uma vez só."
-        />
-      </Animated.View>
+      {doDia.length ? (
+        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+          <Aviso
+            titulo="Mais de uma pessoa pode marcar"
+            texto="Cada marca aparece na hora para os outros. Qualquer um encerra, e a chamada sobe uma vez só."
+          />
+        </Animated.View>
+      ) : null}
     </>
   )
 }
@@ -296,6 +345,7 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
  */
 function CardTurma({
   turma,
+  hora,
   unidade,
   chamada,
   total,
@@ -304,6 +354,8 @@ function CardTurma({
   equipe,
 }: {
   turma: Turma
+  /** "08h" da escala, o horario fixo (sem escala) ou "Treino extra" */
+  hora: string
   unidade: Unidade
   chamada: Chamada | null
   total: number
@@ -367,7 +419,7 @@ function CardTurma({
           <View style={st.texto}>
             <Text style={st.turma}>{nome}</Text>
             <Text style={st.legenda}>
-              {HORARIO[turma]} · {unidade.nome} · {total} {total === 1 ? 'criança' : 'crianças'}
+              {hora} · {unidade.nome} · {total} {total === 1 ? 'criança' : 'crianças'}
             </Text>
           </View>
           <Selo rotulo={estado.rotulo} tom={estado.tom} />
@@ -395,8 +447,9 @@ function CardTurma({
                     {marcadas} de {total} presentes
                   </Text>
                   <Text style={st.legendaPequena}>
-                    Encerrada às {horaDe(chamada.encerrada_em)} · por{' '}
-                    {juntos(chamada.participantes, eu, equipe)}
+                    {encerradaSozinha(chamada)
+                      ? 'Encerrada automaticamente'
+                      : `Encerrada às ${horaDe(chamada.encerrada_em)} · por ${juntos(chamada.participantes, eu, equipe)}`}
                     {ultimaCorrecao
                       ? ` · corrigida por ${juntos([ultimaCorrecao.por], eu, equipe)} às ${horaDe(ultimaCorrecao.em)}`
                       : ''}
@@ -528,6 +581,7 @@ const st = StyleSheet.create({
   turma: { ...type.body, fontFamily: 'Inter_700Bold', color: color.text },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
   legendaPequena: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.faint },
+  dica: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
   forte: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   divisoria: { height: 1, backgroundColor: color.divider },
 

@@ -17,6 +17,7 @@ import {
 import {
   correcaoIncompleta,
   desmarcar,
+  encerradaSozinha,
   encerrar,
   excluirChamada,
   hojeLocal,
@@ -302,11 +303,13 @@ export default function ListaDaChamada() {
     <TelaForm
       titulo={`Chamada dos ${turma}`}
       subtitulo={
-        corrigindo
-          ? `Encerrada às ${horaDe(c.encerrada_em)} · dá para corrigir até 23h59`
-          : c.data !== hojeLocal()
-            ? `Chamada de ${diaMes(c.data)}, ainda aberta · ${juntos(c.participantes, eu, equipe)}`
-            : `${HORARIO[c.turma]} · ${juntos(c.participantes, eu, equipe)} marcando agora`
+        encerradaSozinha(c)
+          ? `Chamada de ${diaMes(c.data)} · Encerrada automaticamente`
+          : corrigindo
+            ? `Encerrada às ${horaDe(c.encerrada_em)} · dá para corrigir até 23h59`
+            : c.data !== hojeLocal()
+              ? `Chamada de ${diaMes(c.data)}, ainda aberta · ${juntos(c.participantes, eu, equipe)}`
+              : `${HORARIO[c.turma]} · ${juntos(c.participantes, eu, equipe)} marcando agora`
       }
       rodape={
         <Botao
