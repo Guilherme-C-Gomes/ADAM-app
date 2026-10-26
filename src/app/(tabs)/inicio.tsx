@@ -1,13 +1,14 @@
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Anel, Card, Chip, Contador, Overline } from '@/components/ui'
 import { Aviso } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
 import { CardQueda } from '@/components/ui/metricas'
+import { entrada, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { HeroSetor } from '@/components/ui/setor'
 import { Esqueleto, SkeletonCard, SkeletonChips, SkeletonFaixa } from '@/components/ui/skeleton'
 import { rotuloLongo } from '@/data/calendario'
@@ -15,7 +16,7 @@ import { useUnidades } from '@/data/chamada'
 import { emQueda, useParticipantes } from '@/data/fichas'
 import { deISO, useTreinosDeHoje } from '@/data/metricas'
 import { usePerfil } from '@/data/perfis'
-import { color, motion, onDark, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
+import { color, onDark, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /** Uma cor por unidade, na ordem do banco. */
 const CORES_UNIDADE = [color.primary, color.primaryLt, color.primaryDk]
@@ -124,15 +125,16 @@ export default function Home() {
               ))}
             </View>
 
-            <Pressable
+            <Pressionavel
               onPress={() => router.push('/secretaria/participantes')}
+              escala={0.98}
               accessibilityRole="button"
               accessibilityLabel="Buscar participante">
               <View style={st.busca}>
                 <Icone nome="busca" cor={color.muted} />
                 <Text style={st.buscaPlaceholder}>Buscar participante</Text>
               </View>
-            </Pressable>
+            </Pressionavel>
 
             <Overline>Resumo de hoje</Overline>
           </>
@@ -152,7 +154,7 @@ export default function Home() {
               />
             ) : null}
 
-            <Animated.View entering={FadeInDown.duration(motion.medium)}>
+            <Animated.View entering={entrada(0)}>
               <Card>
                 <Text style={st.cardTitulo}>Participantes ativos</Text>
                 <View style={st.valorLinha}>
@@ -178,9 +180,12 @@ export default function Home() {
                       <View key={u.id} style={st.legendaLinha}>
                         <View style={[st.ponto, { backgroundColor: u.cor }]} />
                         <Text style={st.legenda}>{u.nome}</Text>
-                        <Text style={st.legendaValor}>
-                          {u.total} {Math.round((u.total / ativos) * 100)}%
-                        </Text>
+                        <NumeroAnimado valor={u.total} style={st.legendaValor} />
+                        <NumeroAnimado
+                          valor={Math.round((u.total / ativos) * 100)}
+                          formato={(n) => `${Math.round(n)}%`}
+                          style={st.legendaValor}
+                        />
                       </View>
                     ))}
                   </>
@@ -188,7 +193,7 @@ export default function Home() {
               </Card>
             </Animated.View>
 
-            <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+            <Animated.View entering={entrada(1)}>
               <Card style={st.cardTreino}>
                 <View style={st.treinoTexto}>
                   <Text style={st.cardTitulo}>Presença no último treino</Text>
@@ -215,7 +220,7 @@ export default function Home() {
               </Card>
             </Animated.View>
 
-            <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+            <Animated.View entering={entrada(2)}>
               <CardQueda quedas={quedas} unidade={unidadeId ? nomeDe(unidadeId) : null} />
             </Animated.View>
           </>

@@ -2,6 +2,7 @@ import { Image } from 'expo-image'
 import { useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { Avatar } from '@/components/ui'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
@@ -17,6 +18,7 @@ import {
   TelaForm,
 } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import {
   carregarBiblioteca,
@@ -172,24 +174,25 @@ export default function ContatoDoLivro() {
           <Aviso tom="ambar" titulo={contatos.erro} />
         ) : contatos.lista.length ? (
           <Grupo>
-            {contatos.lista.map((c) => (
-              <Linha
-                key={`${c.nome}-${c.telefone}`}
-                titulo={c.nome}
-                legenda={`${c.relacao} · ${c.telefone}`}
-                esquerda={<Avatar iniciais={c.nome.charAt(0)} size={30} />}
-                selo={c.principal ? { rotulo: 'principal', tom: 'ambar' } : undefined}
-                direita={
-                  <Pressable
-                    onPress={() => Linking.openURL(`tel:${c.telefone.replace(/\D/g, '')}`)}
-                    hitSlop={space.md}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Ligar para ${c.nome}`}>
-                    <Icone nome="telefone" cor={color.primaryCh} />
-                  </Pressable>
-                }
-                onPress={() => abrirWhatsApp(c.telefone)}
-              />
+            {contatos.lista.map((c, i) => (
+              <Animated.View key={`${c.nome}-${c.telefone}`} entering={entrada(i, { base: 40 })}>
+                <Linha
+                  titulo={c.nome}
+                  legenda={`${c.relacao} · ${c.telefone}`}
+                  esquerda={<Avatar iniciais={c.nome.charAt(0)} size={30} />}
+                  selo={c.principal ? { rotulo: 'principal', tom: 'ambar' } : undefined}
+                  direita={
+                    <Pressable
+                      onPress={() => Linking.openURL(`tel:${c.telefone.replace(/\D/g, '')}`)}
+                      hitSlop={space.md}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Ligar para ${c.nome}`}>
+                      <Icone nome="telefone" cor={color.primaryCh} />
+                    </Pressable>
+                  }
+                  onPress={() => abrirWhatsApp(c.telefone)}
+                />
+              </Animated.View>
             ))}
           </Grupo>
         ) : (

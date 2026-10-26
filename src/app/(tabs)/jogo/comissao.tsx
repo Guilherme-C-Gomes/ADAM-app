@@ -1,8 +1,10 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { Aviso, Bloco, Botao, Grupo, Linha, Opcao, Rotulo, TelaForm } from '@/components/ui/form'
+import { entrada, NumeroAnimado } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { useUnidades } from '@/data/chamada'
 import {
@@ -15,7 +17,7 @@ import {
 } from '@/data/jogo-dados'
 import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
-import { color } from '@/theme/tokens'
+import { color, onDark, type } from '@/theme/tokens'
 
 /**
  * Tela 11y. Serve ao treino e ao jogo: `alvo` e "treino" ou o id do jogo.
@@ -132,31 +134,39 @@ function Escolha({
       ) : null}
 
       <Bloco>
-        <Rotulo extra={`${escolhidos.length} escalados`}>Equipe</Rotulo>
+        <View style={st.cabecalho}>
+          <Rotulo>Equipe</Rotulo>
+          <View style={st.cabecalhoContagem}>
+            <NumeroAnimado valor={escolhidos.length} style={st.cabecalhoExtra} />
+            <Text style={st.cabecalhoExtra}> escalados</Text>
+          </View>
+        </View>
         {voluntarios.length ? (
           <Grupo>
-            {voluntarios.map((v) => {
+            {voluntarios.map((v, i) => {
               const posicao = escolhidos.indexOf(v.id)
               const papel =
                 posicao < 0 ? undefined : noTreino && posicao === 0 ? 'responsável' : 'escalado'
-              return editaEscala ? (
-                <Opcao
-                  key={v.id}
-                  tipo="check"
-                  titulo={v.nome}
-                  iniciais={v.iniciais}
-                  valor={papel ?? FUNCAO[v.funcao ?? ''] ?? ''}
-                  ativa={posicao >= 0}
-                  onPress={() => alternar(v.id)}
-                />
-              ) : (
-                <Linha
-                  key={v.id}
-                  titulo={v.nome}
-                  legenda={FUNCAO[v.funcao ?? ''] ?? ''}
-                  selo={papel ? { rotulo: papel, tom: 'verde' } : undefined}
-                  semSeta
-                />
+              return (
+                <Animated.View key={v.id} entering={entrada(i, { base: 40 })}>
+                  {editaEscala ? (
+                    <Opcao
+                      tipo="check"
+                      titulo={v.nome}
+                      iniciais={v.iniciais}
+                      valor={papel ?? FUNCAO[v.funcao ?? ''] ?? ''}
+                      ativa={posicao >= 0}
+                      onPress={() => alternar(v.id)}
+                    />
+                  ) : (
+                    <Linha
+                      titulo={v.nome}
+                      legenda={FUNCAO[v.funcao ?? ''] ?? ''}
+                      selo={papel ? { rotulo: papel, tom: 'verde' } : undefined}
+                      semSeta
+                    />
+                  )}
+                </Animated.View>
               )
             })}
           </Grupo>
@@ -188,3 +198,9 @@ function Escolha({
     </TelaForm>
   )
 }
+
+const st = StyleSheet.create({
+  cabecalho: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  cabecalhoContagem: { flexDirection: 'row', alignItems: 'center' },
+  cabecalhoExtra: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: onDark.text },
+})

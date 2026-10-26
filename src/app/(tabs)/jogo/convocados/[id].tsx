@@ -1,13 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Card } from '@/components/ui'
 import { EstadoVazio } from '@/components/ui/estados'
 import { Aviso } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, Pressionavel } from '@/components/ui/movimento'
 import { HeroVoltar, Segmentado } from '@/components/ui/setor'
 import { jogadoresEmCampo } from '@/data/jogo'
 import {
@@ -19,16 +20,7 @@ import {
   type DetalheJogo,
   type Situacao,
 } from '@/data/jogo-dados'
-import {
-  color,
-  motion,
-  onDark,
-  radius,
-  space,
-  target,
-  type,
-  ESPACO_FIM_DA_TELA,
-} from '@/theme/tokens'
+import { color, onDark, radius, space, target, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Telas 11o e 11o2. Duas situacoes, uma lista: quem esta em campo e quem
@@ -135,17 +127,20 @@ export default function Convocados() {
         ) : null}
 
         {porSituacao.length ? (
-          <Animated.View entering={FadeInDown.duration(motion.medium)}>
+          <Animated.View entering={entrada(0)}>
             <Card style={st.cardLista}>
               {porSituacao.map((c, i) => {
                 const p = pessoa(c.criancaId)
                 return (
-                  <View
+                  <Animated.View
                     key={c.criancaId}
+                    entering={entrada(i, { base: 40 })}
                     style={[st.linha, i < porSituacao.length - 1 && st.divisoria]}>
-                    <Pressable
+                    <Pressionavel
                       onPress={() => remanejar(c.criancaId, c.situacao)}
-                      style={({ pressed }) => [st.linhaToque, pressed && st.pressed]}
+                      escala={0.98}
+                      opacidade={0.7}
+                      style={st.linhaToque}
                       accessibilityRole="button"
                       accessibilityLabel={`${p?.nome ?? 'Criança'}, mover para ${
                         situacao === 'campo' ? 'o banco' : 'o campo'
@@ -160,7 +155,7 @@ export default function Convocados() {
                           {p?.posicao ? NOME_POSICAO[p.posicao] : 'sem posição'}
                         </Text>
                       </View>
-                    </Pressable>
+                    </Pressionavel>
                     <Pressable
                       onPress={() => tirar(c.criancaId, c.situacao)}
                       hitSlop={space.md}
@@ -168,7 +163,7 @@ export default function Convocados() {
                       accessibilityLabel={`Tirar ${p?.nome ?? 'criança'} da convocação`}>
                       <Icone nome="fechar" cor={color.muted} />
                     </Pressable>
-                  </View>
+                  </Animated.View>
                 )
               })}
             </Card>
@@ -184,12 +179,12 @@ export default function Convocados() {
           />
         )}
 
-        <Pressable
+        <Pressionavel
           onPress={() => router.push({ pathname: '/jogo/convocar/[id]', params: { id: jogo.id } })}
-          style={({ pressed }) => [st.botao, pressed && st.pressed]}
+          style={st.botao}
           accessibilityRole="button">
           <Text style={st.botaoRotulo}>Convocar crianças</Text>
-        </Pressable>
+        </Pressionavel>
       </ScrollView>
     </SafeAreaView>
   )
@@ -212,7 +207,6 @@ const st = StyleSheet.create({
   linhaTexto: { flex: 1, gap: 2 },
   linhaNome: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
-  pressed: { opacity: 0.7 },
 
   selo: {
     paddingHorizontal: space.md,

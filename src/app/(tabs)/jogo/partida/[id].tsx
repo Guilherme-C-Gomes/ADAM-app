@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import Animated, { Keyframe, ReduceMotion } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Card, Chip } from '@/components/ui'
@@ -9,10 +9,11 @@ import { Campo } from '@/components/ui/campo'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Botao, Entrada, Selo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
 import { DIAS_SEMANA } from '@/data/calendario'
-import { formacoesDe } from '@/data/jogo'
+import { formacoesDe, type PosicaoTatica } from '@/data/jogo'
 import {
   atualizarJogo,
   diaMes,
@@ -153,8 +154,12 @@ function Partida({ detalhe, recarregar }: { detalhe: DetalheJogo; recarregar: ()
           ))}
         </View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
-          <Campo posicoes={mapa[formacao] ?? mapa[nomes[0]]} largura={larguraCampo} />
+        <Animated.View entering={entrada(0)}>
+          <CampoTatico
+            formacao={formacao}
+            posicoes={mapa[formacao] ?? mapa[nomes[0]]}
+            largura={larguraCampo}
+          />
         </Animated.View>
 
         <View style={st.linhaTopo}>
@@ -170,32 +175,36 @@ function Partida({ detalhe, recarregar }: { detalhe: DetalheJogo; recarregar: ()
           </Pressable>
         </View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
-          <Pressable
+        <Animated.View entering={entrada(1)}>
+          <Pressionavel
             onPress={() =>
               router.push({ pathname: '/jogo/convocados/[id]', params: { id: jogo.id } })
             }
-            style={({ pressed }) => pressed && st.pressed}
             accessibilityRole="button"
             accessibilityLabel="Ver convocados">
             <Card style={st.grupo}>
               <View style={st.linhaGrupo}>
                 <View style={st.linhaTexto}>
                   <Text style={st.cardTitulo}>Convocados</Text>
-                  <Text style={st.legenda}>
-                    {convocados.length
-                      ? `${emCampo} em campo · ${noBanco} no banco`
-                      : 'Ninguém convocado ainda'}
-                  </Text>
+                  {convocados.length ? (
+                    <View style={st.contagem}>
+                      <NumeroAnimado valor={emCampo} style={st.legenda} />
+                      <Text style={st.legenda}>{' em campo · '}</Text>
+                      <NumeroAnimado valor={noBanco} style={st.legenda} />
+                      <Text style={st.legenda}>{' no banco'}</Text>
+                    </View>
+                  ) : (
+                    <Text style={st.legenda}>Ninguém convocado ainda</Text>
+                  )}
                 </View>
                 <Icone nome="seta" cor={color.faint} />
               </View>
             </Card>
-          </Pressable>
+          </Pressionavel>
 
-          <Pressable
+          <Pressionavel
             onPress={() => router.push({ pathname: '/jogo/comissao', params: { alvo: jogo.id } })}
-            style={({ pressed }) => [st.comissao, pressed && st.pressed]}
+            style={st.comissao}
             accessibilityRole="button"
             accessibilityLabel="Comissão técnica do jogo">
             <Card style={st.grupo}>
@@ -211,11 +220,11 @@ function Partida({ detalhe, recarregar }: { detalhe: DetalheJogo; recarregar: ()
                 <Icone nome="seta" cor={color.faint} />
               </View>
             </Card>
-          </Pressable>
+          </Pressionavel>
         </Animated.View>
 
         {jaFoi ? (
-          <Animated.View entering={FadeInDown.duration(motion.medium).delay(60)}>
+          <Animated.View entering={entrada(2)}>
             <Card style={st.grupo}>
               <Text style={st.cardTitulo}>Resultado</Text>
               <View style={st.placar}>
@@ -256,14 +265,14 @@ function Partida({ detalhe, recarregar }: { detalhe: DetalheJogo; recarregar: ()
           </Animated.View>
         ) : null}
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-          <Pressable
+        <Animated.View entering={entrada(3)}>
+          <Pressionavel
             onPress={() => salvar({ formacao }, 'Escalação salva', true)}
             disabled={salvando}
-            style={({ pressed }) => [st.botao, pressed && st.pressed]}
+            style={st.botao}
             accessibilityRole="button">
             <Text style={st.botaoRotulo}>{salvando ? 'Salvando…' : 'Salvar escalação'}</Text>
-          </Pressable>
+          </Pressionavel>
           <Pressable
             onPress={() => {
               rascunhoJogo.definir({
@@ -286,9 +295,7 @@ function Partida({ detalhe, recarregar }: { detalhe: DetalheJogo; recarregar: ()
         </Animated.View>
 
         {administraJogo ? (
-          <Animated.View
-            entering={FadeInDown.duration(motion.medium).delay(120)}
-            style={st.excluir}>
+          <Animated.View entering={entrada(4)} style={st.excluir}>
             {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
             <Botao
               rotulo={excluindo ? 'Excluindo…' : 'Excluir jogo'}
@@ -303,7 +310,77 @@ function Partida({ detalhe, recarregar }: { detalhe: DetalheJogo; recarregar: ()
   )
 }
 
+/** Mesmo tamanho de ficha do Campo, para os jogadores caberem no desenho. */
+const FICHA = 34
+
+/**
+ * Jogador que entra crescendo de 0.6 e acendendo, um depois do outro.
+ * Um Keyframe novo por ficha: o atraso de cada uma e dela.
+ */
+function fichaEntra(i: number) {
+  return new Keyframe({
+    0: { opacity: 0, transform: [{ scale: 0.6 }] },
+    100: { opacity: 1, transform: [{ scale: 1 }], easing: motion.backOut },
+  })
+    .duration(360)
+    .delay(Math.min(i * motion.stagger, 300))
+    .reduceMotion(ReduceMotion.System)
+}
+
+/**
+ * O campo desenhado pelo Campo (sem jogadores) e as fichas por cima.
+ * A chave de cada ficha leva a formacao: trocar a tatica remonta as
+ * fichas e elas entram de novo em cascata, cada uma no lugar novo.
+ */
+function CampoTatico({
+  formacao,
+  posicoes,
+  largura,
+}: {
+  formacao: string
+  posicoes: PosicaoTatica[]
+  largura: number
+}) {
+  const altura = Math.round(largura * 1.16)
+  return (
+    <View style={[st.campo, { width: largura, height: altura }]}>
+      <Campo posicoes={[]} largura={largura} />
+      {posicoes.map((p, i) => (
+        <Animated.View
+          key={`${formacao}-${p.numero}`}
+          entering={fichaEntra(i)}
+          style={[
+            st.ficha,
+            {
+              // fy 0 e a linha de fundo do ADAM, que na tela fica embaixo
+              left: p.fx * (largura - FICHA),
+              top: (1 - p.fy) * (altura - FICHA),
+            },
+          ]}
+          accessibilityRole="image"
+          accessibilityLabel={`Jogador ${p.numero}`}>
+          <Text style={st.fichaNumero}>{p.numero}</Text>
+        </Animated.View>
+      ))}
+    </View>
+  )
+}
+
 const st = StyleSheet.create({
+  campo: { alignSelf: 'center' },
+  ficha: {
+    position: 'absolute',
+    width: FICHA,
+    height: FICHA,
+    borderRadius: FICHA / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color.primary,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.35)',
+  },
+  fichaNumero: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.text },
+  contagem: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
   placar: { flexDirection: 'row', alignItems: 'flex-end', gap: space.md },
   placarLado: { flex: 1 },
   placarX: { ...type.h2, fontFamily: 'Inter_700Bold', color: color.muted, paddingBottom: space.md },
@@ -328,7 +405,6 @@ const st = StyleSheet.create({
   confirmacao: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.success },
   comissao: { marginTop: space.sm },
   linhaTexto: { flex: 1, gap: 2 },
-  pressed: { opacity: 0.85 },
 
   botao: {
     minHeight: target.minimo + 8,

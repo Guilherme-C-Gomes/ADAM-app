@@ -1,13 +1,14 @@
 import { FlashList } from '@shopify/flash-list'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { memo, useCallback, useMemo, useState } from 'react'
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Chip, Hero } from '@/components/ui'
 import { EstadoVazio } from '@/components/ui/estados'
 import { Esqueleto, SkeletonLinha } from '@/components/ui/skeleton'
 import { Icone } from '@/components/ui/icone'
+import { Pressionavel } from '@/components/ui/movimento'
 import { useUnidades } from '@/data/chamada'
 import { emQueda, useParticipantes, type Participante } from '@/data/fichas'
 import { color, radius, space, type } from '@/theme/tokens'
@@ -34,9 +35,11 @@ const ItemParticipante = memo(function ItemParticipante({
   const semChamada = item.frequencia === null
   const baixa = emQueda(item)
   return (
-    <Pressable
+    <Pressionavel
       onPress={() => onPress(item.id)}
-      style={({ pressed }) => [st.item, pressed && st.itemPressed]}
+      escala={0.98}
+      opacidade={0.7}
+      style={st.item}
       accessibilityRole="button"
       accessibilityLabel={
         semChamada
@@ -65,7 +68,7 @@ const ItemParticipante = memo(function ItemParticipante({
         </View>
       )}
       <Icone nome="seta" cor={color.faint} />
-    </Pressable>
+    </Pressionavel>
   )
 })
 
@@ -298,7 +301,6 @@ const st = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.border,
   },
-  itemPressed: { opacity: 0.7 },
   itemTexto: { flex: 1, gap: 2 },
   itemNome: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   itemMeta: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },

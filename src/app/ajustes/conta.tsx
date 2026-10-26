@@ -1,9 +1,10 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 
 import { Avatar } from '@/components/ui'
 import { Aviso, Bloco, Botao, Entrada, Grupo, Linha, Rotulo, TelaForm } from '@/components/ui/form'
+import { Pressionavel } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { usePerfil } from '@/data/perfis'
 import { atualizarMeuPerfil } from '@/data/usuarios'
@@ -45,14 +46,14 @@ export default function MinhaConta() {
   return (
     <TelaForm titulo="Minha conta" subtitulo={pessoa.email} voltarPara="/">
       <Bloco>
-        <Pressable
+        <Pressionavel
           onPress={() => router.push('/ajustes/foto')}
-          style={({ pressed }) => [st.perfil, pressed && st.pressed]}
+          style={st.perfil}
           accessibilityRole="button"
           accessibilityLabel={pessoa.foto ? 'Trocar minha foto' : 'Colocar minha foto'}>
           <Avatar iniciais={pessoa.iniciais} size={88} foto={pessoa.foto} />
           <Text style={st.linkFoto}>{pessoa.foto ? 'Trocar foto' : 'Colocar foto'}</Text>
-        </Pressable>
+        </Pressionavel>
       </Bloco>
 
       <Bloco ordem={1}>
@@ -139,7 +140,6 @@ export default function MinhaConta() {
 }
 
 const st = StyleSheet.create({
-  pressed: { opacity: 0.85 },
   perfil: { alignItems: 'center', gap: space.sm, paddingVertical: space.sm },
   linkFoto: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.primaryLt },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },

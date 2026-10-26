@@ -1,9 +1,11 @@
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { Avatar, Chip } from '@/components/ui'
 import { Aviso, Bloco, Botao, Busca, Grupo, Linha, TelaForm } from '@/components/ui/form'
+import { entrada } from '@/components/ui/movimento'
 import { useUnidades } from '@/data/chamada'
 import { DOCUMENTOS, paraBR, useParticipantes } from '@/data/fichas'
 import { color, space } from '@/theme/tokens'
@@ -71,36 +73,38 @@ export default function CriancasCadastradas() {
           <ActivityIndicator color={color.primaryCh} />
         ) : lista.length ? (
           <Grupo>
-            {lista.map((p) => {
+            {lista.map((p, i) => {
               const pendencias =
                 DOCUMENTOS.length - p.documentosEntregues + (p.temResponsavel ? 0 : 1)
               return (
-                <Linha
-                  key={p.id}
-                  titulo={p.nome}
-                  legenda={
-                    p.ativa
-                      ? `${p.idade} anos · ${p.unidade}`
-                      : `saiu em ${p.saiuEm ? paraBR(p.saiuEm) : '—'} · ${p.unidade}`
-                  }
-                  esquerda={<Avatar iniciais={p.iniciais} size={34} foto={p.fotoUrl} />}
-                  selo={
-                    !p.ativa
-                      ? { rotulo: 'saiu', tom: 'neutro' }
-                      : pendencias
-                        ? {
-                            rotulo: `${pendencias} ${pendencias === 1 ? 'pendente' : 'pendentes'}`,
-                            tom: 'ambar',
-                          }
-                        : { rotulo: 'completa', tom: 'verde' }
-                  }
-                  onPress={() =>
-                    router.push({
-                      pathname: '/secretaria/participantes/[id]',
-                      params: { id: p.id },
-                    })
-                  }
-                />
+                // cascata so sem busca: digitar nao refaz a entrada
+                <Animated.View key={p.id} entering={termo ? undefined : entrada(i, { base: 50 })}>
+                  <Linha
+                    titulo={p.nome}
+                    legenda={
+                      p.ativa
+                        ? `${p.idade} anos · ${p.unidade}`
+                        : `saiu em ${p.saiuEm ? paraBR(p.saiuEm) : '—'} · ${p.unidade}`
+                    }
+                    esquerda={<Avatar iniciais={p.iniciais} size={34} foto={p.fotoUrl} />}
+                    selo={
+                      !p.ativa
+                        ? { rotulo: 'saiu', tom: 'neutro' }
+                        : pendencias
+                          ? {
+                              rotulo: `${pendencias} ${pendencias === 1 ? 'pendente' : 'pendentes'}`,
+                              tom: 'ambar',
+                            }
+                          : { rotulo: 'completa', tom: 'verde' }
+                    }
+                    onPress={() =>
+                      router.push({
+                        pathname: '/secretaria/participantes/[id]',
+                        params: { id: p.id },
+                      })
+                    }
+                  />
+                </Animated.View>
               )
             })}
           </Grupo>

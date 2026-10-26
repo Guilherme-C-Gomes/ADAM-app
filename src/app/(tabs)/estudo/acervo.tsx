@@ -1,13 +1,15 @@
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { Chip } from '@/components/ui'
 import { Aviso, Bloco, Botao, Busca, Grupo, Rotulo, TelaForm } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { disponiveis, rascunhoLivro, useBiblioteca } from '@/data/estudo'
-import { color, radius, space, target, type } from '@/theme/tokens'
+import { color, onDark, radius, space, target, type } from '@/theme/tokens'
 
 /** Tela 13r. O acervo inteiro, filtrado por tipo — R10: o filtro filtra. */
 export default function Acervo() {
@@ -51,42 +53,52 @@ export default function Acervo() {
       </Bloco>
 
       <Bloco ordem={1}>
-        <Rotulo extra={`${visiveis.length} de ${livros.length}`}>Títulos</Rotulo>
+        <View style={st.cabecalho}>
+          <Rotulo>Títulos</Rotulo>
+          <View style={st.cabecalhoContagem}>
+            <NumeroAnimado valor={visiveis.length} style={st.cabecalhoExtra} />
+            <Text style={st.cabecalhoExtra}>{` de ${livros.length}`}</Text>
+          </View>
+        </View>
         {carregando ? (
           <ActivityIndicator color={color.primaryCh} />
         ) : visiveis.length ? (
           <Grupo>
-            {visiveis.map((l) => {
+            {visiveis.map((l, i) => {
               const livres = disponiveis(l, emprestimos)
+              // a cascata e da chegada da lista, nao de cada letra da busca
               return (
-                <Pressable
-                  key={l.id}
-                  onPress={() => {
-                    // a ficha do livro parte do que esta no banco
-                    rascunhoLivro.limpar()
-                    router.push({ pathname: '/estudo/livro/[id]', params: { id: l.id } })
-                  }}
-                  style={({ pressed }) => [st.linha, pressed && st.pressed]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${l.titulo}, ${livres} de ${l.exemplares} na estante`}>
-                  {l.capaUrl ? (
-                    <Image source={{ uri: l.capaUrl }} style={st.capa} contentFit="cover" />
-                  ) : (
-                    <View style={[st.capa, { backgroundColor: l.cor }]}>
-                      <Text style={st.capaLetra}>{l.titulo.charAt(0)}</Text>
+                <Animated.View key={l.id} entering={termo ? undefined : entrada(i, { base: 40 })}>
+                  <Pressionavel
+                    onPress={() => {
+                      // a ficha do livro parte do que esta no banco
+                      rascunhoLivro.limpar()
+                      router.push({ pathname: '/estudo/livro/[id]', params: { id: l.id } })
+                    }}
+                    escala={0.98}
+                    opacidade={0.7}
+                    style={st.linha}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${l.titulo}, ${livres} de ${l.exemplares} na estante`}>
+                    {l.capaUrl ? (
+                      <Image source={{ uri: l.capaUrl }} style={st.capa} contentFit="cover" />
+                    ) : (
+                      <View style={[st.capa, { backgroundColor: l.cor }]}>
+                        <Text style={st.capaLetra}>{l.titulo.charAt(0)}</Text>
+                      </View>
+                    )}
+                    <View style={st.texto}>
+                      <Text style={st.titulo} numberOfLines={1}>
+                        {l.titulo}
+                      </Text>
+                      <Text style={st.legenda}>{l.tipo}</Text>
                     </View>
-                  )}
-                  <View style={st.texto}>
-                    <Text style={st.titulo} numberOfLines={1}>
-                      {l.titulo}
+                    <Text style={st.contagem}>
+                      {livres} de {l.exemplares}
                     </Text>
-                    <Text style={st.legenda}>{l.tipo}</Text>
-                  </View>
-                  <Text style={st.contagem}>
-                    {livres} de {l.exemplares}
-                  </Text>
-                  <Icone nome="seta" cor={color.faint} />
-                </Pressable>
+                    <Icone nome="seta" cor={color.faint} />
+                  </Pressionavel>
+                </Animated.View>
               )
             })}
           </Grupo>
@@ -127,6 +139,8 @@ const st = StyleSheet.create({
   titulo: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
   legenda: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
   contagem: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.muted },
-  pressed: { opacity: 0.7 },
+  cabecalho: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  cabecalhoContagem: { flexDirection: 'row', alignItems: 'center' },
+  cabecalhoExtra: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: onDark.text },
   radius: { borderRadius: radius.card },
 })

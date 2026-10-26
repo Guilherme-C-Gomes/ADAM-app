@@ -1,8 +1,10 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
+import Animated from 'react-native-reanimated'
 
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Bloco, Botao, Grupo, Opcao, TelaForm } from '@/components/ui/form'
+import { entrada } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import {
   carregarBiblioteca,
@@ -83,25 +85,27 @@ export default function TipoDoLivro() {
       <Bloco>
         <Grupo>
           {[
-            ...tipos.map((t) => {
+            ...tipos.map((t, i) => {
               const n = quantos(t)
               return (
-                <Opcao
-                  key={t}
-                  titulo={t}
-                  valor={`${n} ${n === 1 ? 'livro' : 'livros'}`}
-                  ativa={tipo === t}
-                  onPress={() => setTipo(t)}
-                />
+                <Animated.View key={t} entering={entrada(i, { base: 40 })}>
+                  <Opcao
+                    titulo={t}
+                    valor={`${n} ${n === 1 ? 'livro' : 'livros'}`}
+                    ativa={tipo === t}
+                    onPress={() => setTipo(t)}
+                  />
+                </Animated.View>
               )
             }),
-            <Opcao
-              key="novo"
-              titulo="Novo tipo de livro"
-              ativa={false}
-              onPress={() => router.push('/estudo/novo-tipo')}
-              tipo="check"
-            />,
+            <Animated.View key="novo" entering={entrada(tipos.length, { base: 40 })}>
+              <Opcao
+                titulo="Novo tipo de livro"
+                ativa={false}
+                onPress={() => router.push('/estudo/novo-tipo')}
+                tipo="check"
+              />
+            </Animated.View>,
           ]}
         </Grupo>
       </Bloco>

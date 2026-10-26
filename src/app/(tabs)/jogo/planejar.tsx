@@ -1,13 +1,14 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Card, Chip, Overline } from '@/components/ui'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Botao, CampoSeletor, Entrada, Link, Selo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
 import { rotuloCurto, rotuloLongo } from '@/data/calendario'
@@ -24,7 +25,7 @@ import {
 import { deISO } from '@/data/metricas'
 import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
-import { color, motion, space, target, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
+import { color, space, target, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Telas 11f e 11f2. O que se monta aqui e exatamente o que o tecnico
@@ -121,7 +122,7 @@ export default function PlanejarTreino() {
           </View>
         ) : null}
 
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
+        <Animated.View entering={entrada(0)}>
           <Card style={st.cardCampos}>
             <View style={st.campos}>
               <CampoSeletor
@@ -140,11 +141,13 @@ export default function PlanejarTreino() {
 
             <View style={st.divisoria} />
 
-            <Pressable
+            <Pressionavel
               onPress={() =>
                 router.push({ pathname: '/jogo/comissao', params: { alvo: 'treino' } })
               }
-              style={({ pressed }) => [st.comissao, pressed && st.pressed]}
+              escala={0.98}
+              opacidade={0.7}
+              style={st.comissao}
               accessibilityRole="button"
               accessibilityLabel="Comissão técnica do treino">
               <Text style={st.rotulo}>Comissão técnica</Text>
@@ -161,7 +164,7 @@ export default function PlanejarTreino() {
                 ) : null}
                 <Icone nome="seta" cor={color.faint} />
               </View>
-            </Pressable>
+            </Pressionavel>
           </Card>
         </Animated.View>
 
@@ -172,21 +175,27 @@ export default function PlanejarTreino() {
           placeholder="Ex.: Praça Olímpia"
         />
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)} style={st.secao}>
+        <Animated.View entering={entrada(1)} style={st.secao}>
           <Overline>{`Exercícios do treino · ${itens.length}`}</Overline>
           <Card style={st.cardLista}>
             {itens.map((ex, i) => (
-              <Pressable
-                key={ex.exercicioId}
-                onPress={() =>
-                  router.push({ pathname: '/jogo/exercicio/[id]', params: { id: ex.exercicioId } })
-                }
-                style={({ pressed }) => [st.linha, st.linhaDivisoria, pressed && st.pressed]}
-                accessibilityRole="button">
-                <Text style={st.ordem}>{i + 1}</Text>
-                <Text style={st.linhaNome}>{ex.nome}</Text>
-                <Text style={st.legenda}>{ex.duracaoMin} min</Text>
-              </Pressable>
+              <Animated.View key={ex.exercicioId} entering={entrada(i, { base: 50 })}>
+                <Pressionavel
+                  onPress={() =>
+                    router.push({
+                      pathname: '/jogo/exercicio/[id]',
+                      params: { id: ex.exercicioId },
+                    })
+                  }
+                  escala={0.98}
+                  opacidade={0.7}
+                  style={[st.linha, st.linhaDivisoria]}
+                  accessibilityRole="button">
+                  <Text style={st.ordem}>{i + 1}</Text>
+                  <Text style={st.linhaNome}>{ex.nome}</Text>
+                  <Text style={st.legenda}>{ex.duracaoMin} min</Text>
+                </Pressionavel>
+              </Animated.View>
             ))}
 
             <View style={st.linha}>
@@ -196,12 +205,15 @@ export default function PlanejarTreino() {
                   onPress={() => router.push('/jogo/biblioteca')}
                 />
               </View>
-              <Text style={st.legenda}>{totalMin} min</Text>
+              <View style={st.contagem}>
+                <NumeroAnimado valor={totalMin} style={st.legenda} />
+                <Text style={st.legenda}> min</Text>
+              </View>
             </View>
           </Card>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+        <Animated.View entering={entrada(2)}>
           <Botao
             rotulo={salvando ? 'Salvando…' : 'Salvar treino'}
             desabilitado={!unidadeId || !plano.data || salvando}
@@ -210,9 +222,7 @@ export default function PlanejarTreino() {
         </Animated.View>
 
         {plano.id && administraJogo ? (
-          <Animated.View
-            entering={FadeInDown.duration(motion.medium).delay(120)}
-            style={st.excluir}>
+          <Animated.View entering={entrada(3)} style={st.excluir}>
             {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
             <Botao
               rotulo={excluindo ? 'Excluindo…' : 'Excluir treino'}
@@ -263,5 +273,5 @@ const st = StyleSheet.create({
   ordem: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.primaryLt, width: 14 },
   linhaNome: { ...type.small, fontFamily: 'Inter_400Regular', color: color.text, flex: 1 },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
-  pressed: { opacity: 0.7 },
+  contagem: { flexDirection: 'row', alignItems: 'center' },
 })

@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { Chip } from '@/components/ui'
 import {
@@ -14,6 +15,7 @@ import {
   Marca,
   TelaForm,
 } from '@/components/ui/form'
+import { entrada, Pressionavel } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { Segmentado } from '@/components/ui/setor'
 import { CATEGORIAS_EXERCICIO, type CategoriaExercicio } from '@/data/jogo'
@@ -161,10 +163,14 @@ function Tela({ emEdicao }: { emEdicao?: Exercicio }) {
           <Bloco>
             {lista.length ? (
               <Grupo>
-                {lista.map((e) => {
+                {lista.map((e, i) => {
                   const ativo = marcado(e.id)
+                  // a cascata e da chegada da lista, nao de cada letra da busca
                   return (
-                    <View key={e.id} style={st.linha}>
+                    <Animated.View
+                      key={e.id}
+                      entering={termo ? undefined : entrada(i, { base: 40 })}
+                      style={st.linha}>
                       <Pressable
                         onPress={() => alternar(e)}
                         hitSlop={space.md}
@@ -173,18 +179,20 @@ function Tela({ emEdicao }: { emEdicao?: Exercicio }) {
                         accessibilityLabel={`${ativo ? 'Tirar' : 'Pôr'} ${e.nome} no treino`}>
                         <Marca ativa={ativo} />
                       </Pressable>
-                      <Pressable
+                      <Pressionavel
                         onPress={() =>
                           router.push({ pathname: '/jogo/exercicio/[id]', params: { id: e.id } })
                         }
-                        style={({ pressed }) => [st.texto, pressed && st.pressed]}
+                        escala={0.98}
+                        opacidade={0.7}
+                        style={st.texto}
                         accessibilityRole="button"
                         accessibilityLabel={`${e.nome}, ver como fazer`}>
                         <Text style={st.nome}>{e.nome}</Text>
                         <Text style={st.legenda}>{e.categoria}</Text>
-                      </Pressable>
+                      </Pressionavel>
                       <Text style={st.legenda}>{e.duracaoMin} min</Text>
-                    </View>
+                    </Animated.View>
                   )
                 })}
               </Grupo>
@@ -273,7 +281,6 @@ const st = StyleSheet.create({
   nome: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
   legenda: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
   vazio: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted, textAlign: 'center' },
-  pressed: { opacity: 0.7 },
   dupla: { flexDirection: 'row', gap: space.md },
   metade: { flex: 1 },
 })

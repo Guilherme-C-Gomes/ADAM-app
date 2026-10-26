@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { Aviso, Bloco, SeletorPeriodo, TelaForm } from '@/components/ui/form'
+import { entrada, NumeroAnimado } from '@/components/ui/movimento'
 import { MESES, rotuloCurto } from '@/data/calendario'
 import { NOME_TURMA } from '@/data/chamada'
 import { LIMITE_COMPREENSAO } from '@/data/jogo'
@@ -84,20 +86,24 @@ export default function Avaliacoes() {
             <ActivityIndicator color={color.primaryCh} />
           ) : linhas.length ? (
             <>
-              <View style={[st.linha, st.divisoria]}>
+              <Animated.View entering={entrada(0)} style={[st.linha, st.divisoria]}>
                 <View style={st.colQuando}>
                   <Text style={st.quando}>Média</Text>
-                  <Text style={st.turma}>
-                    {linhas.length} {linhas.length === 1 ? 'treino' : 'treinos'}
-                  </Text>
+                  <View style={st.contagem}>
+                    <NumeroAnimado valor={linhas.length} style={st.turma} />
+                    <Text style={st.turma}>{linhas.length === 1 ? ' treino' : ' treinos'}</Text>
+                  </View>
                 </View>
                 <Nota valor={media('treino')} media />
                 <Nota valor={media('entenderam')} media />
                 <Nota valor={media('dificuldade')} media />
-              </View>
+              </Animated.View>
 
               {linhas.map((l, i) => (
-                <View key={l.id} style={[st.linha, i < linhas.length - 1 && st.divisoria]}>
+                <Animated.View
+                  key={l.id}
+                  entering={entrada(i + 1)}
+                  style={[st.linha, i < linhas.length - 1 && st.divisoria]}>
                   <View style={st.colQuando}>
                     <Text style={st.quando}>{rotuloCurto(deISO(l.data))}</Text>
                     <Text style={st.turma}>{NOME_TURMA[l.turma]}</Text>
@@ -108,7 +114,7 @@ export default function Avaliacoes() {
                     alerta={l.entenderam !== null && l.entenderam < LIMITE_COMPREENSAO}
                   />
                   <Nota valor={l.dificuldade} />
-                </View>
+                </Animated.View>
               ))}
             </>
           ) : (
@@ -129,11 +135,16 @@ function Nota({
   media?: boolean
   alerta?: boolean
 }) {
-  return (
-    <Text style={[st.col, st.nota, media && st.notaMedia, alerta && st.notaAlerta]}>
-      {valor === null ? '—' : valor.toFixed(1).replace('.', ',')}
-    </Text>
-  )
+  const estilo = [st.col, st.nota, media && st.notaMedia, alerta && st.notaAlerta]
+  // a media e o numero que importa: conta ate o valor e acende quando muda
+  if (media && valor !== null) {
+    return <NumeroAnimado valor={valor} formato={formatoNota} style={estilo} />
+  }
+  return <Text style={estilo}>{valor === null ? '—' : formatoNota(valor)}</Text>
+}
+
+function formatoNota(n: number) {
+  return n.toFixed(1).replace('.', ',')
 }
 
 const st = StyleSheet.create({
@@ -151,6 +162,7 @@ const st = StyleSheet.create({
   linha: { flexDirection: 'row', alignItems: 'center', paddingVertical: space.md },
   divisoria: { borderBottomWidth: 1, borderBottomColor: color.divider },
   colQuando: { flex: 1.3 },
+  contagem: { flexDirection: 'row', alignItems: 'center' },
   col: { flex: 1, textAlign: 'center' },
   quando: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
   turma: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },

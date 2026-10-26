@@ -1,13 +1,21 @@
 import { useLocalSearchParams } from 'expo-router'
-import { useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Card, Chip } from '@/components/ui'
 import { EstadoVazio } from '@/components/ui/estados'
 import { Aviso } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, molaPop, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
 import { idadesDaCategoria } from '@/data/jogo'
@@ -111,44 +119,37 @@ export default function Convocar() {
         ) : atletas.erro ? (
           <Aviso tom="ambar" titulo={atletas.erro} texto="Volte e abra de novo em instantes." />
         ) : elegiveis.length ? (
-          <Animated.View entering={FadeInDown.duration(motion.medium)}>
+          <Animated.View entering={entrada(0)}>
             <Card style={st.cardLista}>
               {elegiveis.map((p, i) => {
                 const marcado = escolhidos.includes(p.id)
                 return (
-                  <Pressable
-                    key={p.id}
-                    onPress={() =>
-                      setEscolhidos((atual) =>
-                        marcado ? atual.filter((x) => x !== p.id) : [...atual, p.id],
-                      )
-                    }
-                    style={({ pressed }) => [
-                      st.linha,
-                      i < elegiveis.length - 1 && st.divisoria,
-                      pressed && st.pressed,
-                    ]}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: marcado }}
-                    accessibilityLabel={p.nome}>
-                    <View style={[st.marca, marcado && st.marcaAtiva]}>
-                      <Icone
-                        nome={marcado ? 'check' : 'mais'}
-                        cor={marcado ? color.bg : color.muted}
-                        tamanho={14}
-                      />
-                    </View>
-                    <Avatar iniciais={p.iniciais} size={36} />
-                    <View style={st.linhaTexto}>
-                      <Text style={st.linhaNome}>{p.nome}</Text>
-                      <Text style={st.legenda}>{p.idade} anos</Text>
-                    </View>
-                    <View style={st.selo}>
-                      <Text style={st.seloRotulo}>
-                        {p.posicao ? NOME_POSICAO[p.posicao] : 'sem posição'}
-                      </Text>
-                    </View>
-                  </Pressable>
+                  <Animated.View key={p.id} entering={entrada(i, { base: 40 })}>
+                    <Pressionavel
+                      onPress={() =>
+                        setEscolhidos((atual) =>
+                          marcado ? atual.filter((x) => x !== p.id) : [...atual, p.id],
+                        )
+                      }
+                      escala={0.98}
+                      opacidade={0.7}
+                      style={[st.linha, i < elegiveis.length - 1 && st.divisoria]}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: marcado }}
+                      accessibilityLabel={p.nome}>
+                      <MarcaConvocar marcado={marcado} />
+                      <Avatar iniciais={p.iniciais} size={36} />
+                      <View style={st.linhaTexto}>
+                        <Text style={st.linhaNome}>{p.nome}</Text>
+                        <Text style={st.legenda}>{p.idade} anos</Text>
+                      </View>
+                      <View style={st.selo}>
+                        <Text style={st.seloRotulo}>
+                          {p.posicao ? NOME_POSICAO[p.posicao] : 'sem posição'}
+                        </Text>
+                      </View>
+                    </Pressionavel>
+                  </Animated.View>
                 )
               })}
             </Card>
@@ -169,26 +170,63 @@ export default function Convocar() {
           />
         )}
 
-        <Pressable
-          onPress={confirmar}
-          disabled={!escolhidos.length || salvando}
-          style={({ pressed }) => [
-            st.botao,
-            (!escolhidos.length || salvando) && st.botaoDesabilitado,
-            pressed && st.pressed,
-          ]}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !escolhidos.length || salvando }}>
-          <Text style={st.botaoRotulo}>
-            {salvando
-              ? 'Convocando…'
-              : escolhidos.length
-                ? `Convocar ${escolhidos.length}`
-                : 'Escolha quem convocar'}
-          </Text>
-        </Pressable>
+        {/* o apagado mora fora: a mola do toque cuida da opacidade do botao */}
+        <View style={(!escolhidos.length || salvando) && st.botaoDesabilitado}>
+          <Pressionavel
+            onPress={confirmar}
+            disabled={!escolhidos.length || salvando}
+            style={st.botao}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !escolhidos.length || salvando }}>
+            {escolhidos.length && !salvando ? (
+              <View style={st.botaoLinha}>
+                <Text style={st.botaoRotulo}>Convocar </Text>
+                <NumeroAnimado valor={escolhidos.length} style={st.botaoRotulo} />
+              </View>
+            ) : (
+              <Text style={st.botaoRotulo}>
+                {salvando ? 'Convocando…' : 'Escolha quem convocar'}
+              </Text>
+            )}
+          </Pressionavel>
+        </View>
       </ScrollView>
     </SafeAreaView>
+  )
+}
+
+/**
+ * A bolinha de convocar. Quando acende, encolhe e volta com a mola de
+ * pop; ao abrir a tela ja aparece pronta, sem pular.
+ */
+function MarcaConvocar({ marcado }: { marcado: boolean }) {
+  const escala = useSharedValue(1)
+  const primeiro = useRef(true)
+
+  useEffect(() => {
+    if (primeiro.current) {
+      primeiro.current = false
+      return
+    }
+    if (!marcado) return
+    escala.set(
+      withSequence(
+        withTiming(0.8, { duration: motion.instant, reduceMotion: ReduceMotion.System }),
+        withSpring(1, molaPop),
+      ),
+    )
+  }, [marcado, escala])
+
+  const pop = useAnimatedStyle(() => ({ transform: [{ scale: escala.get() }] }))
+
+  return (
+    <Animated.View style={[st.marca, marcado && st.marcaAtiva, pop]}>
+      <Icone
+        nome={marcado ? 'check' : 'mais'}
+        cor={marcado ? color.bg : color.muted}
+        tamanho={14}
+      />
+    </Animated.View>
   )
 }
 
@@ -209,7 +247,6 @@ const st = StyleSheet.create({
   linhaTexto: { flex: 1, gap: 2 },
   linhaNome: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
-  pressed: { opacity: 0.7 },
 
   marca: {
     width: 24,
@@ -241,5 +278,6 @@ const st = StyleSheet.create({
     backgroundColor: onDark.fill,
   },
   botaoDesabilitado: { opacity: 0.4 },
+  botaoLinha: { flexDirection: 'row', alignItems: 'center' },
   botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
 })

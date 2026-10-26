@@ -9,12 +9,13 @@ import {
   TextInput,
   View,
 } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Overline } from '@/components/ui'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Botao } from '@/components/ui/form'
+import { entrada, Pressionavel } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
 import { rotuloCurto } from '@/data/calendario'
@@ -31,16 +32,7 @@ import { deISO } from '@/data/metricas'
 import { usePerfil } from '@/data/perfis'
 import { COR_FOCO, useFoco } from '@/hooks/use-foco'
 import { voltar } from '@/lib/navegacao'
-import {
-  color,
-  motion,
-  onDark,
-  radius,
-  space,
-  target,
-  type,
-  ESPACO_FIM_DA_TELA,
-} from '@/theme/tokens'
+import { color, onDark, radius, space, target, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Tela 11m. Nada aqui e obrigatorio (R8): existe "Pular por agora", e
@@ -184,22 +176,22 @@ function Formulario({
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
         {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
 
-        <Animated.View entering={FadeInDown.duration(motion.medium)} style={st.secao}>
+        <Animated.View entering={entrada(0)} style={st.secao}>
           <Overline>Como foi o treino</Overline>
           <Escala valor={notaTreino} onChange={setNotaTreino} min="fraco" max="ótimo" />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)} style={st.secao}>
+        <Animated.View entering={entrada(1)} style={st.secao}>
           <Overline>Eles entenderam o exercício</Overline>
           <Escala valor={notaCompreensao} onChange={setNotaCompreensao} min="nada" max="tudo" />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)} style={st.secao}>
+        <Animated.View entering={entrada(2)} style={st.secao}>
           <Overline>Dificuldade para eles</Overline>
           <Escala valor={notaDificuldade} onChange={setNotaDificuldade} min="fácil" max="difícil" />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)} style={st.secao}>
+        <Animated.View entering={entrada(3)} style={st.secao}>
           <Overline>Observações</Overline>
           <TextInput
             style={[st.campo, foco.focado && st.focado]}
@@ -213,19 +205,18 @@ function Formulario({
           />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(160)} style={st.fim}>
-          <Pressable
-            onPress={() => terminar(true)}
-            disabled={salvando || !algumaNota}
-            style={({ pressed }) => [
-              st.botao,
-              (salvando || !algumaNota) && { opacity: 0.5 },
-              pressed && st.pressed,
-            ]}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: salvando || !algumaNota }}>
-            <Text style={st.botaoRotulo}>{salvando ? 'Salvando…' : 'Salvar avaliação'}</Text>
-          </Pressable>
+        <Animated.View entering={entrada(4)} style={st.fim}>
+          {/* o apagado mora fora: a mola do toque cuida da opacidade do botao */}
+          <View style={(salvando || !algumaNota) && st.apagado}>
+            <Pressionavel
+              onPress={() => terminar(true)}
+              disabled={salvando || !algumaNota}
+              style={st.botao}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: salvando || !algumaNota }}>
+              <Text style={st.botaoRotulo}>{salvando ? 'Salvando…' : 'Salvar avaliação'}</Text>
+            </Pressionavel>
+          </View>
           <Pressable
             onPress={() => terminar(false)}
             disabled={salvando}
@@ -236,7 +227,7 @@ function Formulario({
         </Animated.View>
 
         {inicial && administraJogo ? (
-          <Animated.View entering={FadeInDown.duration(motion.medium).delay(200)} style={st.fim}>
+          <Animated.View entering={entrada(5)} style={st.fim}>
             {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
             <Botao
               rotulo={excluindo ? 'Excluindo…' : 'Excluir avaliação'}
@@ -268,15 +259,16 @@ function Escala({
         {ESCALA.map((n) => {
           const ativo = valor === n
           return (
-            <Pressable
+            <Pressionavel
               key={n}
               onPress={() => onChange(n)}
-              style={({ pressed }) => [st.alvo, ativo && st.alvoAtivo, pressed && st.pressed]}
+              escala={0.94}
+              style={[st.alvo, ativo && st.alvoAtivo]}
               accessibilityRole="radio"
               accessibilityState={{ selected: ativo }}
               accessibilityLabel={`Nota ${n}`}>
               <Text style={[st.alvoRotulo, ativo && st.alvoRotuloAtivo]}>{n}</Text>
-            </Pressable>
+            </Pressionavel>
           )
         })}
       </View>
@@ -293,7 +285,7 @@ const st = StyleSheet.create({
   conteudo: { padding: space.lg, gap: space.lg, paddingBottom: ESPACO_FIM_DA_TELA },
   secao: { gap: space.md },
   fim: { gap: space.base, alignItems: 'stretch' },
-  pressed: { opacity: 0.7 },
+  apagado: { opacity: 0.5 },
 
   escalaBloco: { gap: space.sm },
   escalaLinha: { flexDirection: 'row', justifyContent: 'space-between', gap: space.sm },

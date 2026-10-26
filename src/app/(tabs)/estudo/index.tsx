@@ -1,12 +1,13 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Card, Overline } from '@/components/ui'
 import { Aviso, Botao, Busca, Grupo, Linha, Marca, Selo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { HeroSetor, Segmentado } from '@/components/ui/setor'
 import { Esqueleto, SkeletonCard, SkeletonFaixa, SkeletonLista } from '@/components/ui/skeleton'
@@ -23,16 +24,7 @@ import {
   type AbaEstudo,
 } from '@/data/estudo'
 import { deISO, hojeISO } from '@/data/metricas'
-import {
-  color,
-  motion,
-  onDark,
-  radius,
-  space,
-  target,
-  type,
-  ESPACO_FIM_DA_TELA,
-} from '@/theme/tokens'
+import { color, onDark, radius, space, target, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Tela 13. As duas frentes do Estudo em abas: Biblioteca (o livro que a
@@ -121,22 +113,27 @@ function Biblioteca() {
 
       <Busca valor={busca} onChange={setBusca} placeholder="Buscar livro ou quem levou" />
 
-      <Animated.View entering={FadeInDown.duration(motion.medium)} style={st.secao}>
+      <Animated.View entering={entrada(0)} style={st.secao}>
         <View style={st.linhaTopo}>
           <Overline>{`Fora da estante · ${fora.length}`}</Overline>
           {atrasados ? (
-            <Text style={st.legendaAviso}>
-              {atrasados} {atrasados === 1 ? 'atrasado' : 'atrasados'}
-            </Text>
+            <View style={st.contagem}>
+              <NumeroAnimado valor={atrasados} style={st.legendaAviso} />
+              <Text style={st.legendaAviso}>{atrasados === 1 ? ' atrasado' : ' atrasados'}</Text>
+            </View>
           ) : null}
         </View>
 
         {fora.length ? (
           <Grupo>
-            {fora.map(({ emprestimo, livro, crianca }) => {
+            {fora.map(({ emprestimo, livro, crianca }, i) => {
               const titulo = livro?.titulo ?? 'Livro'
+              // a cascata e da chegada da lista, nao de cada letra da busca
               return (
-                <View key={emprestimo.id} style={st.linhaLivro}>
+                <Animated.View
+                  key={emprestimo.id}
+                  entering={termo ? undefined : entrada(i, { base: 40 })}
+                  style={st.linhaLivro}>
                   <Pressable
                     onPress={() => marcarDevolvido(emprestimo.id, titulo)}
                     disabled={devolvendo === emprestimo.id}
@@ -146,14 +143,16 @@ function Biblioteca() {
                     accessibilityLabel={`Marcar ${titulo} como devolvido`}>
                     <Marca ativa={devolvendo === emprestimo.id} />
                   </Pressable>
-                  <Pressable
+                  <Pressionavel
                     onPress={() =>
                       router.push({
                         pathname: '/estudo/contato/[id]',
                         params: { id: emprestimo.id },
                       })
                     }
-                    style={({ pressed }) => [st.linhaTexto, pressed && st.pressed]}
+                    escala={0.98}
+                    opacidade={0.7}
+                    style={st.linhaTexto}
                     accessibilityRole="button"
                     accessibilityLabel={`${titulo}, falar com a família`}>
                     <Text style={st.linhaNome} numberOfLines={1}>
@@ -163,13 +162,13 @@ function Biblioteca() {
                       {crianca?.nome ?? 'criança sem ficha ativa'} · entrega{' '}
                       {diaMes(emprestimo.entrega)}
                     </Text>
-                  </Pressable>
+                  </Pressionavel>
                   <Selo
                     rotulo={emprestimo.atrasado ? 'atrasado' : 'em dia'}
                     tom={emprestimo.atrasado ? 'vermelho' : 'verde'}
                   />
                   <Icone nome="seta" cor={color.faint} />
-                </View>
+                </Animated.View>
               )
             })}
           </Grupo>
@@ -185,7 +184,7 @@ function Biblioteca() {
         ) : null}
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+      <Animated.View entering={entrada(1)}>
         <Grupo>
           <Linha
             titulo="Acervo"
@@ -196,7 +195,7 @@ function Biblioteca() {
         </Grupo>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+      <Animated.View entering={entrada(2)}>
         <Botao
           rotulo="Emprestar livro"
           onPress={() => {
@@ -232,56 +231,58 @@ function Devocional() {
       {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
 
       {deHoje.length ? (
-        <Animated.View entering={FadeInDown.duration(motion.medium)} style={st.secao}>
+        <Animated.View entering={entrada(0)} style={st.secao}>
           <Overline>Aula de hoje</Overline>
-          {deHoje.map((a) => (
-            <Pressable
-              key={a.id}
-              onPress={() => router.push({ pathname: '/estudo/aula/[id]', params: { id: a.id } })}
-              style={({ pressed }) => pressed && st.pressed}
-              accessibilityRole="button"
-              accessibilityLabel={`Aula dos ${NOME_TURMA[a.turma]}`}>
-              <Card style={st.cardAula}>
-                <View style={st.acento} />
-                <View style={st.linhaTexto}>
-                  <Text style={st.linhaNome}>
-                    {NOME_TURMA[a.turma]}
-                    {variasUnidades ? ` · ${nomeUnidade(a.unidadeId)}` : ''}
-                  </Text>
-                  <Text style={st.legenda}>
-                    {nomeProfessor(a.professorId) ?? 'professor a definir'}
-                    {a.historia ? ` — ${a.historia}` : ''}
-                  </Text>
-                </View>
-                <Selo rotulo={horaCurta(a.hora)} tom="roxo" />
-                <Icone nome="seta" cor={color.faint} />
-              </Card>
-            </Pressable>
+          {deHoje.map((a, i) => (
+            <Animated.View key={a.id} entering={entrada(i, { base: 40 })}>
+              <Pressionavel
+                onPress={() => router.push({ pathname: '/estudo/aula/[id]', params: { id: a.id } })}
+                accessibilityRole="button"
+                accessibilityLabel={`Aula dos ${NOME_TURMA[a.turma]}`}>
+                <Card style={st.cardAula}>
+                  <View style={st.acento} />
+                  <View style={st.linhaTexto}>
+                    <Text style={st.linhaNome}>
+                      {NOME_TURMA[a.turma]}
+                      {variasUnidades ? ` · ${nomeUnidade(a.unidadeId)}` : ''}
+                    </Text>
+                    <Text style={st.legenda}>
+                      {nomeProfessor(a.professorId) ?? 'professor a definir'}
+                      {a.historia ? ` — ${a.historia}` : ''}
+                    </Text>
+                  </View>
+                  <Selo rotulo={horaCurta(a.hora)} tom="roxo" />
+                  <Icone nome="seta" cor={color.faint} />
+                </Card>
+              </Pressionavel>
+            </Animated.View>
           ))}
         </Animated.View>
       ) : null}
 
-      <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)} style={st.secao}>
+      <Animated.View entering={entrada(1)} style={st.secao}>
         <View style={st.linhaTopo}>
           <Overline>Escala das aulas</Overline>
-          <Text style={st.legenda}>
-            {aulas.length} {aulas.length === 1 ? 'aula' : 'aulas'}
-          </Text>
+          <View style={st.contagem}>
+            <NumeroAnimado valor={aulas.length} style={st.legenda} />
+            <Text style={st.legenda}>{aulas.length === 1 ? ' aula' : ' aulas'}</Text>
+          </View>
         </View>
         {aulas.length ? (
           <Grupo>
-            {aulas.map((a) => {
+            {aulas.map((a, i) => {
               const professor = nomeProfessor(a.professorId)
               const completa = !!professor && !!a.historia
               return (
-                <Linha
-                  key={a.id}
-                  titulo={`${rotuloCurto(deISO(a.data))} · ${horaCurta(a.hora)} · ${NOME_TURMA[a.turma]}${variasUnidades ? ` · ${nomeUnidade(a.unidadeId)}` : ''}`}
-                  legenda={`${professor ?? 'professor a definir'} — ${a.historia ?? 'história a definir'}`}
-                  legendaTom={completa ? undefined : 'ambar'}
-                  selo={a.historia ? undefined : { rotulo: 'sem conteúdo', tom: 'ambar' }}
-                  onPress={() => abrir(a.id, completa)}
-                />
+                <Animated.View key={a.id} entering={entrada(i, { base: 65 })}>
+                  <Linha
+                    titulo={`${rotuloCurto(deISO(a.data))} · ${horaCurta(a.hora)} · ${NOME_TURMA[a.turma]}${variasUnidades ? ` · ${nomeUnidade(a.unidadeId)}` : ''}`}
+                    legenda={`${professor ?? 'professor a definir'} — ${a.historia ?? 'história a definir'}`}
+                    legendaTom={completa ? undefined : 'ambar'}
+                    selo={a.historia ? undefined : { rotulo: 'sem conteúdo', tom: 'ambar' }}
+                    onPress={() => abrir(a.id, completa)}
+                  />
+                </Animated.View>
               )
             })}
           </Grupo>
@@ -295,32 +296,33 @@ function Devocional() {
       </Animated.View>
 
       {semProfessor.length ? (
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-          <Pressable
+        <Animated.View entering={entrada(2)}>
+          <Pressionavel
             onPress={() =>
               router.push({
                 pathname: '/estudo/definir-aula',
                 params: { id: semProfessor[0].id },
               })
             }
-            style={({ pressed }) => pressed && st.pressed}
             accessibilityRole="button">
             <Card style={st.cardAlerta}>
               <View style={st.acentoAviso} />
               <View style={st.linhaTexto}>
-                <Text style={st.linhaNome}>
-                  {semProfessor.length}{' '}
-                  {semProfessor.length === 1 ? 'aula sem professor' : 'aulas sem professor'}
-                </Text>
+                <View style={st.contagem}>
+                  <NumeroAnimado valor={semProfessor.length} style={st.linhaNome} />
+                  <Text style={st.linhaNome}>
+                    {semProfessor.length === 1 ? ' aula sem professor' : ' aulas sem professor'}
+                  </Text>
+                </View>
                 <Text style={st.legenda}>{semProfessor.map((a) => diaMes(a.data)).join(', ')}</Text>
               </View>
               <Icone nome="seta" cor={color.faint} />
             </Card>
-          </Pressable>
+          </Pressionavel>
         </Animated.View>
       ) : null}
 
-      <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
+      <Animated.View entering={entrada(3)}>
         <Botao
           variante="secundario"
           rotulo="Marcar aula"
@@ -342,7 +344,7 @@ const st = StyleSheet.create({
   legendaFraca: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.faint },
   linhaNome: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   linhaTexto: { flex: 1, gap: 2 },
-  pressed: { opacity: 0.7 },
+  contagem: { flexDirection: 'row', alignItems: 'center' },
 
   linhaLivro: {
     minHeight: target.minimo + 8,

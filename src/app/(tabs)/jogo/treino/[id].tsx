@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Linking,
@@ -9,13 +9,21 @@ import {
   Text,
   View,
 } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Barra, Card, Overline } from '@/components/ui'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Botao } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, molaPop, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
 import { NOME_TURMA } from '@/data/chamada'
@@ -92,13 +100,14 @@ export default function TreinoExercicios() {
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
         {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
 
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
+        <Animated.View entering={entrada(0)}>
           <Card>
             <View style={st.linhaTopo}>
               <Text style={st.cardTitulo}>Exercícios de hoje</Text>
-              <Text style={st.contagem}>
-                {concluidos} de {total}
-              </Text>
+              <View style={st.contagemLinha}>
+                <NumeroAnimado valor={concluidos} style={st.contagem} />
+                <Text style={st.contagem}>{` de ${total}`}</Text>
+              </View>
             </View>
             <Barra pct={total ? (concluidos / total) * 100 : 0} cor={color.success} />
             <Text style={st.legenda}>
@@ -108,15 +117,16 @@ export default function TreinoExercicios() {
         </Animated.View>
 
         {total ? (
-          <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)} style={st.secao}>
+          <Animated.View entering={entrada(1)} style={st.secao}>
             <Overline>Exercícios</Overline>
             <Card style={st.cardLista}>
               {treino.exercicios.map((item, i) => {
                 const ex = exercicios.find((e) => e.id === item.exercicioId)
                 const expandido = aberto === item.exercicioId
                 return (
-                  <View
+                  <Animated.View
                     key={item.exercicioId}
+                    entering={entrada(i, { base: 50 })}
                     style={[st.item, i < treino.exercicios.length - 1 && st.divisoria]}>
                     <View style={st.linha}>
                       <Pressable
@@ -125,13 +135,13 @@ export default function TreinoExercicios() {
                         accessibilityRole="checkbox"
                         accessibilityState={{ checked: item.feito }}
                         accessibilityLabel={`Marcar ${ex?.nome ?? 'exercício'}`}>
-                        <View style={[st.marca, item.feito && st.marcaFeita]}>
-                          {item.feito ? <Icone nome="check" cor={color.bg} tamanho={14} /> : null}
-                        </View>
+                        <MarcaFeita feito={item.feito} />
                       </Pressable>
-                      <Pressable
+                      <Pressionavel
                         onPress={() => setAberto(expandido ? null : item.exercicioId)}
-                        style={({ pressed }) => [st.linhaTexto, pressed && st.pressed]}
+                        escala={0.98}
+                        opacidade={0.7}
+                        style={st.linhaTexto}
                         accessibilityRole="button"
                         accessibilityState={{ expanded: expandido }}
                         accessibilityLabel={`${ex?.nome ?? 'Exercício'}, ver como fazer`}>
@@ -139,10 +149,12 @@ export default function TreinoExercicios() {
                           {ex?.nome ?? 'Exercício removido da biblioteca'}
                         </Text>
                         <Text style={st.legenda}>{item.duracaoMin} min</Text>
-                      </Pressable>
+                      </Pressionavel>
                     </View>
                     {expandido ? (
-                      <Animated.View entering={FadeInDown.duration(motion.base)} style={st.detalhe}>
+                      <Animated.View
+                        entering={entrada(0, { duracao: motion.medium })}
+                        style={st.detalhe}>
                         {ex?.material ? (
                           <Text style={st.material}>Material · {ex.material}</Text>
                         ) : null}
@@ -161,19 +173,19 @@ export default function TreinoExercicios() {
                         ) : null}
                       </Animated.View>
                     ) : null}
-                  </View>
+                  </Animated.View>
                 )
               })}
             </Card>
           </Animated.View>
         ) : null}
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-          <Pressable
+        <Animated.View entering={entrada(2)}>
+          <Pressionavel
             onPress={() =>
               router.push({ pathname: '/jogo/avaliacao/[id]', params: { id: treino.id } })
             }
-            style={({ pressed }) => [st.botao, pressed && st.pressed]}
+            style={st.botao}
             accessibilityRole="button">
             <Text style={st.botaoRotulo}>
               {treino.encerrado
@@ -182,13 +194,11 @@ export default function TreinoExercicios() {
                   : 'Avaliar o treino'
                 : 'Encerrar treino'}
             </Text>
-          </Pressable>
+          </Pressionavel>
         </Animated.View>
 
         {administraJogo ? (
-          <Animated.View
-            entering={FadeInDown.duration(motion.medium).delay(120)}
-            style={st.excluir}>
+          <Animated.View entering={entrada(3)} style={st.excluir}>
             {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
             <Botao
               rotulo={excluindo ? 'Excluindo…' : 'Excluir treino'}
@@ -222,6 +232,37 @@ export default function TreinoExercicios() {
   )
 }
 
+/**
+ * A bolinha do exercicio. Quando acende (feito), encolhe e volta com a
+ * mola de pop; ao abrir a tela ja aparece pronta, sem pular.
+ */
+function MarcaFeita({ feito }: { feito: boolean }) {
+  const escala = useSharedValue(1)
+  const primeiro = useRef(true)
+
+  useEffect(() => {
+    if (primeiro.current) {
+      primeiro.current = false
+      return
+    }
+    if (!feito) return
+    escala.set(
+      withSequence(
+        withTiming(0.8, { duration: motion.instant, reduceMotion: ReduceMotion.System }),
+        withSpring(1, molaPop),
+      ),
+    )
+  }, [feito, escala])
+
+  const pop = useAnimatedStyle(() => ({ transform: [{ scale: escala.get() }] }))
+
+  return (
+    <Animated.View style={[st.marca, feito && st.marcaFeita, pop]}>
+      {feito ? <Icone nome="check" cor={color.bg} tamanho={14} /> : null}
+    </Animated.View>
+  )
+}
+
 const st = StyleSheet.create({
   videoLinha: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   screen: { flex: 1, backgroundColor: color.bg },
@@ -231,9 +272,9 @@ const st = StyleSheet.create({
 
   linhaTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cardTitulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  contagemLinha: { flexDirection: 'row', alignItems: 'center' },
   contagem: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.success },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
-  pressed: { opacity: 0.7 },
 
   cardLista: { paddingVertical: space.xs, gap: 0 },
   linha: {

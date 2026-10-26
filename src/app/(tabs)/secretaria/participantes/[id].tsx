@@ -1,12 +1,13 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Card, Contador } from '@/components/ui'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Botao, Entrada, Link } from '@/components/ui/form'
+import { entrada } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { Esqueleto, SkeletonCard } from '@/components/ui/skeleton'
 import { HeroPerfil } from '@/components/ui/setor'
@@ -24,16 +25,7 @@ import {
   type Participante,
 } from '@/data/fichas'
 import { usePerfil } from '@/data/perfis'
-import {
-  color,
-  motion,
-  onDark,
-  radius,
-  space,
-  target,
-  type,
-  ESPACO_FIM_DA_TELA,
-} from '@/theme/tokens'
+import { color, onDark, radius, space, target, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
 
 /**
@@ -126,7 +118,7 @@ export default function PerfilParticipante() {
       />
 
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
+        <Animated.View entering={entrada(0)}>
           <Card>
             <View style={st.linhaTopo}>
               <Text style={st.cardTitulo}>Frequência</Text>
@@ -180,7 +172,7 @@ export default function PerfilParticipante() {
           </Card>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+        <Animated.View entering={entrada(1)}>
           <Card style={st.cardLista}>
             <View style={st.linhaTopo}>
               <Text style={st.cardTitulo}>Cadastro</Text>
@@ -199,21 +191,19 @@ export default function PerfilParticipante() {
           </Card>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+        <Animated.View entering={entrada(2)}>
           <Card>
             <Text style={st.cardTitulo}>Observações da equipe</Text>
             <Text style={st.legenda}>{p.observacao || 'Nenhuma observação.'}</Text>
           </Card>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(100)}>
+        <Animated.View entering={entrada(3)}>
           <Saida key={`${p.id}-${p.ativa}`} p={p} aoMudar={recarregar} />
         </Animated.View>
 
         {administraSecretaria ? (
-          <Animated.View
-            entering={FadeInDown.duration(motion.medium).delay(120)}
-            style={st.excluir}>
+          <Animated.View entering={entrada(4)} style={st.excluir}>
             {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
             <Botao
               rotulo={excluindo ? 'Excluindo…' : 'Excluir ficha'}

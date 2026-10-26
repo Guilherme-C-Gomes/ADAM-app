@@ -1,10 +1,12 @@
 import { useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { ActivityIndicator, Pressable } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Bloco, Botao, Entrada, Grupo, Linha, Rotulo, TelaForm } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { esquecerNoCelular, HORARIO, NOME_TURMA, TURMAS, type Unidade } from '@/data/chamada'
 import { rascunhoFiltroSecretaria } from '@/data/rascunhos'
@@ -147,27 +149,28 @@ export default function UnidadesETurmas() {
         <Rotulo extra={lista ? `${lista.length}` : undefined}>Unidades</Rotulo>
         {lista?.length ? (
           <Grupo>
-            {lista.map((u) => (
-              <Linha
-                key={u.id}
-                titulo={u.nome}
-                legenda={`${u.criancas} ${u.criancas === 1 ? 'criança ativa' : 'crianças ativas'}`}
-                semSeta
-                direita={
-                  !podeExcluir ? null : excluindo === u.id ? (
-                    <ActivityIndicator color={color.faint} />
-                  ) : (
-                    <Pressable
-                      onPress={() => excluir(u)}
-                      disabled={!!excluindo}
-                      hitSlop={space.md}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Excluir a unidade ${u.nome}`}>
-                      <Icone nome="lixeira" cor={color.muted} />
-                    </Pressable>
-                  )
-                }
-              />
+            {lista.map((u, i) => (
+              <Animated.View key={u.id} entering={entrada(i, { base: 50 })}>
+                <Linha
+                  titulo={u.nome}
+                  legenda={`${u.criancas} ${u.criancas === 1 ? 'criança ativa' : 'crianças ativas'}`}
+                  semSeta
+                  direita={
+                    !podeExcluir ? null : excluindo === u.id ? (
+                      <ActivityIndicator color={color.faint} />
+                    ) : (
+                      <Pressable
+                        onPress={() => excluir(u)}
+                        disabled={!!excluindo}
+                        hitSlop={space.md}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Excluir a unidade ${u.nome}`}>
+                        <Icone nome="lixeira" cor={color.muted} />
+                      </Pressable>
+                    )
+                  }
+                />
+              </Animated.View>
             ))}
           </Grupo>
         ) : lista ? (

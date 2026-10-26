@@ -1,13 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Avatar, Card, Overline } from '@/components/ui'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Aviso, Botao, Grupo, Linha, Selo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, Pressionavel } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { HeroVoltar } from '@/components/ui/setor'
 import { rotuloCurto } from '@/data/calendario'
@@ -16,7 +17,7 @@ import { abrirMaterial, carregarAulas, excluirAula, horaCurta, useAulas } from '
 import { deISO } from '@/data/metricas'
 import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
-import { color, motion, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
+import { color, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Tela 13b. O que o professor precisa ter na mao no dia: quem da a aula,
@@ -94,7 +95,7 @@ export default function AulaDoDia() {
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
         {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
 
-        <Animated.View entering={FadeInDown.duration(motion.medium)}>
+        <Animated.View entering={entrada(0)}>
           <Card style={st.professor}>
             <Avatar iniciais={professor?.iniciais ?? '?'} size={36} />
             <View style={st.texto}>
@@ -108,53 +109,56 @@ export default function AulaDoDia() {
           </Card>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)} style={st.secao}>
+        <Animated.View entering={entrada(1)} style={st.secao}>
           <Overline>Conteúdo da aula</Overline>
           <Card style={st.conteudoCard}>
             <Text style={st.historia}>{aula.historia ?? 'História a definir'}</Text>
-            {aula.material.map((m) => (
-              <Pressable
-                key={m.path}
-                onPress={() => abrir(m.path)}
-                style={({ pressed }) => [st.arquivo, pressed && { opacity: 0.7 }]}
-                accessibilityRole="button"
-                accessibilityLabel={`Abrir ${m.nome}`}>
-                <Icone nome="documento" cor={color.primaryCh} />
-                <View style={st.texto}>
-                  <Text style={st.arquivoNome} numberOfLines={1}>
-                    {m.nome}
-                  </Text>
-                  <Text style={st.legenda}>
-                    {m.tamanho ? `${m.tamanho} · ` : ''}toque para abrir
-                  </Text>
-                </View>
-                <Icone nome="seta" cor={color.faint} />
-              </Pressable>
+            {aula.material.map((m, i) => (
+              <Animated.View key={m.path} entering={entrada(i, { base: 50 })}>
+                <Pressionavel
+                  onPress={() => abrir(m.path)}
+                  escala={0.98}
+                  opacidade={0.7}
+                  style={st.arquivo}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Abrir ${m.nome}`}>
+                  <Icone nome="documento" cor={color.primaryCh} />
+                  <View style={st.texto}>
+                    <Text style={st.arquivoNome} numberOfLines={1}>
+                      {m.nome}
+                    </Text>
+                    <Text style={st.legenda}>
+                      {m.tamanho ? `${m.tamanho} · ` : ''}toque para abrir
+                    </Text>
+                  </View>
+                  <Icone nome="seta" cor={color.faint} />
+                </Pressionavel>
+              </Animated.View>
             ))}
             {aula.material.length ? null : <Text style={st.legenda}>Nenhum material anexado</Text>}
           </Card>
         </Animated.View>
 
         {aula.levar.length ? (
-          <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)} style={st.secao}>
+          <Animated.View entering={entrada(2)} style={st.secao}>
             <Overline>Material para levar</Overline>
             <Grupo>
-              {aula.levar.map((item) => (
-                <Linha key={item} titulo={item} esquerda={<Text style={st.ponto}>•</Text>} />
+              {aula.levar.map((item, i) => (
+                <Animated.View key={item} entering={entrada(i, { base: 75 })}>
+                  <Linha titulo={item} esquerda={<Text style={st.ponto}>•</Text>} />
+                </Animated.View>
               ))}
             </Grupo>
           </Animated.View>
         ) : null}
 
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(120)}>
+        <Animated.View entering={entrada(3)}>
           <Botao rotulo="Fazer chamada" onPress={() => router.navigate('/chamada')} />
         </Animated.View>
 
         {/* so a coordenacao do Estudo ve (e o banco so deixa ela) */}
         {administraEstudo ? (
-          <Animated.View
-            entering={FadeInDown.duration(motion.medium).delay(160)}
-            style={st.excluir}>
+          <Animated.View entering={entrada(4)} style={st.excluir}>
             {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
             <Botao
               rotulo={excluindo ? 'Excluindo…' : 'Excluir aula'}

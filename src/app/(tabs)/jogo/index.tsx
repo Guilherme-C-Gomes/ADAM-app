@@ -4,19 +4,22 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { Card, Overline } from '@/components/ui'
+import { DiasDaSemana, FraseViva } from '@/components/escala/pecas'
+import { fraseGravada, linhasDaTurma } from '@/components/escala/semana'
+import { Card, Chip, Overline } from '@/components/ui'
 import { Aviso, Calendario, SeletorPeriodo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, Pressionavel } from '@/components/ui/movimento'
 import { HeroSetor, Segmentado } from '@/components/ui/setor'
 import { Esqueleto, SkeletonCard, SkeletonLista } from '@/components/ui/skeleton'
 import { DIAS_CURTOS, rotuloCurto, rotuloLongo } from '@/data/calendario'
-import { NOME_TURMA, useUnidades } from '@/data/chamada'
+import { NOME_TURMA, TURMAS, useUnidades, type Turma } from '@/data/chamada'
 import { LIMITE_COMPREENSAO } from '@/data/jogo'
 import {
   abrirPlano,
   diaMes,
+  diasDoMes,
   horaCurta,
-  marcasDoMes,
   nomeNaEquipe,
   novoJogo,
   rascunhoFiltroJogos,
@@ -319,29 +322,109 @@ function Escala() {
   const unidades = useUnidades()
   const { editaEscala } = usePerfil()
   const varias = unidades.dados.length > 1
-  const nomeUnidade = (id: string) => unidades.dados.find((u) => u.id === id)?.nome ?? ''
-  const semTecnico = escala.filter((l) => !l.tecnicoId)
+  const [unidadeId, setUnidadeId] = useState<string | null>(null)
+  const unidade = unidadeId ?? unidades.dados[0]?.id ?? null
+  // uma unidade so: nao filtra (a escala inteira e dela)
+  const filtro = varias ? unidade : null
 
-  // O calendario: cada dia com treino ou horario fixo ganha uma bolinha —
-  // verde se todos tem tecnico, ambar se falta. Tocar abre o dia.
+  // O calendario: cada dia com treino (da escala da semana ou marcado na
+  // data) ganha um fundo e as iniciais de quem vai; ambar se falta tecnico.
+  // Tocar abre o dia.
   const agora = new Date()
   const [mes, setMes] = useState({ ano: agora.getFullYear(), mes: agora.getMonth() })
   const doMes = useTreinosDoMes(mes.ano, mes.mes)
-  const marcas = marcasDoMes(mes.ano, mes.mes, escala, doMes.lista)
-  const pendentes = Object.values(marcas).filter((m) => m === 'pendente').length
+  const marcas = diasDoMes(mes.ano, mes.mes, escala, doMes.lista, equipe, filtro)
+  const pendentes = Object.values(marcas).filter((m) => m.tom === 'pendente').length
   const ehEsteMes = mes.ano === agora.getFullYear() && mes.mes === agora.getMonth()
+  // a escala da semana mudou (ou trocou a unidade): as datas acendem em onda
+  const onda = `${filtro}|${escala
+    .filter((l) => !filtro || l.unidadeId === filtro)
+    .map((l) => `${l.unidadeId}${l.diaSemana}${l.hora}${l.turma}${l.tecnicoId}`)
+    .sort()
+    .join()}`
+
+  const editar = (turma?: Turma) =>
+    router.push({
+      pathname: '/jogo/escala',
+      params: { ...(unidade ? { unidade } : {}), ...(turma ? { turma } : {}) },
+    })
 
   return (
     <>
       {erro ? <Aviso tom="ambar" titulo={erro} /> : null}
 
-      <Animated.View entering={FadeInDown.duration(motion.medium)} style={st.secao}>
+      <Animated.View entering={entrada(0)} style={st.secao}>
+        <Overline>Treinos da semana</Overline>
+        {varias ? (
+          <View style={st.chips}>
+            {unidades.dados.map((u) => (
+              <Chip
+                key={u.id}
+                rotulo={u.nome}
+                ativo={unidade === u.id}
+                onPress={() => setUnidadeId(u.id)}
+              />
+            ))}
+          </View>
+        ) : null}
+        {TURMAS.map((t) => {
+          const linhas = linhasDaTurma(escala, filtro, t)
+          const frase = fraseGravada(escala, equipe, filtro, t)
+          const semTecnico = linhas.some((l) => !l.tecnicoId)
+          const conteudo = (
+            <>
+              {semTecnico ? <View style={st.acentoAviso} /> : null}
+              <View style={st.linhaTopo}>
+                <Text style={st.cardTitulo}>{NOME_TURMA[t]}</Text>
+                <DiasDaSemana dias={linhas.map((l) => l.diaSemana)} pequeno />
+              </View>
+              <FraseViva
+                texto={
+                  frase ??
+                  (editaEscala
+                    ? `Escolha os dias de treino de ${NOME_TURMA[t]}`
+                    : `A coordenação técnica ainda não marcou os treinos de ${NOME_TURMA[t]}.`)
+                }
+                apagada={!frase}
+              />
+              {editaEscala ? (
+                <View style={st.quando}>
+                  <Text style={st.editar}>
+                    {frase ? 'Mudar dias, horário ou técnico' : 'Montar'}
+                  </Text>
+                  <Icone nome="seta" cor={color.primaryLt} />
+                </View>
+              ) : null}
+            </>
+          )
+          return editaEscala ? (
+            <Pressionavel
+              key={t}
+              onPress={() => editar(t)}
+              escala={0.98}
+              style={[st.cardSemana, semTecnico && st.cardSemanaAviso]}
+              accessibilityRole="button"
+              accessibilityLabel={`${frase ?? `${NOME_TURMA[t]} sem treinos na semana`} Editar.`}>
+              {conteudo}
+            </Pressionavel>
+          ) : (
+            <View key={t} style={[st.cardSemana, semTecnico && st.cardSemanaAviso]}>
+              {conteudo}
+            </View>
+          )
+        })}
+      </Animated.View>
+
+      <Animated.View entering={entrada(1)} style={st.secao}>
         <Overline>Escala do mês</Overline>
+        {doMes.erro ? <Aviso tom="ambar" titulo={doMes.erro} /> : null}
         <Calendario
           ano={mes.ano}
           mes={mes.mes}
           marcas={marcas}
-          hoje={ehEsteMes ? agora.getDate() : undefined}
+          onda={onda}
+          comIniciais
+          hoje={ehEsteMes ? agora.getDate() : null}
           onEscolher={(dia) =>
             router.push({
               pathname: '/jogo/escala-dia',
@@ -354,90 +437,40 @@ function Escala() {
           }}
         />
         <View style={st.legendaCalendario}>
-          <View style={[st.pontoLegenda, { backgroundColor: color.success }]} />
-          <Text style={st.legenda}>com técnico</Text>
-          <View
-            style={[st.pontoLegenda, { backgroundColor: color.warn, marginLeft: space.base }]}
-          />
-          <Text style={st.legenda}>
-            {pendentes
-              ? `falta técnico em ${pendentes} ${pendentes === 1 ? 'dia' : 'dias'}`
-              : 'falta técnico'}
-          </Text>
+          <View style={st.itemLegenda}>
+            <View style={[st.pontoLegenda, st.pontoVerde]} />
+            <Text style={st.legenda}>com técnico</Text>
+          </View>
+          <View style={st.itemLegenda}>
+            <View style={[st.pontoLegenda, st.pontoAmbar]} />
+            <Text style={[st.legenda, pendentes > 0 && st.legendaAviso]}>
+              {pendentes
+                ? `falta técnico em ${pendentes} ${pendentes === 1 ? 'dia' : 'dias'}`
+                : 'falta técnico'}
+            </Text>
+          </View>
+          <View style={st.itemLegenda}>
+            <View style={st.iniciaisLegenda}>
+              <Text style={st.iniciaisLegendaTexto}>AB</Text>
+            </View>
+            <Text style={st.legenda}>quem vai</Text>
+          </View>
         </View>
         <Text style={st.legenda}>
           {editaEscala
-            ? 'Toque num dia para escolher o técnico daquela data.'
+            ? 'Toque num dia para trocar o técnico, escolher as pessoas ou adicionar um treino só naquela data.'
             : 'Toque num dia para ver quem está escalado.'}
         </Text>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)} style={st.secao}>
-        <Overline>Horários fixos da semana</Overline>
-        {escala.length ? (
-          <Card style={st.cardLista}>
-            {escala.map((l, i) => {
-              const tecnico = nomeNaEquipe(equipe, l.tecnicoId)
-              return (
-                <View key={l.id} style={[st.linha, i < escala.length - 1 && st.divisoria]}>
-                  <Text style={st.escalaDia}>{DIAS_CURTOS[l.diaSemana]}</Text>
-                  <Text style={st.escalaHora}>{horaCurta(l.hora)}</Text>
-                  <Text style={[st.escalaNome, !tecnico && st.legendaAviso]} numberOfLines={1}>
-                    {tecnico ?? 'a definir'}
-                  </Text>
-                  <Text style={st.legenda}>
-                    {NOME_TURMA[l.turma]}
-                    {varias ? ` · ${nomeUnidade(l.unidadeId)}` : ''}
-                  </Text>
-                </View>
-              )
-            })}
-          </Card>
-        ) : (
-          <Card>
-            <Text style={st.legenda}>
-              {editaEscala
-                ? 'A escala ainda está vazia. Adicione os horários de treino da semana.'
-                : 'A coordenação técnica ainda não montou a escala.'}
-            </Text>
-          </Card>
-        )}
-      </Animated.View>
-
-      {semTecnico.length ? (
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
-          <Pressable
-            onPress={() => router.push('/jogo/escala')}
-            disabled={!editaEscala}
-            style={({ pressed }) => pressed && st.pressed}
-            accessibilityRole={editaEscala ? 'button' : 'text'}>
-            <Card style={st.cardAlerta}>
-              <View style={st.acentoAviso} />
-              <View style={st.linhaTexto}>
-                <Text style={st.cardTitulo}>
-                  {semTecnico.length}{' '}
-                  {semTecnico.length === 1 ? 'horário sem técnico' : 'horários sem técnico'}
-                </Text>
-                <Text style={st.legenda}>
-                  {semTecnico
-                    .map((l) => `${DIAS_CURTOS[l.diaSemana]} ${horaCurta(l.hora)}`)
-                    .join(', ')}
-                </Text>
-              </View>
-              {editaEscala ? <Icone nome="seta" cor={color.faint} /> : null}
-            </Card>
-          </Pressable>
-        </Animated.View>
-      ) : null}
-
       {editaEscala ? (
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
-          <Pressable
-            onPress={() => router.push('/jogo/escala')}
-            style={({ pressed }) => [st.botaoSecundario, pressed && st.pressed]}
+        <Animated.View entering={entrada(2)}>
+          <Pressionavel
+            onPress={() => editar()}
+            style={st.botaoSecundario}
             accessibilityRole="button">
-            <Text style={st.botaoSecundarioRotulo}>Editar escala</Text>
-          </Pressable>
+            <Text style={st.botaoSecundarioRotulo}>Editar treinos da semana</Text>
+          </Pressionavel>
         </Animated.View>
       ) : null}
     </>
@@ -464,8 +497,51 @@ function Nota({
 }
 
 const st = StyleSheet.create({
-  legendaCalendario: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
-  pontoLegenda: { width: 8, height: 8, borderRadius: 4 },
+  legendaCalendario: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: space.base,
+    rowGap: space.xs,
+  },
+  itemLegenda: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
+  pontoLegenda: { width: 14, height: 14, borderRadius: 7 },
+  pontoVerde: { backgroundColor: 'rgba(61, 214, 140, 0.16)' },
+  pontoAmbar: {
+    backgroundColor: 'rgba(245, 165, 36, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 165, 36, 0.6)',
+  },
+  iniciaisLegenda: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color.surface2,
+    borderWidth: 1,
+    borderColor: color.success,
+  },
+  iniciaisLegendaTexto: {
+    fontSize: 8,
+    lineHeight: 10,
+    fontFamily: 'Inter_700Bold',
+    color: color.text,
+  },
+  chips: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
+  cardSemana: {
+    padding: space.base,
+    paddingLeft: space.lg,
+    gap: space.sm,
+    borderRadius: radius.card,
+    borderCurve: 'continuous',
+    backgroundColor: color.surface,
+    borderWidth: 1,
+    borderColor: color.border,
+    overflow: 'hidden',
+  },
+  cardSemanaAviso: { borderColor: 'rgba(245, 165, 36, 0.45)' },
+  editar: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.primaryLt },
   quando: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   screen: { flex: 1, backgroundColor: color.bg },
   conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
@@ -540,18 +616,7 @@ const st = StyleSheet.create({
     paddingLeft: space.lg,
     overflow: 'hidden',
   },
-  cardAlerta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    paddingLeft: space.lg,
-    overflow: 'hidden',
-  },
   linhaNav: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-
-  escalaDia: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.muted, width: 32 },
-  escalaHora: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text, width: 36 },
-  escalaNome: { ...type.small, fontFamily: 'Inter_400Regular', color: color.text, flex: 1 },
 
   notas: { flexDirection: 'row', justifyContent: 'space-between' },
   nota: { flex: 1, gap: space.xs },

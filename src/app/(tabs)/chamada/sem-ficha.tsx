@@ -1,9 +1,11 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { Aviso, Bloco, Botao, Entrada, Grupo, Marca, Rotulo, TelaForm } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, Pressionavel } from '@/components/ui/movimento'
 import { adicionarAvulso, NOME_TURMA, removerAvulso, useAvulsos, useChamada } from '@/data/chamada'
 import {
   avulsosNaFila,
@@ -89,8 +91,8 @@ export default function SemFicha() {
         </Rotulo>
         <Grupo>
           {[
-            ...avulsos.lista.map((a) => (
-              <View key={a.id} style={st.linha}>
+            ...avulsos.lista.map((a, i) => (
+              <Animated.View key={a.id} entering={entrada(i, { base: 50 })} style={st.linha}>
                 <Marca ativa />
                 <Text style={st.nome}>{a.nome}</Text>
                 <Pressable
@@ -100,14 +102,17 @@ export default function SemFicha() {
                   accessibilityLabel={`Remover ${a.nome}`}>
                   <Icone nome="lixeira" cor={color.faint} />
                 </Pressable>
-              </View>
+              </Animated.View>
             )),
             ...naFila.map((nome, i) => (
-              <View key={`fila-${i}-${nome}`} style={st.linha}>
+              <Animated.View
+                key={`fila-${i}-${nome}`}
+                entering={entrada(avulsos.lista.length + i, { base: 50 })}
+                style={st.linha}>
                 <Marca ativa />
                 <Text style={st.nome}>{nome}</Text>
                 <Text style={st.noCelular}>no celular</Text>
-              </View>
+              </Animated.View>
             )),
             adicionando ? (
               <View key="novo" style={st.novo}>
@@ -120,13 +125,15 @@ export default function SemFicha() {
                 />
               </View>
             ) : (
-              <Pressable
+              <Pressionavel
                 key="adicionar"
                 onPress={() => setAdicionando(true)}
-                style={({ pressed }) => [st.linha, pressed && st.pressed]}
+                escala={0.98}
+                opacidade={0.7}
+                style={st.linha}
                 accessibilityRole="button">
                 <Text style={st.link}>Adicionar nome</Text>
-              </Pressable>
+              </Pressionavel>
             ),
           ]}
         </Grupo>
@@ -153,6 +160,5 @@ const st = StyleSheet.create({
   nome: { flex: 1, ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   link: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.primaryLt },
   novo: { paddingVertical: space.md },
-  pressed: { opacity: 0.7 },
   noCelular: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.warn },
 })

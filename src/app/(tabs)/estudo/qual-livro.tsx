@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import Animated from 'react-native-reanimated'
 
 import { Aviso, Bloco, Botao, Busca, Grupo, Opcao, TelaForm } from '@/components/ui/form'
+import { entrada } from '@/components/ui/movimento'
 import { disponiveis, rascunhoEmprestar, useBiblioteca } from '@/data/estudo'
 import { voltar } from '@/lib/navegacao'
 
@@ -36,16 +38,18 @@ export default function QualLivro() {
       <Bloco>
         {livros.length ? (
           <Grupo>
-            {visiveis.map((l) => {
+            {visiveis.map((l, i) => {
               const livres = disponiveis(l, emprestimos)
+              // a cascata e da chegada da lista, nao de cada letra da busca
               return (
-                <Opcao
-                  key={l.id}
-                  titulo={l.titulo}
-                  valor={`${livres} ${livres === 1 ? 'livre' : 'livres'}`}
-                  ativa={livroId === l.id}
-                  onPress={() => setLivroId(l.id)}
-                />
+                <Animated.View key={l.id} entering={termo ? undefined : entrada(i, { base: 40 })}>
+                  <Opcao
+                    titulo={l.titulo}
+                    valor={`${livres} ${livres === 1 ? 'livre' : 'livres'}`}
+                    ativa={livroId === l.id}
+                    onPress={() => setLivroId(l.id)}
+                  />
+                </Animated.View>
               )
             })}
           </Grupo>

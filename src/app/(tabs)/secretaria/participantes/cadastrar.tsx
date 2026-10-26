@@ -1,11 +1,12 @@
 import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 
 import { Avatar, Chip } from '@/components/ui'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { Icone } from '@/components/ui/icone'
+import { Pressionavel } from '@/components/ui/movimento'
 import {
   Aviso,
   Bloco,
@@ -160,9 +161,10 @@ export default function FichaDaCrianca() {
       ) : null}
 
       <Bloco>
-        <Pressable
+        <Pressionavel
           onPress={() => router.push('/secretaria/participantes/foto')}
-          style={({ pressed }) => [st.foto, pressed && st.pressed]}
+          escala={0.98}
+          style={st.foto}
           accessibilityRole="button"
           accessibilityLabel="Foto da criança">
           {foto ? (
@@ -177,7 +179,7 @@ export default function FichaDaCrianca() {
             </Text>
           </View>
           <Icone nome="seta" cor={color.faint} />
-        </Pressable>
+        </Pressionavel>
       </Bloco>
 
       <Bloco ordem={1}>
@@ -396,7 +398,6 @@ const st = StyleSheet.create({
   texto: { flex: 1, gap: 2 },
   titulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted, flex: 1 },
-  pressed: { opacity: 0.8 },
   dupla: { flexDirection: 'row', gap: space.md },
   metade: { flex: 1, gap: space.sm },
   chips: { flexDirection: 'row', gap: space.sm },

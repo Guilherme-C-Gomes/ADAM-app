@@ -1,19 +1,20 @@
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Barra, Card, Contador, Overline } from '@/components/ui'
 import { Aviso, Grupo, Linha, SeletorPeriodo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
 import { CardQueda, Variacao } from '@/components/ui/metricas'
+import { entrada, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { HeroSetor, Segmentado } from '@/components/ui/setor'
 import { Esqueleto, SkeletonCard, SkeletonFaixa, SkeletonLista } from '@/components/ui/skeleton'
 import { DOCUMENTOS, emQueda, useParticipantes } from '@/data/fichas'
 import { useFiltroSecretaria } from '@/data/filtro-secretaria'
 import { useMetricas } from '@/data/metricas'
-import { color, motion, onDark, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
+import { color, onDark, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Tela 12. A Secretaria e quem responde "quanto no conjunto": toda
@@ -83,7 +84,7 @@ export default function Secretaria() {
             />
           ) : (
             <>
-              <Animated.View entering={FadeInDown.duration(motion.medium)}>
+              <Animated.View entering={entrada(0)}>
                 <Card>
                   <View style={st.linhaTopo}>
                     <Text style={st.cardTitulo}>Crianças que foram</Text>
@@ -114,10 +115,10 @@ export default function Secretaria() {
                 </Card>
               </Animated.View>
 
-              <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
-                <Pressable
+              <Animated.View entering={entrada(1)}>
+                <Pressionavel
                   onPress={() => router.push('/secretaria/relatorio')}
-                  style={({ pressed }) => pressed && st.pressed}
+                  escala={0.98}
                   accessibilityRole="button">
                   <Card>
                     <View style={st.linhaTopo}>
@@ -136,7 +137,7 @@ export default function Secretaria() {
                     <View style={st.legendaLinha}>
                       <View style={[st.ponto, { backgroundColor: color.primaryLt }]} />
                       <Text style={st.legenda}>Pequenos</Text>
-                      <Text style={st.legendaValor}>{m.chamadas.pequenos}</Text>
+                      <NumeroAnimado valor={m.chamadas.pequenos} style={st.legendaValor} />
                       <View
                         style={[
                           st.ponto,
@@ -144,23 +145,23 @@ export default function Secretaria() {
                         ]}
                       />
                       <Text style={st.legenda}>Maiores</Text>
-                      <Text style={st.legendaValor}>{m.chamadas.maiores}</Text>
+                      <NumeroAnimado valor={m.chamadas.maiores} style={st.legendaValor} />
                     </View>
                   </Card>
-                </Pressable>
+                </Pressionavel>
               </Animated.View>
 
-              <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+              <Animated.View entering={entrada(2)}>
                 <CardQueda quedas={quedas} unidade={filtro.unidadeId ? nomeUnidade : null} />
               </Animated.View>
             </>
           )
         ) : (
           <>
-            <Animated.View entering={FadeInDown.duration(motion.medium)}>
-              <Pressable
+            <Animated.View entering={entrada(0)}>
+              <Pressionavel
                 onPress={() => router.push('/secretaria/participantes/cadastrar')}
-                style={({ pressed }) => pressed && st.pressed}
+                escala={0.98}
                 accessibilityRole="button">
                 <Card style={st.cardDestaque}>
                   <View style={st.acento} />
@@ -171,10 +172,10 @@ export default function Secretaria() {
                   </View>
                   <Icone nome="seta" cor={color.faint} />
                 </Card>
-              </Pressable>
+              </Pressionavel>
             </Animated.View>
 
-            <Animated.View entering={FadeInDown.duration(motion.medium).delay(40)}>
+            <Animated.View entering={entrada(1)}>
               <Grupo>
                 <Linha
                   titulo="Crianças cadastradas"
@@ -187,14 +188,15 @@ export default function Secretaria() {
               </Grupo>
             </Animated.View>
 
-            <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)} style={st.secao}>
+            <Animated.View entering={entrada(2)} style={st.secao}>
               <Overline>Fichas</Overline>
               <Card>
                 <View style={st.linhaTopo}>
                   <Text style={st.cardTitulo}>Fichas completas</Text>
-                  <Text style={st.legendaValor}>
-                    {completas} de {daUnidade.length}
-                  </Text>
+                  <View style={st.contaLinha}>
+                    <NumeroAnimado valor={completas} style={st.legendaValor} />
+                    <Text style={st.legendaValor}> de {daUnidade.length}</Text>
+                  </View>
                 </View>
                 <Barra
                   pct={daUnidade.length ? (completas / daUnidade.length) * 100 : 0}
@@ -221,10 +223,11 @@ export default function Secretaria() {
 function Mini({ valor, rotulo, destaque }: { valor: number; rotulo: string; destaque?: boolean }) {
   return (
     <View style={st.miniItem}>
-      <Text style={[st.miniValor, destaque && valor > 0 && st.miniDestaque]}>
-        {destaque && valor > 0 ? '+' : ''}
-        {valor}
-      </Text>
+      <NumeroAnimado
+        valor={valor}
+        formato={(n) => `${destaque && valor > 0 ? '+' : ''}${Math.round(n)}`}
+        style={[st.miniValor, destaque && valor > 0 && st.miniDestaque]}
+      />
       <Text style={st.legenda}>{rotulo}</Text>
     </View>
   )
@@ -248,7 +251,7 @@ const st = StyleSheet.create({
   link: { ...type.small, fontFamily: 'Inter_600SemiBold', color: onDark.text },
   legendaLinha: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   ponto: { width: 8, height: 8, borderRadius: 4 },
-  pressed: { opacity: 0.85 },
+  contaLinha: { flexDirection: 'row', alignItems: 'baseline' },
   linhaTexto: { flex: 1, gap: space.xs },
 
   mini: { flexDirection: 'row', justifyContent: 'space-between' },

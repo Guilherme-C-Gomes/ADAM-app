@@ -9,9 +9,11 @@ import {
   TextInput,
   View,
 } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { AdamSymbol, AdamWordmark } from '@/components/brand/adam-mark'
+import { entrada, Pressionavel } from '@/components/ui/movimento'
 import { entrar as entrarNaConta, ErroDeAcesso, retomarSessao } from '@/lib/auth'
 import { VERSAO } from '@/lib/versao'
 import { color, onDark, radius, space, target, type } from '@/theme/tokens'
@@ -93,15 +95,15 @@ export default function Login() {
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.content}>
-        <View style={styles.header}>
+        <Animated.View entering={entrada(0)} style={styles.header}>
           <View style={styles.markRow}>
             <AdamSymbol size={36} />
             <AdamWordmark fontSize={26} />
           </View>
           <Text style={styles.tagline}>Painel da coordenação</Text>
-        </View>
+        </Animated.View>
 
-        <View style={styles.field}>
+        <Animated.View entering={entrada(1)} style={styles.field}>
           <Text style={styles.label}>E-mail</Text>
           <TextInput
             style={[styles.input, focoEmail.focado && styles.focado]}
@@ -118,9 +120,9 @@ export default function Login() {
             inputMode="email"
             returnKeyType="next"
           />
-        </View>
+        </Animated.View>
 
-        <View style={styles.field}>
+        <Animated.View entering={entrada(2)} style={styles.field}>
           <Text style={styles.label}>Senha</Text>
           <View style={[styles.inputRow, focoSenha.focado && styles.focado]}>
             <TextInput
@@ -143,26 +145,28 @@ export default function Login() {
               <Text style={styles.inputAction}>{mostrarSenha ? 'Ocultar' : 'Mostrar'}</Text>
             </Pressable>
           </View>
-        </View>
+        </Animated.View>
 
-        <Pressable
-          onPress={entrar}
-          disabled={!podeEntrar}
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-            !podeEntrar && styles.buttonDisabled,
-          ]}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !podeEntrar, busy: entrando }}>
-          {entrando ? (
-            <ActivityIndicator color={color.text} />
-          ) : (
-            <Text style={styles.buttonLabel}>Entrar</Text>
-          )}
-        </Pressable>
+        {/* o apagado do desabilitado fica numa camada propria: a mola do
+            toque e a entrada mexem na opacidade das outras */}
+        <Animated.View entering={entrada(3)}>
+          <View style={!podeEntrar && styles.buttonDisabled}>
+            <Pressionavel
+              onPress={entrar}
+              disabled={!podeEntrar}
+              style={styles.button}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !podeEntrar, busy: entrando }}>
+              {entrando ? (
+                <ActivityIndicator color={color.text} />
+              ) : (
+                <Text style={styles.buttonLabel}>Entrar</Text>
+              )}
+            </Pressionavel>
+          </View>
+        </Animated.View>
 
-        <View style={styles.lembrar}>
+        <Animated.View entering={entrada(4)} style={styles.lembrar}>
           <View style={styles.lembrarTexto}>
             <Text style={styles.lembrarTitulo}>Lembrar este aparelho</Text>
             <Text style={styles.lembrarLegenda}>Não pede a senha de novo neste celular</Text>
@@ -173,7 +177,7 @@ export default function Login() {
             trackColor={{ true: color.primary, false: color.surface2 }}
             accessibilityLabel="Lembrar este aparelho"
           />
-        </View>
+        </Animated.View>
 
         {erro !== null ? <Text style={styles.erro}>{erro}</Text> : null}
 
@@ -255,7 +259,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  buttonPressed: { opacity: 0.85 },
   buttonDisabled: { opacity: 0.4 },
   erro: {
     ...type.small,

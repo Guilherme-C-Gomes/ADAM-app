@@ -1,7 +1,9 @@
 import { router } from 'expo-router'
 import { useState } from 'react'
+import Animated from 'react-native-reanimated'
 
 import { Aviso, Bloco, Botao, Busca, Grupo, Opcao, TelaForm } from '@/components/ui/form'
+import { entrada } from '@/components/ui/movimento'
 import { rascunhoEmprestar, useBiblioteca, useEscolhaDoRascunho } from '@/data/estudo'
 import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
@@ -37,25 +39,27 @@ export default function QuemLeva() {
 
       <Bloco>
         <Grupo>
-          {visiveis.map((c) => {
+          {visiveis.map((c, i) => {
             const livrosCom = comLivro(c.id)
+            // a cascata e da chegada da lista, nao de cada letra da busca
             return (
-              <Opcao
-                key={c.id}
-                titulo={c.nome}
-                iniciais={c.iniciais}
-                valor={c.turma}
-                selo={
-                  livrosCom
-                    ? {
-                        rotulo: `${livrosCom} ${livrosCom === 1 ? 'livro' : 'livros'} em casa`,
-                        tom: 'ambar',
-                      }
-                    : undefined
-                }
-                ativa={criancaId === c.id}
-                onPress={() => setCriancaId(c.id)}
-              />
+              <Animated.View key={c.id} entering={termo ? undefined : entrada(i, { base: 40 })}>
+                <Opcao
+                  titulo={c.nome}
+                  iniciais={c.iniciais}
+                  valor={c.turma}
+                  selo={
+                    livrosCom
+                      ? {
+                          rotulo: `${livrosCom} ${livrosCom === 1 ? 'livro' : 'livros'} em casa`,
+                          tom: 'ambar',
+                        }
+                      : undefined
+                  }
+                  ativa={criancaId === c.id}
+                  onPress={() => setCriancaId(c.id)}
+                />
+              </Animated.View>
             )
           })}
         </Grupo>

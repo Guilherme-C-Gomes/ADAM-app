@@ -261,7 +261,9 @@ export function Pressionavel({
         p.onPressOut()
         onPressOut?.(e)
       }}
-      style={[style, p.estilo]}
+      // desabilitado nao afunda nem anima a opacidade: assim o estilo de
+      // "desabilitado" da tela (opacidade 0.4) vale, em vez de ser coberto
+      style={props.disabled ? style : [style, p.estilo]}
     />
   )
 }

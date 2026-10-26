@@ -11,9 +11,12 @@ import {
   type ViewStyle,
 } from 'react-native'
 import Animated, {
+  FadeInLeft,
+  FadeInRight,
   ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withSequence,
   withSpring,
   withTiming,
@@ -568,9 +571,29 @@ export function SeletorPeriodo({
 const DIAS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
 
 /**
+ * Marca embaixo de um dia: so o tom (bolinha verde ou ambar) ou, na forma
+ * de objeto, o tom com as iniciais de quem esta escalado e o texto para o
+ * leitor de tela. Na forma de objeto o dia tambem ganha um fundo suave.
+ */
+export type MarcaDia =
+  'ok' | 'pendente' | { tom: 'ok' | 'pendente'; iniciais?: string[]; rotulo?: string }
+
+/** Medidas do calendario: o circulo do dia e a altura de cada semana. */
+const MIOLO = 34
+const LINHA = 42
+const LINHA_COM_INICIAIS = 60
+const topoDoMiolo = (altura: number) => (altura === LINHA ? (LINHA - MIOLO) / 2 : 2)
+
+/**
  * Calendario de um mes. Sem Intl: o Hermes do Expo Go nao tem os dados
  * de pt-BR, entao nome de mes e dia da semana saem de tabela propria.
  * `faixa` pinta um intervalo (filtros de periodo).
+ *
+ * Movimento: o mes novo entra deslizando do lado para onde se andou (com
+ * fade, expoOut); o circulo do dia escolhido anda ate o dia novo com mola;
+ * os dias marcados acendem em onda (25ms de um para o outro) quando o mes
+ * aparece e de novo sempre que `onda` muda. Hoje ganha um anel discreto.
+ * Com "reduzir movimento" ligado, tudo vai direto ao fim.
  */
 export function Calendario({
   ano,
@@ -579,6 +602,8 @@ export function Calendario({
   faixa,
   marcas,
   hoje,
+  onda,
+  comIniciais,
   onEscolher,
   onMudarMes,
 }: {
@@ -586,13 +611,22 @@ export function Calendario({
   mes: number
   selecionado?: number
   faixa?: { de: number; ate: number }
-  /** bolinha embaixo do dia: verde (tudo certo) ou ambar (falta algo) */
-  marcas?: Record<number, 'ok' | 'pendente'>
-  /** o dia de hoje neste mes, com contorno */
-  hoje?: number
-  onEscolher: (dia: number) => void
+  /** bolinha embaixo do dia: verde (tudo certo) ou ambar (falta algo); ou com iniciais */
+  marcas?: Record<number, MarcaDia>
+  /** o dia de hoje neste mes, com anel. Sem a prop, o calendario acha sozinho; null = nenhum */
+  hoje?: number | null
+  /** mudar este valor acende os dias marcados de novo, em onda */
+  onda?: string | number
+  /** reserva espaco embaixo de cada dia para as iniciais das marcas */
+  comIniciais?: boolean
+  /** sem ela, os dias so se veem (nao se tocam) */
+  onEscolher?: (dia: number) => void
   onMudarMes: (delta: number) => void
 }) {
+  // para que lado o mes andou: o novo entra vindo dali (0 = sem animar)
+  const [direcao, setDirecao] = useState(0)
+  const [largura, setLargura] = useState(0)
+
   const primeiro = new Date(ano, mes, 1).getDay()
   const total = new Date(ano, mes + 1, 0).getDate()
   const celulas: (number | null)[] = [
@@ -601,12 +635,44 @@ export function Calendario({
   ]
   while (celulas.length % 7) celulas.push(null)
 
+  const agora = new Date()
+  const diaDeHoje =
+    hoje !== undefined
+      ? hoje
+      : agora.getFullYear() === ano && agora.getMonth() === mes
+        ? agora.getDate()
+        : null
+  const altura = comIniciais ? LINHA_COM_INICIAIS : LINHA
+  // a ordem da onda: os dias marcados em ordem de data
+  const marcados = Object.keys(marcas ?? {})
+    .map(Number)
+    .filter((d) => d >= 1 && d <= total)
+    .sort((a, b) => a - b)
+  // com faixa, as pontas acendem cada uma no seu dia; sem faixa, um circulo so anda
+  const indiceEscolhido =
+    !faixa && selecionado !== undefined && selecionado >= 1 && selecionado <= total
+      ? primeiro + selecionado - 1
+      : null
+
+  const mudar = (delta: number) => {
+    setDirecao(delta)
+    onMudarMes(delta)
+  }
+  const deslize =
+    direcao === 0
+      ? undefined
+      : (direcao > 0 ? FadeInRight : FadeInLeft)
+          .withInitialValues({ opacity: 0, transform: [{ translateX: direcao > 0 ? 28 : -28 }] })
+          .duration(motion.medium)
+          .easing(motion.expoOut)
+          .reduceMotion(ReduceMotion.System)
+
   return (
     <View style={s.calendarioBloco}>
       <SeletorPeriodo
         rotulo={`${MESES[mes]} de ${ano}`}
-        onAnterior={() => onMudarMes(-1)}
-        onProximo={() => onMudarMes(1)}
+        onAnterior={() => mudar(-1)}
+        onProximo={() => mudar(1)}
       />
       <View style={s.calendario}>
         <View style={s.semana}>
@@ -616,63 +682,215 @@ export function Calendario({
             </Text>
           ))}
         </View>
-        {Array.from({ length: celulas.length / 7 }, (_, l) => (
-          <View key={l} style={s.semana}>
-            {celulas.slice(l * 7, l * 7 + 7).map((dia, i) => {
-              const ativo = dia !== null && dia === selecionado
-              const naFaixa = dia !== null && faixa && dia >= faixa.de && dia <= faixa.ate
-              const ponta = dia !== null && faixa && (dia === faixa.de || dia === faixa.ate)
-              const marca = dia !== null ? marcas?.[dia] : undefined
-              return (
-                <Pressable
-                  key={i}
-                  disabled={dia === null}
-                  onPress={() => dia !== null && onEscolher(dia)}
-                  style={[s.dia, naFaixa && s.diaFaixa]}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    dia
-                      ? `Dia ${dia}${marca === 'pendente' ? ', falta técnico' : marca === 'ok' ? ', tudo certo' : ''}`
-                      : undefined
-                  }
-                  accessibilityState={{ selected: ativo || !!ponta }}>
-                  <View style={[s.diaMiolo, dia !== null && dia === hoje && s.diaHoje]}>
-                    <FundoDia ativo={!!(ativo || ponta)} />
-                    <Text style={[s.diaTexto, (ativo || ponta) && s.diaTextoAtivo]}>
-                      {dia ?? ''}
-                    </Text>
-                  </View>
-                  {marca ? (
-                    <View
-                      style={[
-                        s.diaMarca,
-                        { backgroundColor: marca === 'ok' ? color.success : color.warn },
-                      ]}
-                    />
-                  ) : null}
-                </Pressable>
-              )
-            })}
-          </View>
-        ))}
+        <View style={s.calendarioJanela}>
+          <Animated.View
+            key={`${ano}-${mes}`}
+            entering={deslize}
+            style={s.calendarioGrade}
+            onLayout={(e) => setLargura(e.nativeEvent.layout.width)}>
+            {indiceEscolhido !== null && largura > 0 ? (
+              <PilulaDoDia indice={indiceEscolhido} largura={largura} altura={altura} />
+            ) : null}
+            {Array.from({ length: celulas.length / 7 }, (_, l) => (
+              <View key={l} style={s.semana}>
+                {celulas
+                  .slice(l * 7, l * 7 + 7)
+                  .map((dia, i) =>
+                    dia === null ? (
+                      <View key={i} style={[s.dia, { height: altura }]} />
+                    ) : (
+                      <DiaDoMes
+                        key={i}
+                        dia={dia}
+                        altura={altura}
+                        ativo={dia === selecionado}
+                        naFaixa={!!faixa && dia >= faixa.de && dia <= faixa.ate}
+                        ponta={!!faixa && (dia === faixa.de || dia === faixa.ate)}
+                        eHoje={dia === diaDeHoje}
+                        marca={marcas?.[dia]}
+                        ordem={marcados.indexOf(dia)}
+                        onda={onda}
+                        comIniciais={!!comIniciais}
+                        onEscolher={onEscolher}
+                      />
+                    ),
+                  )}
+              </View>
+            ))}
+          </Animated.View>
+        </View>
       </View>
     </View>
   )
 }
 
-/**
- * O circulo roxo do dia escolhido. Quando a escolha muda, ele cresce no
- * dia novo passando um pouco do ponto (backOut); o antigo some rapido.
- */
-function FundoDia({ ativo }: { ativo: boolean }) {
-  const aceso = useSharedValue(ativo ? 1 : 0)
-  const primeiro = useRef(true)
+/** Um dia do calendario. As marcas acendem em onda: escala + fade, na vez do dia. */
+function DiaDoMes({
+  dia,
+  altura,
+  ativo,
+  naFaixa,
+  ponta,
+  eHoje,
+  marca,
+  ordem,
+  onda,
+  comIniciais,
+  onEscolher,
+}: {
+  dia: number
+  altura: number
+  ativo: boolean
+  naFaixa: boolean
+  ponta: boolean
+  eHoje: boolean
+  marca: MarcaDia | undefined
+  ordem: number
+  onda: string | number | undefined
+  comIniciais: boolean
+  onEscolher?: (dia: number) => void
+}) {
+  const luz = useSharedValue(0)
+  const temMarca = !!marca
 
   useEffect(() => {
-    if (primeiro.current) {
-      primeiro.current = false
-      return
-    }
+    if (!temMarca) return
+    luz.set(
+      withSequence(
+        withTiming(0, { duration: 0 }),
+        withDelay(
+          Math.max(0, ordem) * motion.stagger,
+          withTiming(1, {
+            duration: motion.medium,
+            easing: motion.expoOut,
+            reduceMotion: ReduceMotion.System,
+          }),
+          ReduceMotion.System,
+        ),
+      ),
+    )
+  }, [temMarca, ordem, onda, luz])
+
+  const brilho = useAnimatedStyle(() => ({
+    opacity: luz.get(),
+    transform: [{ scale: 0.6 + 0.4 * luz.get() }],
+  }))
+
+  const tom = typeof marca === 'object' ? marca.tom : marca
+  const iniciais = typeof marca === 'object' ? (marca.iniciais ?? []) : []
+  const rotulo =
+    typeof marca === 'object' && marca.rotulo
+      ? `, ${marca.rotulo}`
+      : tom === 'pendente'
+        ? ', falta técnico'
+        : tom === 'ok'
+          ? ', tudo certo'
+          : ''
+  const corTom = tom === 'pendente' ? color.warn : color.success
+  const destaque = ativo || ponta
+
+  return (
+    <Pressable
+      disabled={!onEscolher}
+      onPress={() => onEscolher?.(dia)}
+      style={[s.dia, { height: altura, paddingTop: topoDoMiolo(altura) }, naFaixa && s.diaFaixa]}
+      accessibilityRole={onEscolher ? 'button' : 'text'}
+      accessibilityLabel={`Dia ${dia}${eHoje ? ', hoje' : ''}${rotulo}`}
+      accessibilityState={{ selected: destaque }}>
+      <View style={[s.diaMiolo, eHoje && s.diaHoje]}>
+        {typeof marca === 'object' ? (
+          <Animated.View
+            pointerEvents="none"
+            style={[s.diaTinta, tom === 'pendente' ? s.diaTintaAmbar : s.diaTintaVerde, brilho]}
+          />
+        ) : null}
+        {ponta ? <FundoDia ativo /> : null}
+        <Text style={[s.diaTexto, destaque && s.diaTextoAtivo]}>{dia}</Text>
+      </View>
+      {tom && comIniciais && typeof marca === 'object' ? (
+        <Animated.View style={[s.diaIniciais, brilho]} pointerEvents="none">
+          {iniciais.length ? (
+            <>
+              {iniciais.slice(0, iniciais.length > 2 ? 1 : 2).map((ini, k) => (
+                <View
+                  key={k}
+                  style={[s.diaInicial, k > 0 && s.diaInicialJunta, { borderColor: corTom }]}>
+                  <Text style={s.diaInicialTexto}>{ini.slice(0, 2)}</Text>
+                </View>
+              ))}
+              {iniciais.length > 2 ? (
+                <Text style={s.diaInicialMais}>+{iniciais.length - 1}</Text>
+              ) : null}
+            </>
+          ) : (
+            <View style={[s.diaInicial, s.diaInicialVazia]}>
+              <Text style={[s.diaInicialTexto, { color: color.warn }]}>?</Text>
+            </View>
+          )}
+        </Animated.View>
+      ) : tom ? (
+        <Animated.View style={[s.diaMarca, { backgroundColor: corTom }, brilho]} />
+      ) : null}
+    </Pressable>
+  )
+}
+
+/**
+ * O circulo roxo do dia escolhido: um so, que anda de um dia para o outro
+ * com mola (translateX/Y, thread de UI). Quando aparece, cresce no lugar
+ * passando um pouco do ponto (backOut).
+ */
+function PilulaDoDia({
+  indice,
+  largura,
+  altura,
+}: {
+  indice: number
+  largura: number
+  altura: number
+}) {
+  const celula = largura / 7
+  const alvoX = (indice % 7) * celula + (celula - MIOLO) / 2
+  const alvoY = Math.floor(indice / 7) * (altura + space.xs) + topoDoMiolo(altura)
+  const x = useSharedValue(alvoX)
+  const y = useSharedValue(alvoY)
+  const aceso = useSharedValue(0)
+
+  useEffect(() => {
+    x.set(withSpring(alvoX, molaDeslize))
+    y.set(withSpring(alvoY, molaDeslize))
+  }, [alvoX, alvoY, x, y])
+
+  useEffect(() => {
+    aceso.set(
+      withTiming(1, {
+        duration: motion.medium,
+        easing: motion.backOut,
+        reduceMotion: ReduceMotion.System,
+      }),
+    )
+  }, [aceso])
+
+  const estilo = useAnimatedStyle(() => ({
+    opacity: Math.min(1, Math.max(0, aceso.get() * 2)),
+    transform: [
+      { translateX: x.get() },
+      { translateY: y.get() },
+      { scale: 0.5 + 0.5 * aceso.get() },
+    ],
+  }))
+
+  return <Animated.View pointerEvents="none" style={[s.pilulaDia, estilo]} />
+}
+
+/**
+ * O circulo roxo das pontas de uma faixa. Quando a ponta muda, ele cresce
+ * no dia novo passando um pouco do ponto (backOut).
+ */
+function FundoDia({ ativo }: { ativo: boolean }) {
+  const aceso = useSharedValue(0)
+
+  useEffect(() => {
     aceso.set(
       ativo
         ? withTiming(1, {
@@ -922,6 +1140,9 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.border,
   },
+  // a janela corta o mes que entra deslizando; a grade e a medida da pilula
+  calendarioJanela: { overflow: 'hidden' },
+  calendarioGrade: { gap: space.xs },
   semana: { flexDirection: 'row' },
   diaSemana: {
     flex: 1,
@@ -931,12 +1152,12 @@ const s = StyleSheet.create({
     color: color.faint,
     paddingVertical: space.xs,
   },
-  dia: { flex: 1, height: 42, alignItems: 'center', justifyContent: 'center' },
+  dia: { flex: 1, alignItems: 'center' },
   diaFaixa: { backgroundColor: color.primaryDk },
   diaMiolo: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: MIOLO,
+    height: MIOLO,
+    borderRadius: MIOLO / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -946,11 +1167,65 @@ const s = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    borderRadius: 17,
+    borderRadius: MIOLO / 2,
     backgroundColor: onDark.fill,
+  },
+  pilulaDia: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: MIOLO,
+    height: MIOLO,
+    borderRadius: MIOLO / 2,
+    backgroundColor: onDark.fill,
+  },
+  diaTinta: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderRadius: MIOLO / 2,
+  },
+  diaTintaVerde: { backgroundColor: 'rgba(61, 214, 140, 0.16)' },
+  diaTintaAmbar: {
+    backgroundColor: 'rgba(245, 165, 36, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 165, 36, 0.6)',
   },
   diaTexto: { ...type.small, fontFamily: 'Inter_400Regular', color: color.text },
   diaTextoAtivo: { fontFamily: 'Inter_700Bold' },
-  diaHoje: { borderWidth: 1, borderColor: color.primaryLt },
+  // anel discreto do dia de hoje
+  diaHoje: { borderWidth: 1.5, borderColor: 'rgba(194, 75, 238, 0.55)' },
   diaMarca: { position: 'absolute', bottom: 1, width: 5, height: 5, borderRadius: 3 },
+  diaIniciais: {
+    marginTop: 3,
+    height: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  diaInicial: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color.surface2,
+    borderWidth: 1,
+  },
+  diaInicialJunta: { marginLeft: -5 },
+  diaInicialVazia: { borderColor: color.warn, borderStyle: 'dashed' },
+  diaInicialTexto: {
+    fontSize: 8,
+    lineHeight: 10,
+    fontFamily: 'Inter_700Bold',
+    color: color.text,
+  },
+  diaInicialMais: {
+    marginLeft: 1,
+    fontSize: 9,
+    fontFamily: 'Inter_600SemiBold',
+    color: color.muted,
+  },
 })

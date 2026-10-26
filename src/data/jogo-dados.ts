@@ -1087,6 +1087,8 @@ export type TreinoDoMes = {
   unidadeId: string
   turma: Turma
   responsavelId: string | null
+  /** quem mais esta escalado (treino_comissao), alem do responsavel */
+  comissao: string[]
 }
 
 /** Os treinos de um mes inteiro (passado ou futuro), para o calendario. */
@@ -1105,7 +1107,7 @@ export function useTreinosDoMes(ano: number, mes: number) {
       const linhas = await todasAsLinhas<Record<string, unknown>>((de, ate) =>
         supabase
           .from('treinos')
-          .select('id, data, hora, unidade_id, turma, responsavel_id')
+          .select('id, data, hora, unidade_id, turma, responsavel_id, treino_comissao(usuario_id)')
           .gte('data', inicio)
           .lte('data', fim)
           .order('data')
@@ -1121,6 +1123,9 @@ export function useTreinosDoMes(ano: number, mes: number) {
           unidadeId: t.unidade_id as string,
           turma: t.turma as Turma,
           responsavelId: (t.responsavel_id as string | null) ?? null,
+          comissao: ((t.treino_comissao as { usuario_id: string }[] | null) ?? []).map(
+            (c) => c.usuario_id,
+          ),
         })),
         erro: null,
         de: chave,
@@ -1159,6 +1164,11 @@ export type HorarioDoDia = {
   unidadeId: string
   treinoId: string | null
   responsavelId: string | null
+  comissao: string[]
+  /** o horario existe na escala da semana (senao, e um treino so daquela data) */
+  daSemana: boolean
+  /** o tecnico que a escala da semana poe nesse horario */
+  tecnicoDaSemana: string | null
 }
 
 export function horariosDoDia(
@@ -1168,22 +1178,29 @@ export function horariosDoDia(
 ): HorarioDoDia[] {
   const doDia = treinos.filter((t) => t.data === data)
   const semana = deISO(data).getDay()
-  const fixos = escala
-    .filter((l) => l.diaSemana === semana)
-    .filter(
-      (l) =>
-        !doDia.some((t) => t.unidadeId === l.unidadeId && t.hora === l.hora && t.turma === l.turma),
-    )
+  const daSemana = escala.filter((l) => l.diaSemana === semana)
+  const linhaDe = (unidadeId: string, hora: string, turma: Turma) =>
+    daSemana.find((l) => l.unidadeId === unidadeId && l.hora === hora && l.turma === turma)
+  const fixos = daSemana.filter(
+    (l) =>
+      !doDia.some((t) => t.unidadeId === l.unidadeId && t.hora === l.hora && t.turma === l.turma),
+  )
   return [
-    ...doDia.map((t) => ({
-      chave: t.id,
-      data,
-      hora: t.hora,
-      turma: t.turma,
-      unidadeId: t.unidadeId,
-      treinoId: t.id,
-      responsavelId: t.responsavelId,
-    })),
+    ...doDia.map((t) => {
+      const linha = linhaDe(t.unidadeId, t.hora, t.turma)
+      return {
+        chave: t.id,
+        data,
+        hora: t.hora,
+        turma: t.turma,
+        unidadeId: t.unidadeId,
+        treinoId: t.id,
+        responsavelId: t.responsavelId,
+        comissao: t.comissao,
+        daSemana: !!linha,
+        tecnicoDaSemana: linha?.tecnicoId ?? null,
+      }
+    }),
     ...fixos.map((l) => ({
       chave: `escala-${l.id}`,
       data,
@@ -1192,6 +1209,9 @@ export function horariosDoDia(
       unidadeId: l.unidadeId,
       treinoId: null,
       responsavelId: l.tecnicoId,
+      comissao: [],
+      daSemana: true,
+      tecnicoDaSemana: l.tecnicoId,
     })),
   ].sort((a, b) => a.hora.localeCompare(b.hora) || a.turma.localeCompare(b.turma))
 }
@@ -1213,10 +1233,70 @@ export function marcasDoMes(
   return marcas
 }
 
+/** Um dia de treino no calendario: o tom e as iniciais de quem esta escalado. */
+export type DiaDaEscala = { tom: 'ok' | 'pendente'; iniciais: string[]; rotulo: string }
+
+/**
+ * Os dias de treino do mes (escala da semana + treinos marcados), com as
+ * iniciais do responsavel e da comissao de cada um. Ambar quando algum
+ * horario do dia esta sem tecnico. `unidadeId` null = todas as unidades.
+ */
+export function diasDoMes(
+  ano: number,
+  mes: number,
+  escala: LinhaEscala[],
+  treinos: TreinoDoMes[],
+  equipe: PessoaEquipe[],
+  unidadeId: string | null,
+) {
+  const daEscala = unidadeId ? escala.filter((l) => l.unidadeId === unidadeId) : escala
+  const dosTreinos = unidadeId ? treinos.filter((t) => t.unidadeId === unidadeId) : treinos
+  const marcas: Record<number, DiaDaEscala> = {}
+  const dias = new Date(ano, mes + 1, 0).getDate()
+  for (let dia = 1; dia <= dias; dia++) {
+    const horarios = horariosDoDia(paraISO(new Date(ano, mes, dia)), daEscala, dosTreinos)
+    if (!horarios.length) continue
+    const pessoas = horarios
+      .flatMap((h) => [h.responsavelId, ...h.comissao])
+      .filter((id, i, todos): id is string => !!id && todos.indexOf(id) === i)
+    const nomes = pessoas.map((id) => equipe.find((p) => p.id === id))
+    const completo = horarios.every((h) => h.responsavelId)
+    const treinosRotulo = `${horarios.length} ${horarios.length === 1 ? 'treino' : 'treinos'}`
+    marcas[dia] = {
+      tom: completo ? 'ok' : 'pendente',
+      iniciais: nomes.map((p) => p?.iniciais ?? '?'),
+      rotulo: `${treinosRotulo}, ${
+        nomes.length ? `com ${nomes.map((p) => p?.nome ?? 'alguém').join(', ')}` : 'sem ninguém'
+      }${completo ? '' : ', falta técnico'}`,
+    }
+  }
+  return marcas
+}
+
+/** Garante o treino da data (cria a partir do horario fixo) e devolve o id. */
+async function treinoDoHorario(horario: HorarioDoDia) {
+  if (horario.treinoId) return horario.treinoId
+  const { data, error } = await supabase
+    .from('treinos')
+    .insert({
+      data: horario.data,
+      hora: horario.hora,
+      unidade_id: horario.unidadeId,
+      turma: horario.turma,
+      responsavel_id: horario.responsavelId,
+    })
+    .select('id')
+    .single()
+  if (error || !data) {
+    throw new Error(semTabela(error) ? FALTA_SQL_JOGO : 'Não foi possível marcar o treino do dia.')
+  }
+  return data.id as string
+}
+
 /**
  * O tecnico daquele dia. Treino marcado: troca o responsavel. Horario fixo
  * da escala: cria o treino do dia ja com o responsavel (os exercicios vem
- * depois, no "Planejar treino").
+ * depois, no "Planejar treino"). A escala da semana nao muda.
  */
 export async function definirTecnicoDoDia(horario: HorarioDoDia, tecnicoId: string | null) {
   const { error } = horario.treinoId
@@ -1233,4 +1313,151 @@ export async function definirTecnicoDoDia(horario: HorarioDoDia, tecnicoId: stri
       })
   if (error) throw new Error('Não foi possível salvar o técnico do dia.')
   await carregarJogo()
+}
+
+/**
+ * Quem mais vai naquele treino (a comissao, sem o responsavel). Horario
+ * fixo ainda sem treino: cria o treino do dia primeiro.
+ */
+export async function definirComissaoDoDia(horario: HorarioDoDia, usuarioIds: string[]) {
+  const id = await treinoDoHorario(horario)
+  const ok = await trocarLigacoes(
+    'treino_comissao',
+    'treino_id',
+    id,
+    'usuario_id',
+    usuarioIds
+      .filter((u) => u !== horario.responsavelId)
+      .map((usuario_id) => ({ treino_id: id, usuario_id })),
+  )
+  await carregarJogo()
+  if (!ok) throw new Error('Não foi possível salvar quem vai no treino.')
+}
+
+/** Um treino so naquela data (fora da escala da semana). */
+export async function adicionarTreinoNaData(dados: {
+  data: string
+  hora: string
+  unidadeId: string
+  turma: Turma
+  responsavelId: string | null
+}) {
+  const { data: iguais, error: erroLeitura } = await supabase
+    .from('treinos')
+    .select('id')
+    .eq('data', dados.data)
+    .eq('hora', dados.hora)
+    .eq('unidade_id', dados.unidadeId)
+    .eq('turma', dados.turma)
+    .limit(1)
+  if (erroLeitura) {
+    throw new Error(semTabela(erroLeitura) ? FALTA_SQL_JOGO : 'Não foi possível criar o treino.')
+  }
+  if (iguais?.length) throw new Error('Esse treino já está marcado nesta data.')
+  const { error } = await supabase.from('treinos').insert({
+    data: dados.data,
+    hora: dados.hora,
+    unidade_id: dados.unidadeId,
+    turma: dados.turma,
+    responsavel_id: dados.responsavelId,
+  })
+  if (error) throw new Error(semTabela(error) ? FALTA_SQL_JOGO : 'Não foi possível criar o treino.')
+  await carregarJogo()
+}
+
+/** A semana de uma turma: em que dias, a que horas e com quem. */
+export type Semana = {
+  unidadeId: string
+  turma: Turma
+  dias: number[]
+  hora: string
+  /** undefined mantem o tecnico de cada dia */
+  tecnicoId: string | null | undefined
+}
+
+/**
+ * O que mudar na escala para a turma treinar em `dias`, sempre em `hora`.
+ * Sem ir ao banco: a tela usa para avisar o que sai antes de salvar.
+ */
+export function planoDaSemana(escala: LinhaEscala[], p: Semana) {
+  const atuais = escala.filter((l) => l.unidadeId === p.unidadeId && l.turma === p.turma)
+  const ficam = atuais.filter((l) => p.dias.includes(l.diaSemana) && l.hora === p.hora)
+  const saem = atuais.filter((l) => !ficam.includes(l))
+  const entram = p.dias
+    .filter((d) => !ficam.some((l) => l.diaSemana === d))
+    .map((d) => ({
+      diaSemana: d,
+      // mudou so a hora: o dia continua com o tecnico que tinha
+      tecnicoId:
+        p.tecnicoId !== undefined
+          ? p.tecnicoId
+          : (saem.find((l) => l.diaSemana === d)?.tecnicoId ?? null),
+    }))
+  const trocam = p.tecnicoId === undefined ? [] : ficam.filter((l) => l.tecnicoId !== p.tecnicoId)
+  return { entram, trocam, saem }
+}
+
+/**
+ * Grava a semana de uma turma (planoDaSemana). Primeiro entram os dias
+ * novos e trocam os tecnicos, so depois saem os dias tirados: se algo
+ * falhar no meio, a turma nunca fica sem treino. Tirar dia e da
+ * administracao do Jogo (o banco confere: administra_jogo()). Os treinos
+ * ja marcados nas datas continuam.
+ */
+export async function salvarSemana(p: Semana) {
+  const { entram, trocam, saem } = planoDaSemana(memoria.ler().escala, p)
+  try {
+    if (entram.length) {
+      const { error } = await supabase.from('escala').insert(
+        entram.map((e) => ({
+          unidade_id: p.unidadeId,
+          dia_semana: e.diaSemana,
+          hora: p.hora,
+          turma: p.turma,
+          tecnico_id: e.tecnicoId,
+        })),
+      )
+      if (error) {
+        throw new Error(
+          error.code === '23505'
+            ? 'Alguém mudou a escala agora há pouco. Confira e salve de novo.'
+            : semTabela(error)
+              ? FALTA_SQL_JOGO
+              : 'Não foi possível salvar os dias de treino.',
+        )
+      }
+    }
+    if (trocam.length) {
+      const { error } = await supabase
+        .from('escala')
+        .update({ tecnico_id: p.tecnicoId ?? null })
+        .in(
+          'id',
+          trocam.map((l) => l.id),
+        )
+      if (error) throw new Error('Os dias foram salvos, mas o técnico não. Tente de novo.')
+    }
+    if (saem.length) {
+      const { error, count } = await supabase
+        .from('escala')
+        .delete({ count: 'exact' })
+        .in(
+          'id',
+          saem.map((l) => l.id),
+        )
+      if (error) {
+        throw new Error(
+          error.code === '42501'
+            ? SO_COORDENACAO_JOGO
+            : 'Não foi possível tirar os dias da escala.',
+        )
+      }
+      // RLS nao da erro, so nao apaga
+      if ((count ?? 0) < saem.length) {
+        throw new Error('Só a coordenação do Jogo pode tirar dias da escala.')
+      }
+    }
+  } finally {
+    await carregarJogo()
+  }
 }

@@ -1,12 +1,13 @@
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Card, Chip, Overline } from '@/components/ui'
 import { Aviso, Botao, Link, Selo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { entrada, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { HeroSetor } from '@/components/ui/setor'
 import {
   encerradaSozinha,
@@ -42,7 +43,7 @@ import {
   useFilaChamada,
 } from '@/data/chamada-offline'
 import { sessao, usePerfil } from '@/data/perfis'
-import { color, motion, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
+import { color, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Tela 18. A aba Chamada: as turmas do dia, uma embaixo da outra. O dia vem
@@ -265,16 +266,17 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
               {ficaramAbertas.length} {ficaramAbertas.length === 1 ? 'chamada' : 'chamadas'}
             </Text>
           </View>
-          {ficaramAbertas.map((c) => (
-            <CardAberta
-              key={c.id}
-              chamada={c}
-              unidade={unidade}
-              total={daTurma(c.turma).length}
-              marcadas={marcadasNaLista(c, daTurma(c.turma))}
-              eu={eu}
-              equipe={equipe}
-            />
+          {ficaramAbertas.map((c, i) => (
+            <Animated.View key={c.id} entering={entrada(i)}>
+              <CardAberta
+                chamada={c}
+                unidade={unidade}
+                total={daTurma(c.turma).length}
+                marcadas={marcadasNaLista(c, daTurma(c.turma))}
+                eu={eu}
+                equipe={equipe}
+              />
+            </Animated.View>
           ))}
         </>
       ) : null}
@@ -282,9 +284,10 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
       <View style={st.linhaTopo}>
         <Overline>Chamadas de hoje</Overline>
         {doDia.length ? (
-          <Text style={st.contagem}>
-            {encerradas} de {doDia.length} encerradas
-          </Text>
+          <View style={st.numeroLinha}>
+            <NumeroAnimado valor={encerradas} style={st.contagem} />
+            <Text style={st.contagem}> de {doDia.length} encerradas</Text>
+          </View>
         ) : null}
       </View>
 
@@ -312,7 +315,7 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
       ) : null}
 
       {doDia.map(({ turma, hora }, i) => (
-        <Animated.View key={turma} entering={FadeInDown.duration(motion.medium).delay(i * 40)}>
+        <Animated.View key={turma} entering={entrada(ficaramAbertas.length + i)}>
           <CardTurma
             turma={turma}
             hora={hora}
@@ -327,7 +330,7 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
       ))}
 
       {doDia.length ? (
-        <Animated.View entering={FadeInDown.duration(motion.medium).delay(80)}>
+        <Animated.View entering={entrada(ficaramAbertas.length + doDia.length)}>
           <Aviso
             titulo="Mais de uma pessoa pode marcar"
             texto="Cada marca aparece na hora para os outros. Qualquer um encerra, e a chamada sobe uma vez só."
@@ -409,10 +412,11 @@ function CardTurma({
 
   return (
     <Card style={st.card}>
-      <Pressable
+      <Pressionavel
         onPress={abrir}
         disabled={abrindo}
-        style={({ pressed }) => [st.porta, pressed && st.pressed]}
+        escala={0.98}
+        style={st.porta}
         accessibilityRole="button"
         accessibilityLabel={`Chamada dos ${nome}, ${estado.rotulo}`}>
         <View style={st.cabecalho}>
@@ -443,9 +447,10 @@ function CardTurma({
               </View>
               {chamada.estado === 'encerrada' ? (
                 <View style={st.texto}>
-                  <Text style={st.forte}>
-                    {marcadas} de {total} presentes
-                  </Text>
+                  <View style={st.numeroLinha}>
+                    <NumeroAnimado valor={marcadas} style={st.forte} />
+                    <Text style={st.forte}> de {total} presentes</Text>
+                  </View>
                   <Text style={st.legendaPequena}>
                     {encerradaSozinha(chamada)
                       ? 'Encerrada automaticamente'
@@ -461,15 +466,16 @@ function CardTurma({
                     {capitalizar(juntos(chamada.participantes, eu, equipe))}{' '}
                     {chamada.participantes.length > 1 ? 'estão' : 'está'} marcando
                   </Text>
-                  <Text style={st.legendaPequena}>
-                    {marcadas} de {total} marcadas até agora
-                  </Text>
+                  <View style={st.numeroLinha}>
+                    <NumeroAnimado valor={marcadas} style={st.legendaPequena} />
+                    <Text style={st.legendaPequena}> de {total} marcadas até agora</Text>
+                  </View>
                 </View>
               )}
             </View>
           </>
         ) : null}
-      </Pressable>
+      </Pressionavel>
 
       {estadoChave === 'afazer' ? (
         <Botao rotulo="Começar chamada" onPress={abrir} desabilitado={abrindo} />
@@ -510,9 +516,10 @@ function CardAberta({
 
   return (
     <Card style={st.card}>
-      <Pressable
+      <Pressionavel
         onPress={abrir}
-        style={({ pressed }) => [st.porta, pressed && st.pressed]}
+        escala={0.98}
+        style={st.porta}
         accessibilityRole="button"
         accessibilityLabel={`Chamada dos ${nome} de ${diaPorExtenso(chamada.data)}, ainda aberta`}>
         <View style={st.cabecalho}>
@@ -527,9 +534,10 @@ function CardAberta({
         </View>
         <View style={st.divisoria} />
         <View style={st.texto}>
-          <Text style={st.forte}>
-            {marcadas} de {total} marcadas
-          </Text>
+          <View style={st.numeroLinha}>
+            <NumeroAnimado valor={marcadas} style={st.forte} />
+            <Text style={st.forte}> de {total} marcadas</Text>
+          </View>
           <Text style={st.legendaPequena}>
             {chamada.participantes.length
               ? `${capitalizar(juntos(chamada.participantes, eu, equipe))} ${chamada.participantes.length > 1 ? 'estavam' : 'estava'} marcando. `
@@ -537,7 +545,7 @@ function CardAberta({
             Não foi encerrada, então ainda não conta nas métricas.
           </Text>
         </View>
-      </Pressable>
+      </Pressionavel>
       {euMarcando ? <Botao rotulo="Abrir para encerrar" onPress={abrir} /> : null}
     </Card>
   )
@@ -571,7 +579,8 @@ const st = StyleSheet.create({
   chips: { flexDirection: 'row', gap: space.sm },
   linhaTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   contagem: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.primaryCh },
-  pressed: { opacity: 0.85 },
+  // numero que conta (NumeroAnimado) seguido do resto da frase
+  numeroLinha: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline' },
   erro: { ...type.small, fontFamily: 'Inter_400Regular', color: color.danger },
 
   card: { gap: space.md },

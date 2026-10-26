@@ -1,19 +1,11 @@
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { Avatar, Chip } from '@/components/ui'
-import {
-  Aviso,
-  Bloco,
-  Botao,
-  Busca,
-  Grupo,
-  Linha,
-  Marca,
-  Rotulo,
-  TelaForm,
-} from '@/components/ui/form'
+import { Aviso, Bloco, Botao, Busca, Grupo, Linha, Marca, TelaForm } from '@/components/ui/form'
+import { entrada, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import {
   correcaoIncompleta,
   desmarcar,
@@ -49,7 +41,7 @@ import { pedirConfirmacao } from '@/components/ui/confirmacao'
 import { mostrarRecado } from '@/components/ui/recado'
 import { sessao, usePerfil } from '@/data/perfis'
 import { iniciaisDe } from '@/data/jogo'
-import { color, space, target, type } from '@/theme/tokens'
+import { color, onDark, space, target, type } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
 
 /**
@@ -353,22 +345,35 @@ export default function ListaDaChamada() {
       </Bloco>
 
       <Bloco ordem={1}>
-        <Rotulo extra={`${marcadas} de ${daTurma.length} ${corrigindo ? 'presentes' : 'marcadas'}`}>
-          {turma}
-        </Rotulo>
+        {/* o rotulo da secao com o contador que conta e acende a cada marca */}
+        <View style={st.rotuloLinha}>
+          <Text style={st.rotulo}>{turma}</Text>
+          <View style={st.contador}>
+            <NumeroAnimado valor={marcadas} style={st.rotuloExtra} />
+            <Text style={st.rotuloExtra}>
+              {' '}
+              de {daTurma.length} {corrigindo ? 'presentes' : 'marcadas'}
+            </Text>
+          </View>
+        </View>
         <Grupo>
           {visiveis.length ? (
-            visiveis.map((k) => (
-              <LinhaCrianca
+            visiveis.map((k, i) => (
+              // cascata so na lista inteira: com busca ou filtro, quem volta
+              // a aparecer entra parado (nada de animar a cada letra)
+              <Animated.View
                 key={k.id}
-                id={k.id}
-                nome={k.nome}
-                idade={k.idade}
-                marcadoPor={
-                  marcas[k.id] ? (equipe[marcas[k.id]] ?? { nome: '', iniciais: '·' }) : null
-                }
-                onTocar={tocar}
-              />
+                entering={termo || filtro !== 'Todos' ? undefined : entrada(i, { base: 50 })}>
+                <LinhaCrianca
+                  id={k.id}
+                  nome={k.nome}
+                  idade={k.idade}
+                  marcadoPor={
+                    marcas[k.id] ? (equipe[marcas[k.id]] ?? { nome: '', iniciais: '·' }) : null
+                  }
+                  onTocar={tocar}
+                />
+              </Animated.View>
             ))
           ) : (
             <Text style={st.vazio}>
@@ -443,9 +448,11 @@ function LinhaCrianca({
   onTocar: (id: string) => void
 }) {
   return (
-    <Pressable
+    <Pressionavel
       onPress={() => onTocar(id)}
-      style={({ pressed }) => [st.linha, pressed && st.pressed]}
+      escala={0.98}
+      opacidade={0.7}
+      style={st.linha}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: !!marcadoPor }}
       accessibilityLabel={marcadoPor ? `${nome}, marcado por ${marcadoPor.nome}` : nome}>
@@ -460,7 +467,7 @@ function LinhaCrianca({
         </View>
       ) : null}
       <Text style={st.idade}>{idade} anos</Text>
-    </Pressable>
+    </Pressionavel>
   )
 }
 
@@ -473,7 +480,17 @@ const st = StyleSheet.create({
     gap: space.md,
     paddingVertical: space.sm,
   },
-  pressed: { opacity: 0.7 },
+  // o mesmo desenho do Rotulo do form, com o numero animado
+  rotuloLinha: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  rotulo: {
+    ...type.caption,
+    fontFamily: 'Inter_600SemiBold',
+    color: color.faint,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  contador: { flexDirection: 'row', alignItems: 'baseline' },
+  rotuloExtra: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: onDark.text },
   nome: { flex: 1, ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   idade: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
   por: {

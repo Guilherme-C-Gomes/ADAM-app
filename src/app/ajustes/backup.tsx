@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { ActivityIndicator } from 'react-native'
+import Animated from 'react-native-reanimated'
 
 import { Aviso, Bloco, Botao, Grupo, Linha, Rotulo, TelaForm } from '@/components/ui/form'
+import { entrada } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import {
   avisoDeAtraso,
@@ -155,15 +157,16 @@ export default function CopiaDeSeguranca() {
         <Bloco ordem={1}>
           <Rotulo>Últimas cópias</Rotulo>
           <Grupo>
-            {lista.map((b) => (
-              <Linha
-                key={b.id}
-                titulo={`${quando(b.feitoEm)} · ${b.origem === 'agendado' ? 'automática' : 'pedida no app'}`}
-                legenda={legenda(b)}
-                legendaTom={b.ok ? undefined : 'ambar'}
-                selo={b.ok ? { rotulo: 'ok', tom: 'verde' } : { rotulo: 'falhou', tom: 'ambar' }}
-                semSeta
-              />
+            {lista.map((b, i) => (
+              <Animated.View key={b.id} entering={entrada(i, { base: 50 })}>
+                <Linha
+                  titulo={`${quando(b.feitoEm)} · ${b.origem === 'agendado' ? 'automática' : 'pedida no app'}`}
+                  legenda={legenda(b)}
+                  legendaTom={b.ok ? undefined : 'ambar'}
+                  selo={b.ok ? { rotulo: 'ok', tom: 'verde' } : { rotulo: 'falhou', tom: 'ambar' }}
+                  semSeta
+                />
+              </Animated.View>
             ))}
           </Grupo>
         </Bloco>
