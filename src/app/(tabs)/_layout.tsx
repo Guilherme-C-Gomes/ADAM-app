@@ -27,6 +27,9 @@ export default function TabsLayout() {
         screenOptions={{
           headerShown: false,
           sceneStyle: { backgroundColor: color.bg },
+          // trocar de menu e voltar: o setor abre do comeco, nao na tela
+          // em que a pessoa tinha parado
+          popToTopOnBlur: true,
         }}>
         <Tabs.Screen name="chamada" />
         <Tabs.Protected guard={veDadosSensiveis}>
