@@ -1,45 +1,68 @@
-import * as Print from 'expo-print'
-import * as Sharing from 'expo-sharing'
 import { router } from 'expo-router'
+import { useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
 import { Barra } from '@/components/ui'
-import { Bloco, Botao, Grupo, Linha, Rotulo, TelaForm } from '@/components/ui/form'
+import { Aviso, Bloco, Botao, Grupo, Linha, Rotulo, TelaForm } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { mostrarRecado } from '@/components/ui/recado'
 import { useUnidades } from '@/data/chamada'
-import { DOCUMENTOS } from '@/data/fichas'
+import { DOCUMENTOS, novaFicha, salvarFicha } from '@/data/fichas'
 import { rascunhoFicha } from '@/data/rascunhos'
+import { voltar } from '@/lib/navegacao'
 import { color, radius, space, type } from '@/theme/tokens'
 
 /**
  * Tela 17f. O que falta fica visivel em ambar: documento pendente nao
  * impede a crianca de treinar, mas a Secretaria precisa ver o buraco.
+ *
+ * "Salvar" grava a ficha inteira daqui mesmo, com documentos e responsaveis
+ * faltando: o que falta fica pendente e entra depois, editando a ficha.
  */
 export default function Documentos() {
   const ficha = rascunhoFicha.useValor()
   const unidades = useUnidades()
-  const unidade = unidades.dados.find((u) => u.id === ficha.unidadeId)?.nome ?? ''
+  const [salvando, setSalvando] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
   const entregues = ficha.documentos.length
   const total = DOCUMENTOS.length
   const faltam = total - entregues
 
-  const exportar = async () => {
-    const linhas = DOCUMENTOS.map(
-      (d, i) => `<li>${d.nome} — ${ficha.documentos.includes(i) ? 'entregue' : 'pendente'}</li>`,
-    ).join('')
-    const html = `<html><body style="font-family:sans-serif;padding:32px">
-      <h2>Ficha · ${ficha.nome || 'criança'}</h2>
-      <p>${unidade} · ${entregues} de ${total} documentos</p>
-      <ul>${linhas}</ul></body></html>`
-    const { uri } = await Print.printToFileAsync({ html })
-    if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(uri)
+  const salvar = async () => {
+    setErro(null)
+    setSalvando(true)
+    try {
+      // a unidade padrao e a primeira, como na ficha
+      const unidadeId = ficha.unidadeId ?? unidades.dados[0]?.id ?? null
+      if (!ficha.unidadeId && unidadeId) rascunhoFicha.definir({ unidadeId })
+      await salvarFicha()
+      novaFicha()
+      mostrarRecado(ficha.id ? 'Ficha salva' : 'Criança cadastrada')
+      // fecha os documentos e a ficha: volta para onde a ficha foi aberta
+      if (router.canDismiss()) router.dismiss(2)
+      else voltar('/secretaria/participantes')
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível salvar a ficha.')
+      setSalvando(false)
+    }
   }
 
   return (
     <TelaForm
       titulo="Documentos"
       subtitulo={ficha.nome || 'Nova ficha'}
-      rodape={<Botao variante="secundario" rotulo="Exportar ficha em PDF" onPress={exportar} />}>
+      rodape={
+        <Botao
+          rotulo={salvando ? 'Salvando…' : 'Salvar'}
+          desabilitado={salvando}
+          onPress={salvar}
+        />
+      }>
+      {erro ? (
+        <Bloco>
+          <Aviso tom="ambar" titulo={erro} texto="Confira a ficha e tente de novo" />
+        </Bloco>
+      ) : null}
       <Bloco>
         <View style={st.progresso}>
           <View style={st.linhaTopo}>
