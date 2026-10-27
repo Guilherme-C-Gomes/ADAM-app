@@ -49,6 +49,15 @@ export function telefoneValido(texto: string) {
   return d.length === 10 || d.length === 11
 }
 
+/**
+ * Ja nao cabe mais nada: celular com os 11 numeros, ou fixo (comeca com 2 a
+ * 5 depois do DDD) com os 10. Um celular com 10 ainda esta no meio.
+ */
+export function telefoneCompleto(texto: string) {
+  const d = nacional(texto)
+  return d.length === 11 || (d.length === 10 && /^[2-5]/.test(d.slice(2)))
+}
+
 /** "5511987654321": para o WhatsApp e para ligar (com "+" na frente). */
 export function digitosComPais(texto: string) {
   const digitos = texto.replace(/\D/g, '')

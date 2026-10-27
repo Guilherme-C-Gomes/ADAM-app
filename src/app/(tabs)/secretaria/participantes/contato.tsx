@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { Keyboard, StyleSheet, View } from 'react-native'
 
 import { Chip } from '@/components/ui'
 import {
@@ -15,7 +15,7 @@ import {
 import { rascunhoFicha, type Contato } from '@/data/rascunhos'
 import { space } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
-import { digitarTelefone, mascaraTelefone, telefoneValido } from '@/lib/telefone'
+import { digitarTelefone, mascaraTelefone, telefoneCompleto, telefoneValido } from '@/lib/telefone'
 
 /** Tela 17e. Um contato da ficha: mae, pai, avo ou outro. */
 const RELACOES: Contato['relacao'][] = ['Mãe', 'Pai', 'Avó', 'Outro']
@@ -86,7 +86,12 @@ export default function ContatoDaFicha() {
           rotulo="Telefone"
           icone="telefone"
           value={telefone}
-          onChangeText={(t) => setTelefone(digitarTelefone(telefone, t))}
+          onChangeText={(t) => {
+            const novo = digitarTelefone(telefone, t)
+            setTelefone(novo)
+            // acabou de completar o numero: o teclado sai da frente sozinho
+            if (telefoneCompleto(novo) && !telefoneCompleto(telefone)) Keyboard.dismiss()
+          }}
           placeholder="+55 (11) 98765-4321"
           keyboardType="phone-pad"
         />
