@@ -74,7 +74,7 @@ function FichaDoUsuario({ usuario }: { usuario: Usuario }) {
     try {
       await redefinirSenha(usuario.id, senhaNova)
       setSenhaNova('')
-      mostrarRecado(`Senha redefinida. Passe a nova para ${usuario.nome.split(' ')[0]}.`)
+      mostrarRecado(`Senha redefinida. Passe a nova para ${usuario.nome.split(' ')[0]}.`, 'aviso')
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível redefinir a senha.')
     } finally {

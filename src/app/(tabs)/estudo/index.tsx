@@ -101,7 +101,10 @@ function Biblioteca() {
       await devolver(id)
       mostrarRecado(`“${titulo}” voltou para a estante`)
     } catch (e) {
-      mostrarRecado(e instanceof Error ? e.message : 'Não foi possível registrar a devolução.')
+      mostrarRecado(
+        e instanceof Error ? e.message : 'Não foi possível registrar a devolução.',
+        'aviso',
+      )
     } finally {
       setDevolvendo(null)
     }

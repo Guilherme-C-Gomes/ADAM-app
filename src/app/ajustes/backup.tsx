@@ -62,11 +62,14 @@ export default function CopiaDeSeguranca() {
     setFazendo('drive')
     try {
       const r = await fazerCopiaAgora()
-      mostrarRecado(
-        r.arquivos_pendentes
-          ? `Cópia feita. ${r.arquivos_pendentes} fotos e documentos seguem na próxima.`
-          : 'Cópia feita no Drive',
-      )
+      if (r.arquivos_pendentes) {
+        mostrarRecado(
+          `Cópia feita. ${r.arquivos_pendentes} fotos e documentos seguem na próxima.`,
+          'aviso',
+        )
+      } else {
+        mostrarRecado('Cópia feita no Drive')
+      }
     } catch (e) {
       setFalha(e instanceof Error ? e.message : 'A cópia não foi feita.')
     } finally {

@@ -152,7 +152,7 @@ export default function Compartilhar() {
                   if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(uri)
                   mostrarRecado('PDF gerado')
                 } catch {
-                  mostrarRecado('Não foi possível gerar o PDF. Tente de novo.')
+                  mostrarRecado('Não foi possível gerar o PDF. Tente de novo.', 'aviso')
                 }
               }}
             />

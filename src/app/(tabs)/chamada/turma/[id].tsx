@@ -217,7 +217,7 @@ export default function ListaDaChamada() {
       // da a fila uns segundos para subir; sinal ruim nao prende a tela
       await Promise.race([sincronizar(), new Promise((pronto) => setTimeout(pronto, ESPERA_ENVIO))])
       if (await temNaFila(c.id)) {
-        mostrarRecado('Chamada encerrada no celular. Ela sobe quando a internet voltar.')
+        mostrarRecado('Chamada encerrada no celular. Ela sobe quando a internet voltar.', 'aviso')
       }
       voltar()
     }

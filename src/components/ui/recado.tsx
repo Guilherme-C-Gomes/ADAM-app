@@ -14,30 +14,36 @@ import { color, radius, space, type } from '@/theme/tokens'
  *
  * Nao usa o Alert do React Native: na versao web ele nao aparece.
  */
-const recado = criarRascunho({ texto: null as string | null, vez: 0 })
+type Tom = 'sucesso' | 'aviso'
 
-// Todo recado fica o mesmo tempo: entra (o check assenta em ~520ms, ver
-// `seloEntra`) e fica 400ms parado antes de sair.
+const recado = criarRascunho({ texto: null as string | null, tom: 'sucesso' as Tom, vez: 0 })
+
+// O recado entra (o selo assenta em ~520ms, ver `seloEntra`) e fica parado:
+// o de sucesso so 400ms, e um "deu certo" que se ve de relance; o aviso
+// (erro, "sobe quando a internet voltar", senha nova) tem frase para ler.
 const ENTRADA = 520
-const PARADO = 400
-const DURACAO = ENTRADA + PARADO
+const PARADO: Record<Tom, number> = { sucesso: 400, aviso: 4000 }
 
-/** Mostra o pop-up. Chamar de novo troca o texto e reinicia o tempo. */
-export function mostrarRecado(texto: string) {
-  recado.definir({ texto, vez: recado.ler().vez + 1 })
+/**
+ * Mostra o pop-up. Chamar de novo troca o texto e reinicia o tempo.
+ * `aviso` e para o que a pessoa precisa ler: fica mais e vem com o alerta.
+ */
+export function mostrarRecado(texto: string, tom: Tom = 'sucesso') {
+  recado.definir({ texto, tom, vez: recado.ler().vez + 1 })
 }
 
 const fechar = () => recado.definir({ texto: null })
 
 export function Recado() {
-  const { texto, vez } = recado.useValor()
+  const { texto, tom, vez } = recado.useValor()
+  const aviso = tom === 'aviso'
 
   // fecha sozinho; um recado novo (outra `vez`) reinicia a contagem
   useEffect(() => {
     if (!texto) return
-    const tempo = setTimeout(fechar, DURACAO)
+    const tempo = setTimeout(fechar, ENTRADA + PARADO[tom])
     return () => clearTimeout(tempo)
-  }, [texto, vez])
+  }, [texto, tom, vez])
 
   if (!texto) return null
 
@@ -56,8 +62,13 @@ export function Recado() {
         accessibilityHint="Toque para fechar">
         <Animated.View entering={cartaoEntra} exiting={cartaoSai} style={st.cartao}>
           {/* o check estoura logo depois do cartao assentar */}
-          <Animated.View entering={seloEntra} style={st.selo}>
-            <Icone nome="check" cor={color.success} tamanho={22} traco={2.4} />
+          <Animated.View entering={seloEntra} style={[st.selo, aviso && st.seloAviso]}>
+            <Icone
+              nome={aviso ? 'alerta' : 'check'}
+              cor={aviso ? color.warn : color.success}
+              tamanho={22}
+              traco={2.4}
+            />
           </Animated.View>
           <Text style={st.texto}>{texto}</Text>
         </Animated.View>
@@ -101,6 +112,7 @@ const st = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(61, 214, 140, 0.14)',
   },
+  seloAviso: { backgroundColor: 'rgba(245, 165, 36, 0.14)' },
   texto: {
     ...type.body,
     fontFamily: 'Inter_600SemiBold',
