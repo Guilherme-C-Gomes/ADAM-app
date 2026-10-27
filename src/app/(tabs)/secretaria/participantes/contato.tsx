@@ -15,6 +15,7 @@ import {
 import { rascunhoFicha, type Contato } from '@/data/rascunhos'
 import { space } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
+import { digitarTelefone, mascaraTelefone, telefoneValido } from '@/lib/telefone'
 
 /** Tela 17e. Um contato da ficha: mae, pai, avo ou outro. */
 const RELACOES: Contato['relacao'][] = ['Mãe', 'Pai', 'Avó', 'Outro']
@@ -26,7 +27,7 @@ export default function ContatoDaFicha() {
 
   const [nome, setNome] = useState(atual?.nome ?? '')
   const [relacao, setRelacao] = useState<Contato['relacao']>(atual?.relacao ?? 'Mãe')
-  const [telefone, setTelefone] = useState(atual?.telefone ?? '')
+  const [telefone, setTelefone] = useState(mascaraTelefone(atual?.telefone ?? ''))
   const [whatsapp, setWhatsapp] = useState(atual?.whatsapp ?? true)
   // O primeiro contato nasce principal; so pode haver um por ficha.
   const [principal, setPrincipal] = useState(atual?.principal ?? indice === 0)
@@ -56,10 +57,19 @@ export default function ContatoDaFicha() {
       titulo={relacao}
       subtitulo={ficha.nome || 'Nova ficha'}
       rodape={
-        <Botao rotulo="Salvar contato" desabilitado={!nome.trim() || !telefone.trim()} onPress={salvar} />
+        <Botao
+          rotulo="Salvar contato"
+          desabilitado={!nome.trim() || !telefoneValido(telefone)}
+          onPress={salvar}
+        />
       }>
       <Bloco>
-        <Entrada rotulo="Nome" value={nome} onChangeText={setNome} placeholder="Nome do responsável" />
+        <Entrada
+          rotulo="Nome"
+          value={nome}
+          onChangeText={setNome}
+          placeholder="Nome do responsável"
+        />
       </Bloco>
 
       <Bloco ordem={1}>
@@ -76,8 +86,8 @@ export default function ContatoDaFicha() {
           rotulo="Telefone"
           icone="telefone"
           value={telefone}
-          onChangeText={setTelefone}
-          placeholder="(11) 9 0000-0000"
+          onChangeText={(t) => setTelefone(digitarTelefone(telefone, t))}
+          placeholder="+55 (11) 98765-4321"
           keyboardType="phone-pad"
         />
       </Bloco>

@@ -31,6 +31,7 @@ import {
 import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
 import { color, radius, space, type } from '@/theme/tokens'
+import { digitosComPais } from '@/lib/telefone'
 
 /**
  * Tela 13n. Cobrar livro atrasado e conversa, nao notificacao: a
@@ -42,10 +43,7 @@ import { color, radius, space, type } from '@/theme/tokens'
  */
 
 /** So os digitos, com o 55 do Brasil na frente quando faltar. */
-function numeroWhatsApp(telefone: string) {
-  const digitos = telefone.replace(/\D/g, '')
-  return digitos.length <= 11 ? `55${digitos}` : digitos
-}
+const numeroWhatsApp = digitosComPais
 
 export default function ContatoDoLivro() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -183,7 +181,7 @@ export default function ContatoDoLivro() {
                   selo={c.principal ? { rotulo: 'principal', tom: 'ambar' } : undefined}
                   direita={
                     <Pressable
-                      onPress={() => Linking.openURL(`tel:${c.telefone.replace(/\D/g, '')}`)}
+                      onPress={() => Linking.openURL(`tel:+${digitosComPais(c.telefone)}`)}
                       hitSlop={space.md}
                       accessibilityRole="button"
                       accessibilityLabel={`Ligar para ${c.nome}`}>
