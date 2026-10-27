@@ -16,7 +16,11 @@ import { color, radius, space, type } from '@/theme/tokens'
  */
 const recado = criarRascunho({ texto: null as string | null, vez: 0 })
 
-const DURACAO = 2600
+// Todo recado fica o mesmo tempo: entra (o check assenta em ~520ms, ver
+// `seloEntra`) e fica 400ms parado antes de sair.
+const ENTRADA = 520
+const PARADO = 400
+const DURACAO = ENTRADA + PARADO
 
 /** Mostra o pop-up. Chamar de novo troca o texto e reinicia o tempo. */
 export function mostrarRecado(texto: string) {
