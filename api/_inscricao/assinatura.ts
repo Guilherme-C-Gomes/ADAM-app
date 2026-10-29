@@ -12,6 +12,8 @@
  * A validacao criptografica completa (cadeia e revogacao) fica para o
  * validar.iti.gov.br, que o app abre para a Secretaria quando ela quiser.
  */
+import { inflateSync } from 'node:zlib'
+
 import { marcaDoPdf } from './ficha'
 
 export type Conferencia = { ok: true; reconhecida: boolean } | { ok: false; erro: string }
@@ -61,4 +63,38 @@ export function conferirPdfAssinado(bytes: Uint8Array, hash: string): Conferenci
   const reconhecida = /ICP-Brasil|Governo Federal do Brasil|gov\.br|GOV\.BR/i.test(certificado)
 
   return { ok: true, reconhecida }
+}
+
+const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+
+/**
+ * A imagem da assinatura e um PNG de verdade, de tamanho de quadro? Um PNG
+ * com os dados estragados prendia o pdf-lib ate o tempo da funcao acabar:
+ * aqui ele e aberto antes (inflateSync recusa dado estragado na hora).
+ */
+export function pngInteiro(png: Uint8Array) {
+  if (PNG.some((b, i) => png[i] !== b)) return false
+  const dados = Buffer.from(png)
+  const pedacos: Buffer[] = []
+  let largura = 0
+  let altura = 0
+  for (let i = 8; i + 12 <= dados.length;) {
+    const tamanho = dados.readUInt32BE(i)
+    const tipo = dados.toString('latin1', i + 4, i + 8)
+    if (i + 12 + tamanho > dados.length) return false
+    if (tipo === 'IHDR') {
+      largura = dados.readUInt32BE(i + 8)
+      altura = dados.readUInt32BE(i + 12)
+    }
+    if (tipo === 'IDAT') pedacos.push(dados.subarray(i + 8, i + 8 + tamanho))
+    if (tipo === 'IEND') break
+    i += 12 + tamanho
+  }
+  if (!largura || !altura || largura > 4000 || altura > 2000 || !pedacos.length) return false
+  try {
+    inflateSync(Buffer.concat(pedacos), { maxOutputLength: 4000 * 2000 * 4 + 2000 })
+    return true
+  } catch {
+    return false
+  }
 }
