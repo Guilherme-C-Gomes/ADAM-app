@@ -1,6 +1,6 @@
 /**
  * Os termos da ficha, para o formulario mostrar o mesmo texto que vai no
- * PDF (lib/pdf.ts e a fonte; aqui so entrega).
+ * PDF (_inscricao/pdf.ts e a fonte; aqui so entrega).
  */
 import { LGPD, TERMOS } from '../_inscricao/pdf'
 

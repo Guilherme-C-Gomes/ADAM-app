@@ -1,6 +1,6 @@
 /**
  * O PDF da ficha de matricula, montado no servidor a partir da ficha ja
- * conferida (lib/ficha.ts). Sai de dois jeitos:
+ * conferida (ficha.ts). Sai de dois jeitos:
  *
  * - sem assinatura, para a mae baixar e assinar no gov.br. A marca
  *   "ADAM-FICHA:<hash>" vai no dicionario de informacoes do PDF, em texto

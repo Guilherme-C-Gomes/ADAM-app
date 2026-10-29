@@ -5,11 +5,13 @@
  * Secretaria cadastrar pelo app.
  *
  * Assinatura:
- * - gov.br: o PDF assinado ja subiu (ficha_govbr.pdf); lib/assinatura.ts
+ * - gov.br: o PDF assinado ja subiu (ficha_govbr.pdf); _inscricao/assinatura.ts
  *   confere se e desta ficha, se esta assinado e se nada mudou depois;
  * - na tela: chega a imagem da assinatura; o PDF guardado e montado aqui,
  *   com a imagem, a data e a hora e o registro do envio.
  */
+import { inflateSync } from 'node:zlib'
+
 import { conferirPdfAssinado } from '../_inscricao/assinatura'
 import { codigoDa, conferirFicha } from '../_inscricao/ficha'
 import { montarPdf } from '../_inscricao/pdf'
@@ -30,7 +32,39 @@ import {
 
 /** Menos que isto entre abrir o formulario e enviar e robo, nao gente. */
 const TEMPO_MINIMO = 45_000
-const PNG = [0x89, 0x50, 0x4e, 0x47]
+const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+
+/**
+ * A imagem da assinatura e um PNG de verdade, de tamanho de quadro? Um PNG
+ * com os dados estragados prendia o pdf-lib ate o tempo da funcao acabar:
+ * aqui ele e aberto antes (inflateSync recusa dado estragado na hora).
+ */
+function pngInteiro(png: Uint8Array) {
+  if (PNG.some((b, i) => png[i] !== b)) return false
+  const dados = Buffer.from(png)
+  const pedacos: Buffer[] = []
+  let largura = 0
+  let altura = 0
+  for (let i = 8; i + 12 <= dados.length;) {
+    const tamanho = dados.readUInt32BE(i)
+    const tipo = dados.toString('latin1', i + 4, i + 8)
+    if (i + 12 + tamanho > dados.length) return false
+    if (tipo === 'IHDR') {
+      largura = dados.readUInt32BE(i + 8)
+      altura = dados.readUInt32BE(i + 12)
+    }
+    if (tipo === 'IDAT') pedacos.push(dados.subarray(i + 8, i + 8 + tamanho))
+    if (tipo === 'IEND') break
+    i += 12 + tamanho
+  }
+  if (!largura || !altura || largura > 4000 || altura > 2000 || !pedacos.length) return false
+  try {
+    inflateSync(Buffer.concat(pedacos), { maxOutputLength: 4000 * 2000 * 4 + 2000 })
+    return true
+  } catch {
+    return false
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -111,7 +145,7 @@ export async function POST(request: Request) {
       const imagem = String(assinatura.imagem ?? '')
       const base64 = imagem.startsWith('data:image/png;base64,') ? imagem.slice(22) : ''
       const png = new Uint8Array(Buffer.from(base64, 'base64'))
-      if (png.length < 200 || png.length > 600_000 || PNG.some((b, i) => png[i] !== b)) {
+      if (png.length < 200 || png.length > 600_000 || !pngInteiro(png)) {
         return falha('A assinatura não chegou. Assine de novo no quadro.')
       }
       const quando = new Date().toISOString()

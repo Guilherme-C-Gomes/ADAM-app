@@ -2,7 +2,7 @@
  * Confere o PDF que a mae devolve depois de assinar no gov.br.
  *
  * O que da para garantir aqui, sem servico pago:
- * - e a ficha DESTA inscricao: a marca "ADAM-FICHA:<hash>" (lib/pdf.ts) esta
+ * - e a ficha DESTA inscricao: a marca "ADAM-FICHA:<hash>" (pdf.ts) esta
  *   no arquivo, e o hash so bate se nenhum dado mudou depois de baixar;
  * - tem assinatura digital (PAdES: /ByteRange + /Contents), e a ultima
  *   assinatura cobre o arquivo ate o fim — nada foi acrescentado depois;

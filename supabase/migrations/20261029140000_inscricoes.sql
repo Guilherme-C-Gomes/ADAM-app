@@ -17,7 +17,7 @@ create table if not exists public.inscricoes (
   crianca_nome text not null,
   nascimento date not null,
   unidade_id uuid references public.unidades (id) on delete set null,
-  -- a ficha inteira, como a mae preencheu (formato em inscricao/lib/ficha.ts)
+  -- a ficha inteira, como a mae preencheu (formato em api/_inscricao/ficha.ts)
   dados jsonb not null,
   -- sha-256 da ficha: e o que vai dentro do PDF e liga o PDF assinado a ela
   hash text not null,

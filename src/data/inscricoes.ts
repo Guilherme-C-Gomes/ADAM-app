@@ -8,7 +8,7 @@ import { mascaraTelefone } from '@/lib/telefone'
 
 /**
  * Inscricoes pelo link: a ficha de matricula que a familia preenche e
- * assina no formulario publico (projeto `inscricao/`, na Vercel). Chegam
+ * assina no formulario publico (pagina em `inscricao/`, funcoes em `api/inscricao/`). Chegam
  * "pendentes"; a Secretaria confere e cadastra a crianca pelo formulario de
  * sempre, ja preenchido — ou recusa.
  *
@@ -19,7 +19,7 @@ import { mascaraTelefone } from '@/lib/telefone'
 /** O endereco que a Secretaria manda para as familias. */
 export const LINK_INSCRICAO = 'https://adam-inscricao.vercel.app'
 
-/** O formato de `inscricoes.dados` (inscricao/lib/ficha.ts e a fonte). */
+/** O formato de `inscricoes.dados` (api/_inscricao/ficha.ts e a fonte). */
 export type FichaInscricao = {
   crianca: {
     nome: string

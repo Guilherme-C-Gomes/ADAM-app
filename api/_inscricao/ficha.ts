@@ -1,6 +1,6 @@
 /**
  * A ficha de matricula da ADAM, como o formulario manda: o formato, a
- * limpeza e a conferencia. O PDF (lib/pdf.ts) e o envio (api/enviar.ts)
+ * limpeza e a conferencia. O PDF (pdf.ts) e o envio (api/inscricao/enviar.ts)
  * passam os dados por `conferirFicha` — assim a ficha que a mae baixa para
  * assinar no gov.br e a que chega no envio dao o mesmo `hash`.
  *
