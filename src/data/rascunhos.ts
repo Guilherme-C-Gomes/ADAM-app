@@ -66,6 +66,8 @@ export const FICHA_VAZIA = {
   anexos: {} as Record<number, Anexo>,
   /** Qual contato a tela 17e esta editando. */
   editando: 0,
+  /** Veio de uma inscricao pelo link: salvar a ficha da baixa nela. */
+  inscricaoId: undefined as string | undefined,
 }
 
 export const rascunhoFicha = criarRascunho({ ...FICHA_VAZIA })

@@ -13,6 +13,7 @@ import { HeroSetor, Segmentado } from '@/components/ui/setor'
 import { Esqueleto, SkeletonCard, SkeletonFaixa, SkeletonLista } from '@/components/ui/skeleton'
 import { DOCUMENTOS, emQueda, useParticipantes } from '@/data/fichas'
 import { useFiltroSecretaria } from '@/data/filtro-secretaria'
+import { usePendentes } from '@/data/inscricoes'
 import { useMetricas } from '@/data/metricas'
 import { color, onDark, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
@@ -29,6 +30,7 @@ export default function Secretaria() {
   const { filtro, todasAsUnidades, nomeUnidade, rotulo, anterior, proximo } = useFiltroSecretaria()
   const metricas = useMetricas(filtro)
   const fichas = useParticipantes()
+  const { total: inscricoesNovas, recarregar: recarregarInscricoes } = usePendentes()
   const recarregarMetricas = metricas.recarregar
   const recarregarFichas = fichas.recarregar
 
@@ -37,7 +39,8 @@ export default function Secretaria() {
     useCallback(() => {
       recarregarMetricas()
       recarregarFichas()
-    }, [recarregarMetricas, recarregarFichas]),
+      recarregarInscricoes()
+    }, [recarregarMetricas, recarregarFichas, recarregarInscricoes]),
   )
 
   // as fichas seguem a unidade do filtro, como os numeros
@@ -184,6 +187,19 @@ export default function Secretaria() {
                     pendentes ? { rotulo: `${pendentes} com pendência`, tom: 'ambar' } : undefined
                   }
                   onPress={() => router.push('/secretaria/criancas')}
+                />
+                <Linha
+                  titulo="Inscrições pelo link"
+                  legenda="Fichas que as famílias mandaram pelo celular"
+                  selo={
+                    inscricoesNovas
+                      ? {
+                          rotulo: `${inscricoesNovas} nova${inscricoesNovas === 1 ? '' : 's'}`,
+                          tom: 'roxo',
+                        }
+                      : undefined
+                  }
+                  onPress={() => router.push('/secretaria/inscricoes')}
                 />
               </Grupo>
             </Animated.View>

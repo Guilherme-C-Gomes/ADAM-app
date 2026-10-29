@@ -168,6 +168,7 @@ const TABELAS = [
   'chamada_marcas',
   'chamada_avulsos',
   'chamada_correcoes',
+  'inscricoes',
 ]
 
 /**

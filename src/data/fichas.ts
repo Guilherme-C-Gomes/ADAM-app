@@ -5,6 +5,7 @@ import { iniciaisDe } from '@/data/jogo'
 import { FICHA_VAZIA, rascunhoFicha, type Anexo } from '@/data/rascunhos'
 import { esquecerNoCelular } from '@/data/chamada'
 import { deISO, paraISO as dataParaISO } from '@/data/metricas'
+import { sessao } from '@/data/perfis'
 import { porLotes, todasAsLinhas } from '@/lib/consulta'
 import { supabase } from '@/lib/supabase'
 
@@ -562,6 +563,21 @@ export async function salvarFicha() {
       .eq('crianca_id', id)
       .in('tipo', retirados)
     if (error) throw falhou('a lista de documentos')
+  }
+
+  // veio de uma inscricao pelo link (data/inscricoes.ts): ela vira
+  // "cadastrada", ligada a esta crianca, e sai da lista de novas
+  if (f.inscricaoId) {
+    const { error } = await supabase
+      .from('inscricoes')
+      .update({
+        status: 'aprovada',
+        crianca_id: id,
+        decidido_em: new Date().toISOString(),
+        decidido_por: sessao.ler().usuarioId,
+      })
+      .eq('id', f.inscricaoId)
+    if (error) throw falhou('a baixa da inscrição pelo link')
   }
 
   return id as string

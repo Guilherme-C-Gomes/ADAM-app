@@ -51,7 +51,10 @@ const TABELAS = [
   'emprestimos', 'aulas', 'exercicios', 'treinos', 'treino_comissao', 'treino_exercicios',
   'treino_avaliacoes', 'escala', 'jogos', 'jogo_convocados', 'jogo_comissao', 'chamadas',
   'chamada_participantes', 'chamada_marcas', 'chamada_avulsos', 'chamada_correcoes',
+  'inscricoes',
 ]
+/** Tabelas novas: copia feita antes delas existirem nao tem, e tudo bem. */
+const NOVAS = new Set(['inscricoes'])
 
 /** coluna -> tabela para onde ela aponta (para achar ligacoes quebradas). */
 function alvoDa(coluna) {
@@ -75,7 +78,9 @@ function conferir(copia) {
   for (const nome of TABELAS) {
     const linhas = copia.tabelas?.[nome]
     if (!Array.isArray(linhas)) {
-      if (ausentes.has(nome)) avisos.push(`${nome}: a tabela não existia no banco na hora da cópia`)
+      if (ausentes.has(nome) || NOVAS.has(nome)) {
+        avisos.push(`${nome}: a tabela não existia no banco na hora da cópia`)
+      }
       else problemas.push(`${nome}: falta na cópia`)
       continue
     }

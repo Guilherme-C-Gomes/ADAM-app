@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A12" />
+  <meta name="robots" content="noindex" />
+  <title>Inscrição ADAM</title>
+  <meta name="description" content="Ficha de matrícula da Escolinha de Futebol ADAM, para preencher e assinar pelo celular." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/estilo.css" />
+</head>
+<body>
+  <header class="topo">
+    <div class="marca">ADAM <span>· Inscrição</span></div>
+    <div class="progresso" id="progresso" hidden>
+      <div class="progresso-texto"><span id="passo-numero"></span><span id="passo-nome"></span></div>
+      <div class="barra"><div class="barra-cheia" id="barra"></div></div>
+    </div>
+  </header>
+
+  <main id="formulario">
+    <!-- 0 · inicio -->
+    <section class="passo" data-passo="inicio">
+      <h1>Ficha de matrícula da Escolinha de Futebol ADAM</h1>
+      <p class="lead">Preencha pelo celular, assine e envie. A Secretaria da ADAM confere e confirma a matrícula.</p>
+      <div class="cartao">
+        <h2>Tenha em mãos</h2>
+        <ul class="lista">
+          <li>Dados da criança, da escola e da família</li>
+          <li>Seu RG e CPF (de quem assina)</li>
+          <li>Se puder, fotos do RG ou certidão da criança, comprovante de residência, atestado médico e atestado de matrícula escolar. Dá para entregar depois.</li>
+        </ul>
+      </div>
+      <div class="cartao">
+        <h2>Leva uns 10 minutos</h2>
+        <p>As respostas ficam guardadas neste celular enquanto você preenche. Se precisar sair, é só voltar por este mesmo link.</p>
+      </div>
+      <p class="nota">Os dados vão só para a ADAM, para a matrícula e o cuidado com a criança (LGPD, Lei nº 13.709/2018). Ninguém mais vê.</p>
+    </section>
+
+    <!-- 1 · crianca -->
+    <section class="passo" data-passo="crianca" data-nome="A criança" hidden>
+      <h1>A criança</h1>
+      <label class="campo">Nome completo do atleta
+        <input name="crianca.nome" autocomplete="off" autocapitalize="words" maxlength="120" required />
+      </label>
+      <label class="campo">Data de nascimento
+        <input name="crianca.nascimento" type="date" required />
+      </label>
+      <label class="campo">Unidade onde vai treinar
+        <select name="crianca.unidadeId" id="unidades" required>
+          <option value="">Carregando…</option>
+        </select>
+      </label>
+      <div class="dupla">
+        <label class="campo">CEP
+          <input name="crianca.cep" inputmode="numeric" data-mascara="cep" placeholder="12940-000" />
+        </label>
+        <label class="campo">Cidade
+          <input name="crianca.cidade" autocapitalize="words" maxlength="80" required />
+        </label>
+      </div>
+      <label class="campo">Endereço (rua e número)
+        <input name="crianca.endereco" autocapitalize="words" maxlength="200" required />
+      </label>
+      <label class="campo">Bairro
+        <input name="crianca.bairro" autocapitalize="words" maxlength="80" />
+      </label>
+      <label class="campo">Escola em que estuda
+        <input name="crianca.escola" autocapitalize="words" maxlength="120" required />
+      </label>
+      <fieldset class="campo">
+        <legend>Turno da escola</legend>
+        <div class="opcoes">
+          <label><input type="radio" name="crianca.turno" value="manha" /> Manhã</label>
+          <label><input type="radio" name="crianca.turno" value="tarde" /> Tarde</label>
+          <label><input type="radio" name="crianca.turno" value="noite" /> Noite</label>
+          <label><input type="radio" name="crianca.turno" value="integral_manha_tarde" /> Integral (manhã/tarde)</label>
+          <label><input type="radio" name="crianca.turno" value="integral_tarde_noite" /> Integral (tarde/noite)</label>
+        </div>
+      </fieldset>
+      <label class="campo">Série atual
+        <input name="crianca.serie" maxlength="40" placeholder="Ex.: 5º ano" />
+      </label>
+      <fieldset class="campo">
+        <legend>Aulas por semana no projeto</legend>
+        <div class="opcoes linha">
+          <label><input type="radio" name="crianca.aulasPorSemana" value="1" /> 1 vez</label>
+          <label><input type="radio" name="crianca.aulasPorSemana" value="2" /> 2 vezes</label>
+          <label><input type="radio" name="crianca.aulasPorSemana" value="3" /> 3 vezes</label>
+        </div>
+      </fieldset>
+      <label class="campo">Quais dias vai
+        <input name="crianca.dias" maxlength="120" placeholder="Ex.: terça e quinta" />
+      </label>
+    </section>
+
+    <!-- 2 · familia -->
+    <section class="passo" data-passo="familia" data-nome="A família" hidden>
+      <h1>A família</h1>
+      <label class="campo">Nome da mãe
+        <input name="familia.nomeMae" autocapitalize="words" maxlength="120" />
+      </label>
+      <label class="campo">Nome do pai
+        <input name="familia.nomePai" autocapitalize="words" maxlength="120" />
+      </label>
+      <fieldset class="campo">
+        <legend>A criança mora com quem?</legend>
+        <div class="opcoes">
+          <label><input type="radio" name="familia.moraCom" value="pai_e_mae" /> Pai e mãe</label>
+          <label><input type="radio" name="familia.moraCom" value="mae" /> Mãe</label>
+          <label><input type="radio" name="familia.moraCom" value="pai" /> Pai</label>
+          <label><input type="radio" name="familia.moraCom" value="outros" /> Outros responsáveis</label>
+        </div>
+      </fieldset>
+      <label class="campo" data-se="familia.moraCom=outros">Quem?
+        <input name="familia.moraComQuem" maxlength="120" placeholder="Ex.: avó materna" />
+      </label>
+      <fieldset class="campo">
+        <legend>Tem irmãos?</legend>
+        <div class="opcoes linha">
+          <label><input type="radio" name="familia.irmaos" value="sim" /> Sim</label>
+          <label><input type="radio" name="familia.irmaos" value="nao" /> Não</label>
+        </div>
+      </fieldset>
+      <label class="campo" data-se="familia.irmaos=sim">Quantos?
+        <input name="familia.irmaosQuantos" inputmode="numeric" maxlength="2" />
+      </label>
+      <fieldset class="campo">
+        <legend>Frequenta alguma igreja?</legend>
+        <div class="opcoes linha">
+          <label><input type="radio" name="familia.igreja" value="sim" /> Sim</label>
+          <label><input type="radio" name="familia.igreja" value="nao" /> Não</label>
+          <label><input type="radio" name="familia.igreja" value="as_vezes" /> Às vezes</label>
+        </div>
+      </fieldset>
+      <label class="campo" data-se="familia.igreja=sim|as_vezes">Qual?
+        <input name="familia.igrejaQual" maxlength="120" />
+      </label>
+      <fieldset class="campo">
+        <legend>A família é atendida pelo CRAS Atibaia (Centro de Referência de Assistência Social)?</legend>
+        <div class="opcoes linha">
+          <label><input type="radio" name="familia.cras" value="sim" /> Sim</label>
+          <label><input type="radio" name="familia.cras" value="nao" /> Não</label>
+        </div>
+      </fieldset>
+      <label class="campo" data-se="familia.cras=sim">Qual unidade do CRAS?
+        <input name="familia.crasUnidade" maxlength="120" />
+      </label>
+    </section>
+
+    <!-- 3 · responsaveis -->
+    <section class="passo" data-passo="responsaveis" data-nome="Responsáveis" hidden>
+      <h1>Responsáveis</h1>
+      <p class="lead">Quem a ADAM procura para avisos e convocações.</p>
+      <div class="cartao">
+        <h2>Responsável 1</h2>
+        <label class="campo">Nome
+          <input name="responsaveis.0.nome" autocapitalize="words" maxlength="120" required />
+        </label>
+        <label class="campo">Parentesco
+          <input name="responsaveis.0.parentesco" list="parentescos" maxlength="40" placeholder="Mãe, avó, tia…" required />
+        </label>
+        <label class="campo">Celular
+          <input name="responsaveis.0.telefone" type="tel" inputmode="tel" data-mascara="telefone" placeholder="+55 (11) 98765-4321" required />
+        </label>
+        <label class="marcar"><input type="checkbox" name="responsaveis.0.whatsapp" checked /> Esse número é WhatsApp</label>
+      </div>
+      <button type="button" class="botao secundario" id="quero-resp2">Adicionar responsável 2</button>
+      <div class="cartao" id="resp2" hidden>
+        <h2>Responsável 2 <span class="fraco">(opcional)</span></h2>
+        <label class="campo">Nome
+          <input name="responsaveis.1.nome" autocapitalize="words" maxlength="120" />
+        </label>
+        <label class="campo">Parentesco
+          <input name="responsaveis.1.parentesco" list="parentescos" maxlength="40" placeholder="Pai, avô, tio…" />
+        </label>
+        <label class="campo">Celular
+          <input name="responsaveis.1.telefone" type="tel" inputmode="tel" data-mascara="telefone" placeholder="+55 (11) 98765-4321" />
+        </label>
+        <label class="marcar"><input type="checkbox" name="responsaveis.1.whatsapp" checked /> Esse número é WhatsApp</label>
+        <button type="button" class="link" id="tirar-resp2">Remover responsável 2</button>
+      </div>
+      <datalist id="parentescos">
+        <option value="Mãe"></option><option value="Pai"></option><option value="Avó"></option>
+        <option value="Avô"></option><option value="Tia"></option><option value="Tio"></option>
+        <option value="Madrasta"></option><option value="Padrasto"></option><option value="Irmã"></option><option value="Irmão"></option>
+      </datalist>
+      <div class="cartao">
+        <h2>Outros contatos</h2>
+        <label class="campo">Telefone residencial <span class="fraco">(se tiver)</span>
+          <input name="familia.telResidencial" type="tel" inputmode="tel" data-mascara="telefone" placeholder="+55 (11) 4411-2648" />
+        </label>
+        <label class="campo">Em caso de urgência, chamar
+          <input name="familia.urgenciaNome" autocapitalize="words" maxlength="120" placeholder="Nome" required />
+        </label>
+        <label class="campo">Celular de urgência
+          <input name="familia.urgenciaTelefone" type="tel" inputmode="tel" data-mascara="telefone" placeholder="+55 (11) 98765-4321" required />
+        </label>
+      </div>
+    </section>
+
+    <!-- 4 · saude -->
+    <section class="passo" data-passo="saude" data-nome="Saúde" hidden>
+      <h1>Saúde</h1>
+      <fieldset class="campo">
+        <legend>A criança tem problemas de saúde?</legend>
+        <div class="opcoes linha">
+          <label><input type="radio" name="saude.problemas" value="nao" /> Não</label>
+          <label><input type="radio" name="saude.problemas" value="sim" /> Sim</label>
+        </div>
+      </fieldset>
+      <label class="campo" data-se="saude.problemas=sim">Descreva
+        <textarea name="saude.descricao" rows="4" maxlength="600"></textarea>
+      </label>
+      <label class="campo">Alergias <span class="fraco">(remédio, alimento…)</span>
+        <input name="saude.alergias" maxlength="300" placeholder="Se não tiver, deixe em branco" />
+      </label>
+      <div class="dupla">
+        <label class="campo">Peso (kg)
+          <input name="saude.peso" inputmode="decimal" maxlength="10" />
+        </label>
+        <label class="campo">Altura (m)
+          <input name="saude.altura" inputmode="decimal" maxlength="10" placeholder="1,40" />
+        </label>
+      </div>
+      <div class="dupla">
+        <label class="campo">Tipo sanguíneo
+          <select name="saude.tipoSanguineo">
+            <option value="">Não sei</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+          </select>
+        </label>
+        <label class="campo">Nº da chuteira
+          <input name="saude.chuteira" inputmode="numeric" maxlength="6" />
+        </label>
+      </div>
+      <fieldset class="campo">
+        <legend>Tem convênio médico?</legend>
+        <div class="opcoes linha">
+          <label><input type="radio" name="saude.convenio" value="nao" /> Não</label>
+          <label><input type="radio" name="saude.convenio" value="sim" /> Sim</label>
+        </div>
+      </fieldset>
+      <label class="campo" data-se="saude.convenio=sim">Qual convênio?
+        <input name="saude.convenioQual" maxlength="120" />
+      </label>
+      <label class="campo">Observações
+        <textarea name="saude.observacoes" rows="3" maxlength="600"></textarea>
+      </label>
+    </section>
+
+    <!-- 5 · termos -->
+    <section class="passo" data-passo="termos" data-nome="Declaração" hidden>
+      <h1>Declaração do responsável</h1>
+      <p class="lead">Quem assina a ficha.</p>
+      <label class="campo">Seu nome completo
+        <input name="declarante.nome" autocapitalize="words" maxlength="120" required />
+      </label>
+      <div class="dupla">
+        <label class="campo">Seu RG
+          <input name="declarante.rg" maxlength="20" required />
+        </label>
+        <label class="campo">Seu CPF
+          <input name="declarante.cpf" inputmode="numeric" data-mascara="cpf" placeholder="000.000.000-00" required />
+        </label>
+      </div>
+      <fieldset class="campo">
+        <legend>Você é</legend>
+        <div class="opcoes linha">
+          <label><input type="radio" name="declarante.vinculo" value="mae" /> Mãe</label>
+          <label><input type="radio" name="declarante.vinculo" value="pai" /> Pai</label>
+          <label><input type="radio" name="declarante.vinculo" value="responsavel_legal" /> Responsável legal</label>
+        </div>
+      </fieldset>
+
+      <div class="cartao termos">
+        <h2>Termos da ADAM</h2>
+        <p>Venho solicitar a inscrição do menor na Escolinha de Futebol ADAM e <strong>concordo</strong> com os termos abaixo:</p>
+        <ol id="termos"></ol>
+        <p>Autorizo o menor a frequentar as atividades desportivas da ADAM, informando que está matriculado em escola de ensino regular e em plenas condições de saúde para a prática de esporte, e me responsabilizo por todo e qualquer acidente que venha a sofrer praticando esporte nos locais de treino da ADAM.</p>
+        <p>Estou ciente da proposta e assumo a veracidade das informações prestadas. Também estou ciente de que é preciso consultar um médico antes de aumentar o nível de atividade física da criança caso exista alguma restrição de saúde, e assumo a responsabilidade por atividade praticada sem essa recomendação.</p>
+        <p class="fraco">A matrícula só vale com esta ficha assinada e a entrega dos documentos e atestados exigidos pela direção da ADAM.</p>
+      </div>
+
+      <fieldset class="campo">
+        <legend>Uso de imagem (fotos e vídeos dos treinos, jogos e eventos)</legend>
+        <div class="opcoes">
+          <label><input type="radio" name="declarante.autorizaImagem" value="true" /> <strong>Autorizo</strong> a divulgação das imagens</label>
+          <label><input type="radio" name="declarante.autorizaImagem" value="false" /> <strong>Não autorizo</strong> a divulgação das imagens</label>
+        </div>
+        <p class="fraco">Conforme o Art. 14, § 1º, da LGPD: o uso de dados de crianças exige consentimento específico de pelo menos um dos pais ou do responsável legal.</p>
+      </fieldset>
+      <label class="marcar destaque"><input type="checkbox" name="declarante.aceitaTermos" /> Li e concordo com os termos da ficha da ADAM</label>
+    </section>
+
+    <!-- 6 · assinatura -->
+    <section class="passo" data-passo="assinatura" data-nome="Assinatura" hidden>
+      <h1>Assinatura</h1>
+      <p class="lead">Escolha como assinar a ficha.</p>
+      <div class="escolha">
+        <label class="opcao-grande">
+          <input type="radio" name="assinatura.tipo" value="govbr" />
+          <span><strong>Com a conta gov.br</strong><small>Assinatura digital oficial e gratuita. Precisa de conta gov.br nível prata ou ouro.</small></span>
+        </label>
+        <label class="opcao-grande">
+          <input type="radio" name="assinatura.tipo" value="tela" />
+          <span><strong>Com o dedo, aqui na tela</strong><small>Para quem não tem gov.br prata ou ouro.</small></span>
+        </label>
+      </div>
+
+      <div id="via-govbr" hidden>
+        <ol class="etapas">
+          <li>
+            <strong>Baixe a sua ficha preenchida</strong>
+            <button type="button" class="botao" id="baixar-ficha">Baixar ficha (PDF)</button>
+            <span class="fraco" id="baixou"></span>
+          </li>
+          <li>
+            <strong>Assine no gov.br</strong>
+            <a class="botao secundario" href="https://assinador.iti.br" target="_blank" rel="noopener">Abrir o assinador gov.br</a>
+            <span class="fraco">Entre com a sua conta gov.br, escolha o arquivo que baixou, toque onde quer a assinatura, assine com o código que chega no celular e baixe o arquivo assinado.</span>
+          </li>
+          <li>
+            <strong>Volte aqui e envie o arquivo assinado</strong>
+            <label class="arquivo" id="caixa-govbr">
+              <input type="file" accept="application/pdf" id="ficha-govbr" />
+              <span id="nome-govbr">Escolher a ficha assinada (PDF)</span>
+            </label>
+          </li>
+        </ol>
+        <p class="aviso" id="aviso-govbr" hidden></p>
+        <p class="fraco">Se você mudar alguma resposta depois de baixar, baixe e assine a ficha de novo.</p>
+      </div>
+
+      <div id="via-tela" hidden>
+        <p>Assine dentro do quadro, como no seu documento:</p>
+        <div class="quadro">
+          <canvas id="quadro" aria-label="Quadro para assinar com o dedo"></canvas>
+          <span class="linha-assina"></span>
+        </div>
+        <button type="button" class="link" id="limpar-quadro">Limpar e assinar de novo</button>
+        <p class="fraco">Ao assinar, você confirma que é o(a) responsável informado(a) na declaração. A data, a hora e um registro do envio vão junto na ficha.</p>
+      </div>
+    </section>
+
+    <!-- 7 · documentos -->
+    <section class="passo" data-passo="documentos" data-nome="Documentos" hidden>
+      <h1>Documentos</h1>
+      <p class="lead">Opcional: tire foto ou escolha o arquivo. O que faltar pode ser entregue depois, na ADAM.</p>
+      <div class="arquivos" id="arquivos"></div>
+    </section>
+
+    <!-- 8 · revisar -->
+    <section class="passo" data-passo="revisar" data-nome="Enviar" hidden>
+      <h1>Confira e envie</h1>
+      <div class="cartao" id="resumo"></div>
+      <div class="erros" id="erros" role="alert" hidden></div>
+      <label class="escondido" aria-hidden="true">Site <input name="site" id="site" tabindex="-1" autocomplete="off" /></label>
+    </section>
+
+    <!-- 9 · pronto -->
+    <section class="passo" data-passo="pronto" hidden>
+      <div class="ok-icone" aria-hidden="true">✓</div>
+      <h1>Inscrição enviada!</h1>
+      <p class="lead">A Secretaria da ADAM vai conferir a ficha e entrar em contato para confirmar a matrícula.</p>
+      <div class="cartao"><p>Código da ficha: <strong id="codigo"></strong></p><p class="fraco">Guarde este código se precisar falar com a ADAM sobre a inscrição.</p></div>
+      <button type="button" class="botao secundario" id="nova">Inscrever outra criança</button>
+    </section>
+  </main>
+
+  <footer class="rodape" id="rodape">
+    <p class="mensagem" id="mensagem" role="status" aria-live="polite"></p>
+    <div class="botoes">
+      <button type="button" class="botao secundario" id="voltar" hidden>Voltar</button>
+      <button type="button" class="botao" id="avancar">Começar</button>
+    </div>
+  </footer>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>

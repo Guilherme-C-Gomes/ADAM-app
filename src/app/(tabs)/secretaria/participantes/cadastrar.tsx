@@ -50,7 +50,9 @@ import { voltar } from '@/lib/navegacao'
  * chip calculado, com a regra escrita do lado.
  */
 export default function FichaDaCrianca() {
-  const { id } = useLocalSearchParams<{ id?: string }>()
+  // `inscricao`: veio de uma inscricao pelo link, ja posta no rascunho por
+  // prepararCadastro (data/inscricoes.ts) — nao comecar do zero
+  const { id, inscricao } = useLocalSearchParams<{ id?: string; inscricao?: string }>()
   const ficha = rascunhoFicha.useValor()
   const unidades = useUnidades()
   const fotoGuardada = useFotoFicha(ficha.fotoPath)
@@ -71,7 +73,7 @@ export default function FichaDaCrianca() {
   useEffect(() => {
     let ativo = true
     if (!id) {
-      novaFicha()
+      if (!inscricao || rascunhoFicha.ler().inscricaoId !== inscricao) novaFicha()
       return
     }
     abrirFicha(id).then(
@@ -88,7 +90,7 @@ export default function FichaDaCrianca() {
     return () => {
       ativo = false
     }
-  }, [id, tentativa])
+  }, [id, inscricao, tentativa])
 
   const tentarDeNovo = () => {
     setErroAoAbrir(null)
@@ -146,7 +148,13 @@ export default function FichaDaCrianca() {
   return (
     <TelaForm
       titulo={ficha.id ? 'Editar ficha' : 'Cadastrar criança'}
-      subtitulo={ficha.id ? ficha.nome : 'A ficha leva 2 minutos'}
+      subtitulo={
+        ficha.id
+          ? ficha.nome
+          : ficha.inscricaoId
+            ? 'Veio pelo link: confira e salve'
+            : 'A ficha leva 2 minutos'
+      }
       rodape={
         <Botao
           rotulo={salvando ? 'Salvando…' : ficha.id ? 'Salvar alterações' : 'Salvar ficha'}

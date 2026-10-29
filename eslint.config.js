@@ -5,7 +5,7 @@ const expoConfig = require("eslint-config-expo/flat");
 module.exports = defineConfig([
   expoConfig,
   {
-    // supabase/functions roda em Deno, nao no app
-    ignores: ["dist/*", "supabase/functions/*"],
+    // supabase/functions roda em Deno e inscricao/ e outro projeto da Vercel
+    ignores: ["dist/*", "supabase/functions/*", "inscricao/*"],
   }
 ]);

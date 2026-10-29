@@ -62,9 +62,10 @@ const TABELAS: { nome: string; chave: string[] }[] = [
   { nome: 'chamada_marcas', chave: ['chamada_id', 'crianca_id'] },
   { nome: 'chamada_avulsos', chave: ['id'] },
   { nome: 'chamada_correcoes', chave: ['id'] },
+  { nome: 'inscricoes', chave: ['id'] },
 ]
 
-const BUCKETS = ['fichas', 'capas', 'materiais', 'perfis']
+const BUCKETS = ['fichas', 'capas', 'materiais', 'perfis', 'inscricoes']
 const PAGINA = 1000
 // por vez, para caber no tempo da funcao; o resto vai na proxima copia
 const MAX_ARQUIVOS = 40
