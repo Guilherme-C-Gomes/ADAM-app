@@ -238,7 +238,6 @@ function conferir(passo) {
   if (passo === 'crianca') {
     exige(palavras(d.crianca.nome) >= 2, 'crianca.nome', 'Escreva o nome completo da criança.')
     exige(d.crianca.nascimento, 'crianca.nascimento', 'Falta a data de nascimento.')
-    exige(d.crianca.unidadeId, 'crianca.unidadeId', 'Escolha a unidade.')
     exige(String(d.crianca.cidade || '').trim(), 'crianca.cidade', 'Falta a cidade.')
     exige(String(d.crianca.endereco || '').trim(), 'crianca.endereco', 'Falta o endereço.')
     exige(String(d.crianca.escola || '').trim(), 'crianca.escola', 'Falta a escola.')
@@ -518,7 +517,6 @@ async function comprimir(file) {
 
 // ─── revisar e enviar ────────────────────────────────────────────────
 
-let nomesDasUnidades = {}
 const br = (iso) => (iso ? iso.split('-').reverse().join('/') : '')
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
@@ -529,7 +527,7 @@ function resumir() {
   const linhas = [
     ['Criança', d.crianca.nome],
     ['Nascimento', br(d.crianca.nascimento)],
-    ['Unidade', nomesDasUnidades[d.crianca.unidadeId] || ''],
+    ['Unidade', 'Atibaia'],
     ...r.map((x, i) => [`Responsável ${i + 1}`, `${x.nome} (${x.parentesco}) · ${x.telefone}`]),
     ['Saúde', d.saude.problemas === 'sim' ? d.saude.descricao : 'Sem problemas informados'],
     ['Uso de imagem', d.declarante.autorizaImagem ? 'Autoriza' : 'Não autoriza'],
@@ -627,22 +625,6 @@ $('#nova').addEventListener('click', () => location.reload())
 
 // ─── comeco ──────────────────────────────────────────────────────────
 
-async function carregarUnidades() {
-  const select = $('#unidades')
-  try {
-    const r = await fetch('/api/unidades')
-    const lista = await r.json()
-    if (!r.ok || !Array.isArray(lista)) throw new Error()
-    nomesDasUnidades = Object.fromEntries(lista.map((u) => [u.id, u.nome]))
-    select.innerHTML =
-      `<option value="">Escolha</option>` +
-      lista.map((u) => `<option value="${esc(u.id)}">${esc(u.nome)}</option>`).join('')
-    select.value = estado.dados.crianca.unidadeId || ''
-  } catch {
-    select.innerHTML = '<option value="">Não carregou — recarregue a página</option>'
-  }
-}
-
 async function carregarTermos() {
   try {
     const r = await fetch('/api/termos')
@@ -655,7 +637,6 @@ async function carregarTermos() {
 
 montarDocumentos()
 preencherCampos()
-carregarUnidades()
 carregarTermos()
 history.replaceState({ passo: estado.passo }, '')
 mostrar(estado.passo === 'pronto' ? 'inicio' : estado.passo, false)

@@ -17,10 +17,11 @@ import {
   admin,
   BUCKET,
   CAMPOS_DE_ARQUIVO,
+  comUnidade,
   falha,
   ipComSal,
   lerJson,
-  nomeDaUnidade,
+  unidadeDaInscricao,
   resposta,
   TAMANHO_MAXIMO,
   UUID,
@@ -65,11 +66,12 @@ export async function POST(request: Request) {
       return falha('Este envio expirou. Recarregue a página e envie de novo (os dados continuam preenchidos).')
     }
 
-    const conferida = conferirFicha(corpo.ficha)
+    const daInscricao = await unidadeDaInscricao()
+    if (!daInscricao) return falha('O formulário está em manutenção. Tente mais tarde.', 503)
+    const unidade = daInscricao.nome
+    const conferida = conferirFicha(comUnidade(corpo.ficha, daInscricao.id))
     if (!conferida.ok) return Response.json({ erros: conferida.erros }, { status: 400 })
     const { ficha, hash } = conferida
-    const unidade = await nomeDaUnidade(ficha.crianca.unidadeId)
-    if (!unidade) return falha('A unidade escolhida não existe mais. Escolha de novo.')
 
     // os arquivos que subiram para a pasta desta inscricao
     const lista = await banco.storage.from(BUCKET).list(id, { limit: 20 })

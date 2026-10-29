@@ -5,18 +5,17 @@
  */
 import { conferirFicha } from '../lib/ficha'
 import { montarPdf } from '../lib/pdf'
-import { falha, lerJson, nomeDaUnidade } from '../lib/servidor'
+import { comUnidade, falha, lerJson, unidadeDaInscricao } from '../lib/servidor'
 
 export async function POST(request: Request) {
   try {
     const corpo = (await lerJson(request)) as { ficha?: unknown }
-    const conferida = conferirFicha(corpo?.ficha)
+    const unidade = await unidadeDaInscricao()
+    if (!unidade) return falha('O formulário está em manutenção. Tente mais tarde.', 503)
+    const conferida = conferirFicha(comUnidade(corpo?.ficha, unidade.id))
     if (!conferida.ok) return Response.json({ erros: conferida.erros }, { status: 400 })
 
-    const unidade = await nomeDaUnidade(conferida.ficha.crianca.unidadeId)
-    if (!unidade) return falha('A unidade escolhida não existe mais. Escolha de novo.')
-
-    const pdf = await montarPdf(conferida.ficha, conferida.hash, unidade, null)
+    const pdf = await montarPdf(conferida.ficha, conferida.hash, unidade.nome, null)
     const primeiro = conferida.ficha.crianca.nome
       .split(' ')[0]
       .normalize('NFD')

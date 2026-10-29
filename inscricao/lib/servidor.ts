@@ -70,9 +70,22 @@ export async function lerJson(request: Request, limite = 1_000_000): Promise<unk
   return JSON.parse(texto)
 }
 
-export async function nomeDaUnidade(id: string) {
-  const { data } = await admin().from('unidades').select('nome').eq('id', id).maybeSingle()
-  return (data?.nome as string | undefined) ?? null
+/**
+ * Por enquanto toda inscricao pelo link e para Atibaia: a mae nao escolhe
+ * unidade. A unidade de nome "Atibaia" (ou, sem ela, a primeira cadastrada).
+ */
+export async function unidadeDaInscricao() {
+  const { data, error } = await admin().from('unidades').select('id, nome').order('nome')
+  if (error) throw error
+  const lista = (data ?? []) as { id: string; nome: string }[]
+  return lista.find((u) => /atibaia/i.test(u.nome)) ?? lista[0] ?? null
+}
+
+/** Poe a unidade na ficha que veio do navegador, antes de conferir. */
+export function comUnidade(ficha: unknown, unidadeId: string) {
+  const f = (ficha && typeof ficha === 'object' ? ficha : {}) as Record<string, unknown>
+  const crianca = (f.crianca && typeof f.crianca === 'object' ? f.crianca : {}) as Record<string, unknown>
+  return { ...f, crianca: { ...crianca, unidadeId } }
 }
 
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
