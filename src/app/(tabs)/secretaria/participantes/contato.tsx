@@ -2,23 +2,18 @@ import { useState } from 'react'
 import { Keyboard, StyleSheet, View } from 'react-native'
 
 import { Chip } from '@/components/ui'
-import {
-  Bloco,
-  Botao,
-  Entrada,
-  Grupo,
-  Interruptor,
-  Linha,
-  Rotulo,
-  TelaForm,
-} from '@/components/ui/form'
+import { Bloco, Botao, Entrada, Grupo, Interruptor, Linha, TelaForm } from '@/components/ui/form'
 import { rascunhoFicha, type Contato } from '@/data/rascunhos'
 import { space } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
 import { digitarTelefone, mascaraTelefone, telefoneCompleto, telefoneValido } from '@/lib/telefone'
 
-/** Tela 17e. Um contato da ficha: mae, pai, avo ou outro. */
-const RELACOES: Contato['relacao'][] = ['Mãe', 'Pai', 'Avó', 'Outro']
+/**
+ * Tela 17e. Um responsavel da ficha (Responsavel 1 ou 2), com o parentesco
+ * escrito. Os atalhos so preenchem o campo: tia, padrasto ou vizinha se
+ * escreve.
+ */
+const ATALHOS = ['Mãe', 'Pai', 'Avó', 'Avô', 'Tia', 'Tio']
 
 export default function ContatoDaFicha() {
   const ficha = rascunhoFicha.useValor()
@@ -26,7 +21,7 @@ export default function ContatoDaFicha() {
   const atual = ficha.contatos[indice]
 
   const [nome, setNome] = useState(atual?.nome ?? '')
-  const [relacao, setRelacao] = useState<Contato['relacao']>(atual?.relacao ?? 'Mãe')
+  const [parentesco, setParentesco] = useState(atual?.parentesco ?? '')
   const [telefone, setTelefone] = useState(mascaraTelefone(atual?.telefone ?? ''))
   const [whatsapp, setWhatsapp] = useState(atual?.whatsapp ?? true)
   // O primeiro contato nasce principal; so pode haver um por ficha.
@@ -35,7 +30,7 @@ export default function ContatoDaFicha() {
   const salvar = () => {
     const novo: Contato = {
       nome: nome.trim(),
-      relacao,
+      parentesco: parentesco.trim(),
       telefone: telefone.trim(),
       whatsapp,
       principal,
@@ -54,12 +49,12 @@ export default function ContatoDaFicha() {
 
   return (
     <TelaForm
-      titulo={relacao}
+      titulo={`Responsável ${indice + 1}`}
       subtitulo={ficha.nome || 'Nova ficha'}
       rodape={
         <Botao
           rotulo="Salvar contato"
-          desabilitado={!nome.trim() || !telefoneValido(telefone)}
+          desabilitado={!nome.trim() || !parentesco.trim() || !telefoneValido(telefone)}
           onPress={salvar}
         />
       }>
@@ -73,10 +68,22 @@ export default function ContatoDaFicha() {
       </Bloco>
 
       <Bloco ordem={1}>
-        <Rotulo>Relação com a criança</Rotulo>
+        <Entrada
+          rotulo="Parentesco"
+          value={parentesco}
+          onChangeText={setParentesco}
+          placeholder="Mãe, avó, tia, padrasto…"
+          autoCapitalize="sentences"
+          maxLength={40}
+        />
         <View style={st.chips}>
-          {RELACOES.map((r) => (
-            <Chip key={r} rotulo={r} ativo={relacao === r} onPress={() => setRelacao(r)} />
+          {ATALHOS.map((r) => (
+            <Chip
+              key={r}
+              rotulo={r}
+              ativo={parentesco.trim().toLowerCase() === r.toLowerCase()}
+              onPress={() => setParentesco(r)}
+            />
           ))}
         </View>
       </Bloco>

@@ -116,7 +116,9 @@ export default function Documentos() {
             titulo="Responsáveis"
             legenda={
               ficha.contatos.length
-                ? ficha.contatos.map((c) => `${c.relacao.toLowerCase()}, com telefone`).join(' · ')
+                ? ficha.contatos
+                    .map((c) => `${c.parentesco.toLowerCase() || 'responsável'}, com telefone`)
+                    .join(' · ')
                 : 'Nenhum contato na ficha ainda'
             }
             selo={{

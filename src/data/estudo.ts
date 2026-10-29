@@ -413,6 +413,10 @@ export type Contato = {
 
 const RELACAO: Record<string, string> = { mae: 'mãe', pai: 'pai', avo: 'avó', outro: 'responsável' }
 
+/** O parentesco escrito na ficha; sem ele, o da coluna antiga. */
+const parentescoDe = (r: { relacao: string; parentesco?: string | null }) =>
+  r.parentesco?.trim().toLowerCase() || RELACAO[r.relacao] || r.relacao
+
 /**
  * Quem procurar pelo livro. ADM ve todos os responsaveis; o professor so o
  * numero principal — e o banco so entrega se a crianca esta com livro.
@@ -421,19 +425,24 @@ export async function lerContatos(criancaId: string, veTudo: boolean): Promise<C
   if (veTudo) {
     const { data, error } = await supabase
       .from('responsaveis')
-      .select('nome, relacao, telefone, whatsapp, principal')
+      .select('nome, relacao, parentesco, telefone, whatsapp, principal')
       .eq('crianca_id', criancaId)
       .order('principal', { ascending: false })
     if (error) throw error
-    return (data ?? []).map((r) => ({ ...r, relacao: RELACAO[r.relacao] ?? r.relacao }))
+    return (data ?? []).map(({ parentesco, ...r }) => ({
+      ...r,
+      relacao: parentescoDe({ ...r, parentesco }),
+    }))
   }
   const { data, error } = await supabase.rpc('contato_principal', { p_crianca: criancaId })
   if (error) throw error
-  return ((data ?? []) as Omit<Contato, 'principal'>[]).map((r) => ({
-    ...r,
-    relacao: RELACAO[r.relacao] ?? r.relacao,
-    principal: true,
-  }))
+  return ((data ?? []) as (Omit<Contato, 'principal'> & { parentesco?: string | null })[]).map(
+    ({ parentesco, ...r }) => ({
+      ...r,
+      relacao: parentescoDe({ ...r, parentesco }),
+      principal: true,
+    }),
+  )
 }
 
 // ─── Devocional ──────────────────────────────────────────────────────

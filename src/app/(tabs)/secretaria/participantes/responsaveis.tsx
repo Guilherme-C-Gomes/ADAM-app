@@ -7,8 +7,8 @@ import { color, space, type } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
 
 /**
- * Telas 17d e 17d2. Mae e pai, cada um com o seu numero, e UM deles e o
- * numero principal — quase sempre o da mae. E dele que saem a convocacao
+ * Telas 17d e 17d2. Responsavel 1 e Responsavel 2, cada um com o seu
+ * parentesco e o seu numero, e UM deles e o numero principal. E dele que saem a convocacao
  * e a cobranca, e e o unico que o professor ve. Um contato ja serve: a
  * ficha existe para a coordenacao achar alguem, nao para exigir
  * formulario completo antes da crianca poder treinar.
@@ -28,13 +28,15 @@ export default function Responsaveis() {
       subtitulo={`${ficha.nome || 'Nova ficha'} · ${ficha.contatos.length} de 2`}
       rodape={<Botao rotulo="Salvar responsáveis" onPress={() => voltar()} />}>
       <Bloco>
-        <Rotulo>{principal?.relacao ?? 'Mãe'}</Rotulo>
+        <Rotulo>Responsável 1</Rotulo>
         <Grupo>
           {principal ? (
             <Linha
               titulo={principal.nome}
               legenda={principal.telefone}
-              selo={{ rotulo: principal.relacao.toLowerCase() }}
+              selo={
+                principal.parentesco ? { rotulo: principal.parentesco.toLowerCase() } : undefined
+              }
               direita={
                 <View style={st.selos}>
                   {principal.whatsapp ? <Selo rotulo="WhatsApp" tom="verde" /> : null}
@@ -45,8 +47,8 @@ export default function Responsaveis() {
             />
           ) : (
             <Linha
-              titulo="Adicionar a mãe"
-              legenda="Ou quem é o responsável principal"
+              titulo="Adicionar responsável"
+              legenda="Quem responde pela criança"
               onPress={() => abrir(0)}
             />
           )}
@@ -54,13 +56,13 @@ export default function Responsaveis() {
       </Bloco>
 
       <Bloco ordem={1}>
-        <Rotulo>{segundo?.relacao ?? 'Pai'}</Rotulo>
+        <Rotulo>Responsável 2</Rotulo>
         <Grupo>
           {segundo ? (
             <Linha
               titulo={segundo.nome}
               legenda={segundo.telefone}
-              selo={{ rotulo: segundo.relacao.toLowerCase() }}
+              selo={segundo.parentesco ? { rotulo: segundo.parentesco.toLowerCase() } : undefined}
               direita={
                 <View style={st.selos}>
                   {segundo.whatsapp ? <Selo rotulo="WhatsApp" tom="verde" /> : null}
@@ -71,8 +73,8 @@ export default function Responsaveis() {
             />
           ) : (
             <Linha
-              titulo="Adicionar o pai"
-              legenda="Opcional. Ou avó, ou quem busca a criança"
+              titulo="Adicionar responsável"
+              legenda="Opcional. Outra pessoa da família ou quem busca a criança"
               onPress={() => abrir(1)}
             />
           )}

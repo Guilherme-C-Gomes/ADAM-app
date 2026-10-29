@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { turmaDaIdade, type TurmaEstudo } from '@/data/estudo'
 import { iniciaisDe } from '@/data/jogo'
-import { FICHA_VAZIA, rascunhoFicha, type Anexo, type Contato } from '@/data/rascunhos'
+import { FICHA_VAZIA, rascunhoFicha, type Anexo } from '@/data/rascunhos'
 import { esquecerNoCelular } from '@/data/chamada'
 import { deISO, paraISO as dataParaISO } from '@/data/metricas'
 import { porLotes, todasAsLinhas } from '@/lib/consulta'
@@ -327,18 +327,20 @@ export function useParticipantes(id?: string, saidas = false) {
 
 // ─── a ficha: abrir e salvar ─────────────────────────────────────────
 
-const RELACAO_BANCO: Record<Contato['relacao'], string> = {
-  Mãe: 'mae',
-  Pai: 'pai',
-  Avó: 'avo',
-  Outro: 'outro',
+// O parentesco e escrito; a coluna antiga `relacao` (enum) segue preenchida
+// a partir dele, para quem ainda le dela.
+function relacaoDo(parentesco: string) {
+  const p = parentesco
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+  if (p === 'mae') return 'mae'
+  if (p === 'pai') return 'pai'
+  if (p === 'avo') return 'avo'
+  return 'outro'
 }
-const RELACAO_TELA: Record<string, Contato['relacao']> = {
-  mae: 'Mãe',
-  pai: 'Pai',
-  avo: 'Avó',
-  outro: 'Outro',
-}
+const RELACAO_TELA: Record<string, string> = { mae: 'Mãe', pai: 'Pai', avo: 'Avó', outro: '' }
 const POSICAO_BANCO = {
   Goleiro: 'goleiro',
   Defesa: 'defesa',
@@ -366,7 +368,7 @@ export async function abrirFicha(id: string) {
       .single(),
     supabase
       .from('responsaveis')
-      .select('nome, relacao, telefone, whatsapp, principal')
+      .select('nome, relacao, parentesco, telefone, whatsapp, principal')
       .eq('crianca_id', id)
       .order('criado_em'),
     supabase.from('documentos').select('tipo').eq('crianca_id', id),
@@ -391,7 +393,7 @@ export async function abrirFicha(id: string) {
     observacao: c.observacao ?? '',
     contatos: responsaveis.data.map((r) => ({
       nome: r.nome,
-      relacao: RELACAO_TELA[r.relacao] ?? 'Outro',
+      parentesco: r.parentesco ?? RELACAO_TELA[r.relacao] ?? '',
       telefone: r.telefone,
       whatsapp: r.whatsapp,
       principal: r.principal,
@@ -483,7 +485,8 @@ export async function salvarFicha() {
   const contatos = preenchidos.map((c) => ({
     crianca_id: id,
     nome: c.nome.trim(),
-    relacao: RELACAO_BANCO[c.relacao],
+    relacao: relacaoDo(c.parentesco),
+    parentesco: c.parentesco.trim() || null,
     telefone: c.telefone.trim(),
     whatsapp: c.whatsapp,
     principal: false,

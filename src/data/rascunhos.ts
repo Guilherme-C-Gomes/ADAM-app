@@ -24,7 +24,8 @@ export const rascunhoFiltroSecretaria = criarRascunho({
 
 export type Contato = {
   nome: string
-  relacao: 'Mãe' | 'Pai' | 'Avó' | 'Outro'
+  /** Escrito: "Mãe", "Avó", "Tia", "Padrasto"... */
+  parentesco: string
   telefone: string
   whatsapp: boolean
   /**
