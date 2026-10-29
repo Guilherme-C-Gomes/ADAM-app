@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import Animated, {
+  interpolateColor,
   ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
@@ -11,14 +12,16 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { IconeChamada, IconeEstudo, IconeJogo, IconeSecretaria } from '@/components/ui/icones'
-import { molaPop, usePilulaDeslizante } from '@/components/ui/movimento'
+import { molaPop } from '@/components/ui/movimento'
 import { usePendentes } from '@/data/inscricoes'
 import { criarRascunho } from '@/hooks/use-rascunho'
-import { color, onDark, radius, space, target } from '@/theme/tokens'
+import { color, motion, space } from '@/theme/tokens'
 
-const ALTURA_BARRA = 60
+/** Lado de cada botao da barra (quadrado, cantos arredondados). */
+const LADO = 54
+const ALTURA_BARRA = LADO
 
-/** Folga entre o fim da tela e a pilula, no alto da faixa da barra. */
+/** Folga entre o fim da tela e os botoes, no alto da faixa da barra. */
 const FOLGA_TOPO = space.sm
 
 /** A barra esta na tela agora? (some dentro dos formularios) */
@@ -43,10 +46,10 @@ export function useEspacoDaBarra() {
  * nem chegam aqui: o layout das abas os protege (`Tabs.Protected`), e rota
  * protegida sai do estado do navegador.
  *
- * Nao e nativa de proposito: o design pede uma pilula de raio 24, que a
- * UITabBar do sistema nao faz. Ela mora numa faixa propria no fim da
- * tela (o conteudo termina acima, nunca passa por baixo) e o setor ativo
- * ganha uma pilula roxa que desliza ate ele.
+ * Nao e nativa de proposito: botoes pequenos e separados, no centro (como
+ * a barra do Pinterest), que a UITabBar do sistema nao faz. Ela mora numa
+ * faixa propria no fim da tela (o conteudo termina acima, nunca passa por
+ * baixo) e o setor ativo se enche de roxo, com um pulinho no icone.
  *
  * Ajustes nao mora aqui: chega pelo perfil no topo das telas.
  */
@@ -116,11 +119,6 @@ export function TabBar({ state, navigation }: PropsBarra) {
   const dentroDoSetor = caminhoFocado(state).slice(1)
   const visivel = !dentroDoSetor.some((nome) => !COM_BARRA.has(nome))
 
-  // uma pilula so, que desliza ate o setor ativo
-  const rotaAtiva = state.routes[state.index]
-  const chaveAtiva = rotaAtiva ? (rotaAtiva.key ?? rotaAtiva.name) : ''
-  const pilula = usePilulaDeslizante(chaveAtiva)
-
   useEffect(() => {
     barraNaTela.definir({ visivel })
   }, [visivel])
@@ -133,77 +131,59 @@ export function TabBar({ state, navigation }: PropsBarra) {
     // acima dela (paddingBottom no layout das abas), sem sobrepor nem degrade
     <View style={[s.wrapper, { paddingBottom: baixo }]} pointerEvents="box-none">
       <View style={s.barra}>
-        {/* trilho sem borda nem padding: a posicao medida de cada item e
-            a mesma que a pilula absoluta usa */}
-        <View style={s.trilho}>
-          {pilula.medida ? (
-            <Animated.View
-              pointerEvents="none"
-              style={[
-                s.pilula,
-                {
-                  top: pilula.medida.y,
-                  width: pilula.medida.largura,
-                  height: pilula.medida.altura,
-                },
-                pilula.estilo,
-              ]}
+        {state.routes.map((route, i) => {
+          const nome = route.name as keyof typeof ICONES
+          if (!ICONES[nome]) return null
+          const ativo = state.index === i
+          return (
+            <ItemBarra
+              key={route.key}
+              nome={nome}
+              ativo={ativo}
+              selo={nome === 'secretaria' ? (inscricoesNovas ?? 0) : 0}
+              onPress={() => {
+                const evento = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key ?? route.name,
+                  canPreventDefault: true,
+                })
+                if (!ativo && !evento.defaultPrevented) {
+                  navigation.navigate(route.name)
+                }
+              }}
             />
-          ) : null}
-          {state.routes.map((route, i) => {
-            const nome = route.name as keyof typeof ICONES
-            if (!ICONES[nome]) return null
-            const ativo = state.index === i
-            return (
-              <ItemBarra
-                key={route.key}
-                nome={nome}
-                ativo={ativo}
-                selo={nome === 'secretaria' ? (inscricoesNovas ?? 0) : 0}
-                // ate a pilula ser medida, o item ativo pinta o proprio fundo
-                fundo={ativo && !pilula.medida}
-                onLayout={pilula.medir(route.key ?? route.name)}
-                onPress={() => {
-                  const evento = navigation.emit({
-                    type: 'tabPress',
-                    target: route.key ?? route.name,
-                    canPreventDefault: true,
-                  })
-                  if (!ativo && !evento.defaultPrevented) {
-                    navigation.navigate(route.name)
-                  }
-                }}
-              />
-            )
-          })}
-        </View>
+          )
+        })}
       </View>
     </View>
   )
 }
 
-/** Um icone da barra. Ao virar o ativo, da um pulinho (escala 1.15 e volta). */
+/**
+ * Um botao da barra. Ao virar o ativo, o fundo se enche de roxo e o icone
+ * da um pulinho (escala 1.15 e volta).
+ */
 function ItemBarra({
   nome,
   ativo,
   selo,
-  fundo,
-  onLayout,
   onPress,
 }: {
   nome: keyof typeof ICONES
   ativo: boolean
   /** numero pequeno no canto do icone (0 = sem) */
   selo: number
-  fundo: boolean
-  onLayout: (e: LayoutChangeEvent) => void
   onPress: () => void
 }) {
   const Icone = ICONES[nome]
   const escala = useSharedValue(1)
+  const cheio = useSharedValue(ativo ? 1 : 0)
   const primeiro = useRef(true)
 
   useEffect(() => {
+    cheio.set(
+      withTiming(ativo ? 1 : 0, { duration: motion.base, reduceMotion: ReduceMotion.System }),
+    )
     // na abertura do app nao pula: so quando o setor muda
     if (primeiro.current) {
       primeiro.current = false
@@ -216,15 +196,18 @@ function ItemBarra({
         withSpring(1, molaPop),
       ),
     )
-  }, [ativo, escala])
+  }, [ativo, escala, cheio])
 
   const pulo = useAnimatedStyle(() => ({ transform: [{ scale: escala.get() }] }))
+  const fundo = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(cheio.get(), [0, 1], [color.surface2, color.primary]),
+    borderColor: interpolateColor(cheio.get(), [0, 1], [color.border, color.primary]),
+  }))
 
   return (
     <Pressable
-      onLayout={onLayout}
       onPress={onPress}
-      style={({ pressed }) => [s.item, fundo && s.itemAtivo, pressed && s.pressed]}
+      style={({ pressed }) => pressed && s.pressed}
       accessibilityRole="button"
       accessibilityState={{ selected: ativo }}
       accessibilityLabel={
@@ -232,8 +215,10 @@ function ItemBarra({
           ? `${ROTULOS[nome]}, ${selo} ${selo === 1 ? 'inscrição nova' : 'inscrições novas'}`
           : ROTULOS[nome]
       }>
-      <Animated.View style={pulo}>
-        <Icone cor={ativo ? color.text : color.muted} />
+      <Animated.View style={[s.item, fundo]}>
+        <Animated.View style={pulo}>
+          <Icone cor={ativo ? color.text : color.muted} />
+        </Animated.View>
         {selo ? (
           <View style={s.selo}>
             <Text style={s.seloTexto}>{selo > 9 ? '9+' : selo}</Text>
@@ -270,42 +255,29 @@ const s = StyleSheet.create({
     paddingHorizontal: space.lg,
     backgroundColor: color.bg,
   },
+  // botoes soltos, lado a lado no centro: cada um e o seu proprio quadrado
   barra: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    alignSelf: 'stretch',
+    justifyContent: 'center',
+    gap: space.md,
     height: ALTURA_BARRA,
-    paddingHorizontal: space.sm,
-    borderRadius: radius.nav,
-    borderCurve: 'continuous',
-    backgroundColor: color.surface2,
-    borderWidth: 1,
-    borderColor: color.border,
-  },
-  trilho: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    alignSelf: 'stretch',
-  },
-  pilula: {
-    position: 'absolute',
-    left: 0,
-    borderRadius: radius.chip,
-    borderCurve: 'continuous',
-    backgroundColor: onDark.fill,
   },
   item: {
-    width: target.minimo,
-    height: target.minimo,
-    borderRadius: radius.chip,
+    width: LADO,
+    height: LADO,
+    borderRadius: 18,
     borderCurve: 'continuous',
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    // a sombra destaca o botao do fundo escuro (no iPhone; no Android, elevation)
+    shadowColor: '#000',
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
-  itemAtivo: { backgroundColor: onDark.fill },
   // Feedback de toque do design: escala 0.97 junto da opacidade.
   pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
 })
