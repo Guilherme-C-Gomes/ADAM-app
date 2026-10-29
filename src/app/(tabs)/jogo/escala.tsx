@@ -348,6 +348,6 @@ const st = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.border,
   },
-  cartaoMudou: { borderColor: 'rgba(194, 75, 238, 0.55)' },
+  cartaoMudou: { borderColor: color.primary },
   cartaoTopo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 })

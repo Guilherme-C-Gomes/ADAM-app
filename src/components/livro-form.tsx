@@ -197,7 +197,7 @@ const st = StyleSheet.create({
     borderColor: color.border,
   },
   capa: { width: 42, height: 54, borderRadius: 6, borderCurve: 'continuous' },
-  capaVazia: { backgroundColor: color.primaryDk, alignItems: 'center', justifyContent: 'center' },
+  capaVazia: { backgroundColor: color.primary, alignItems: 'center', justifyContent: 'center' },
   capaLetra: { ...type.h2, fontFamily: 'Inter_700Bold', color: color.primaryCh },
   texto: { flex: 1, gap: 2 },
   titulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },

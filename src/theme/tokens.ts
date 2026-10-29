@@ -22,11 +22,15 @@ export const color = {
   muted: '#9A9AAD',
   faint: '#8A8AA0',
 
-  // marca
-  primary: '#9E05D2',
-  primaryLt: '#C24BEE',
-  primaryCh: '#D06CF5',
+  // marca: #9E06D1 e o roxo exato da marca (logo e kit), em tudo que e cor
+  // cheia. primaryLt/primaryCh sao o mesmo roxo clareado so o bastante para
+  // texto pequeno ler no escuro (4,5:1 no bg, surface e surface2).
+  primary: '#9E06D1',
+  primaryLt: '#BF5BE1',
+  primaryCh: '#BF5BE1',
   primaryDk: '#3A0A52',
+  /** fundo do botao secundario e de faixas: o roxo da marca a 40% */
+  primarySoft: 'rgba(158, 6, 209, 0.4)',
 
   // estado
   success: '#3DD68C',
@@ -36,8 +40,8 @@ export const color = {
 
 /**
  * Contraste: primary rende 3.19:1 sobre bg — aprovado para area cheia
- * (botao, icone), reprovado para texto. Texto e dado em roxo usam
- * primaryLt, que rende 5.18:1 e passa no criterio AA.
+ * (botao, icone), reprovado para texto; texto branco sobre ele rende 6.18:1.
+ * Texto e dado em roxo usam primaryLt, que passa 4.5:1 (criterio AA).
  */
 export const onDark = {
   fill: color.primary,

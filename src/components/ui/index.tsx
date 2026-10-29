@@ -289,9 +289,9 @@ const s = StyleSheet.create({
 
   avatar: {
     overflow: 'hidden',
-    backgroundColor: color.primaryDk,
+    backgroundColor: color.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarIniciais: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.primaryCh },
+  avatarIniciais: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
 })

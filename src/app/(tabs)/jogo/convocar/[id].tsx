@@ -265,9 +265,9 @@ const st = StyleSheet.create({
     paddingVertical: space.xs,
     borderRadius: radius.chip,
     borderCurve: 'continuous',
-    backgroundColor: color.primaryDk,
+    backgroundColor: color.primary,
   },
-  seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.primaryCh },
+  seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.text },
 
   botao: {
     minHeight: target.minimo + 8,

@@ -605,9 +605,9 @@ const st = StyleSheet.create({
     paddingVertical: space.xs,
     borderRadius: radius.chip,
     borderCurve: 'continuous',
-    backgroundColor: color.primaryDk,
+    backgroundColor: color.primary,
   },
-  seloCategoriaRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.primaryCh },
+  seloCategoriaRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.text },
 
   cardPartida: {
     flexDirection: 'row',
@@ -629,10 +629,10 @@ const st = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.botao,
     borderCurve: 'continuous',
-    // o mesmo secundario do app: roxo claro, abaixo do principal (roxo cheio)
-    backgroundColor: 'rgba(158, 5, 210, 0.16)',
+    // o mesmo secundario do app: roxo a 40%, abaixo do principal (roxo cheio)
+    backgroundColor: color.primarySoft,
     borderWidth: 1,
-    borderColor: 'rgba(194, 75, 238, 0.55)',
+    borderColor: color.primary,
   },
-  botaoSecundarioRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.primaryLt },
+  botaoSecundarioRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
 })

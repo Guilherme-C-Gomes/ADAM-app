@@ -228,7 +228,7 @@ export function Grupo({ children, style }: { children: React.ReactNode; style?: 
 export type Tom = 'roxo' | 'verde' | 'ambar' | 'vermelho' | 'neutro'
 
 const TONS: Record<Tom, { fundo: string; texto: string }> = {
-  roxo: { fundo: color.primaryDk, texto: color.primaryCh },
+  roxo: { fundo: color.primary, texto: color.text },
   verde: { fundo: 'rgba(61, 214, 140, 0.14)', texto: color.success },
   ambar: { fundo: 'rgba(245, 165, 36, 0.14)', texto: color.warn },
   vermelho: { fundo: 'rgba(255, 122, 181, 0.14)', texto: color.danger },
@@ -948,12 +948,12 @@ const s = StyleSheet.create({
     backgroundColor: onDark.fill,
     paddingHorizontal: space.base,
   },
-  // Secundario: o roxo da marca em tom claro — destaca sem disputar com o
-  // principal (roxo cheio). O texto e o primaryLt, que passa no contraste AA.
+  // Secundario: o roxo da marca a 40% com borda no roxo cheio — destaca sem
+  // disputar com o principal (roxo cheio). Letra branca.
   botaoSecundario: {
-    backgroundColor: 'rgba(158, 5, 210, 0.16)',
+    backgroundColor: color.primarySoft,
     borderWidth: 1,
-    borderColor: 'rgba(194, 75, 238, 0.55)',
+    borderColor: color.primary,
   },
   botaoPerigo: {
     backgroundColor: 'rgba(255, 122, 181, 0.1)',
@@ -961,7 +961,7 @@ const s = StyleSheet.create({
     borderColor: 'rgba(255, 122, 181, 0.5)',
   },
   botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
-  textoSecundario: { color: color.primaryLt },
+  textoSecundario: { color: color.text },
   textoPerigo: { color: color.danger },
   textoAviso: { color: color.warn },
   desabilitado: { opacity: 0.4 },
@@ -1153,7 +1153,7 @@ const s = StyleSheet.create({
     paddingVertical: space.xs,
   },
   dia: { flex: 1, alignItems: 'center' },
-  diaFaixa: { backgroundColor: color.primaryDk },
+  diaFaixa: { backgroundColor: color.primarySoft },
   diaMiolo: {
     width: MIOLO,
     height: MIOLO,
@@ -1196,7 +1196,7 @@ const s = StyleSheet.create({
   diaTexto: { ...type.small, fontFamily: 'Inter_400Regular', color: color.text },
   diaTextoAtivo: { fontFamily: 'Inter_700Bold' },
   // anel discreto do dia de hoje
-  diaHoje: { borderWidth: 1.5, borderColor: 'rgba(194, 75, 238, 0.55)' },
+  diaHoje: { borderWidth: 1.5, borderColor: color.primary },
   diaMarca: { position: 'absolute', bottom: 1, width: 5, height: 5, borderRadius: 3 },
   diaIniciais: {
     marginTop: 3,

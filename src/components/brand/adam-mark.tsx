@@ -4,14 +4,10 @@ import { Text } from 'react-native'
 import { color } from '@/theme/tokens'
 
 /**
- * Simbolo da marca, direto do kit oficial (Marca > Institucional >
- * PNG fundo transparente > "simbolo regular roxo").
- *
- * A arte e monocromatica em #9E05D1, praticamente o token `primary`
- * (#9E05D2) — a diferenca de um bit por canal nao e perceptivel.
- *
- * Cuidado ao trocar de arquivo: no kit, "simbolo tridimencional roxo-43"
- * esta nomeado como roxo mas a arte e preta, e sumiria no fundo escuro.
+ * Simbolo da marca: a mao em 3D, miolo branco, contorno e volume no roxo
+ * da marca e borda branca de adesivo (fundo transparente). Veio do arquivo
+ * "Design sem nome.pdf" da coordenacao, em 29/10/2026; o roxo e o #9E06D1
+ * do token `primary`.
  */
 
 const SYMBOL = require('../../../assets/brand/adam-symbol.png')

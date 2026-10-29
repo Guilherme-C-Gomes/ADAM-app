@@ -7,8 +7,9 @@
   --text: #ffffff;
   --muted: #9a9aad;
   --faint: #8a8aa0;
-  --primary: #9e05d2;
-  --primary-lt: #c24bee;
+  --primary: #9e06d1;
+  --primary-lt: #bf5be1;
+  --primary-soft: rgba(158, 6, 209, 0.4);
   --primary-dk: #3a0a52;
   --success: #3dd68c;
   --warn: #f5a524;
@@ -38,7 +39,8 @@ body {
   border-bottom: 1px solid var(--border);
   padding: calc(env(safe-area-inset-top) + 12px) 16px 12px;
 }
-.marca { font-weight: 700; letter-spacing: 0.04em; }
+.marca { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: 0.04em; }
+.marca span { margin-left: -4px; }
 .marca span { color: var(--muted); font-weight: 400; letter-spacing: 0; }
 .progresso { margin-top: 10px; }
 .progresso-texto { display: flex; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
@@ -90,7 +92,7 @@ input:not([type='radio']):not([type='checkbox']):not([type='file']), select, tex
 }
 select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 20px) 55%, calc(100% - 15px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
 input[type='date'] { min-height: 48px; }
-input:focus, select:focus, textarea:focus { border-color: var(--primary-lt); box-shadow: 0 0 0 3px rgba(194, 75, 238, 0.25); }
+input:focus, select:focus, textarea:focus { border-color: var(--primary-lt); box-shadow: 0 0 0 3px rgba(158, 6, 209, 0.35); }
 .invalido { border-color: var(--warn) !important; }
 textarea { resize: vertical; }
 .dupla { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -137,7 +139,7 @@ input[type='radio'], input[type='checkbox'] { width: 20px; height: 20px; margin:
 }
 .botao:active { transform: scale(0.97); }
 .botao:disabled { opacity: 0.5; cursor: default; transform: none; }
-.botao.secundario { background: transparent; color: var(--primary-lt); border-color: var(--primary-lt); }
+.botao.secundario { background: var(--primary-soft); color: #fff; border-color: var(--primary); }
 #voltar { flex: 0 0 auto; }
 .link { background: none; border: 0; color: var(--primary-lt); font: 600 15px inherit; font-family: inherit; padding: 8px 0; cursor: pointer; }
 #quero-resp2 { width: 100%; margin-bottom: 16px; }

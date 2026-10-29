@@ -497,7 +497,7 @@ const st = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: color.primaryDk,
+    backgroundColor: color.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
