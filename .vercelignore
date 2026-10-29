@@ -1,15 +1,15 @@
-# O que NAO sobe para a Vercel. Ela instala as dependencias e roda o
+﻿# O que NAO sobe para a Vercel. Ela instala as dependencias e roda o
 # `expo export -p web` la; o resto e documentacao, banco ou coisa local.
 node_modules
 dist
 .expo
 .env
 .env*.local
-protótipo
+protÃ³tipo
 supabase
 scripts
 .claude
 backup
 docs
 # o formulario de inscricao e outro projeto da Vercel (adam-inscricao)
-inscricao
+/inscricao
