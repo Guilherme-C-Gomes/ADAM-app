@@ -1,13 +1,17 @@
 /// <reference types="node" />
 /**
- * O que as funcoes do formulario dividem: o Supabase com a chave secreta, o
- * "ip com sal" e as respostas.
+ * O que as funcoes do formulario de inscricao dividem: o Supabase com a
+ * chave secreta, o "ip com sal" e as respostas.
  *
- * Variaveis na Vercel (projeto adam-inscricao > Settings > Environment
- * Variables), nunca no codigo:
+ * As funcoes (api/inscricao/*) rodam neste projeto, o `adam`, que ja tem as
+ * variaveis do backup. O site do formulario (pasta inscricao/, projeto
+ * adam-inscricao) so tem a pagina e repassa /api/* para ca (inscricao/
+ * vercel.json): assim a chave secreta mora num lugar so.
  * - SUPABASE_URL         endereco do projeto do ADAM
  * - SUPABASE_SECRET_KEY  chave secreta (sb_secret_...): grava a inscricao,
  *                        passa o RLS. So o servidor a ve; o navegador nunca.
+ *
+ * Esta pasta comeca com "_": a Vercel nao a publica como funcao.
  */
 import { createHash } from 'node:crypto'
 
@@ -84,7 +88,10 @@ export async function unidadeDaInscricao() {
 /** Poe a unidade na ficha que veio do navegador, antes de conferir. */
 export function comUnidade(ficha: unknown, unidadeId: string) {
   const f = (ficha && typeof ficha === 'object' ? ficha : {}) as Record<string, unknown>
-  const crianca = (f.crianca && typeof f.crianca === 'object' ? f.crianca : {}) as Record<string, unknown>
+  const crianca = (f.crianca && typeof f.crianca === 'object' ? f.crianca : {}) as Record<
+    string,
+    unknown
+  >
   return { ...f, crianca: { ...crianca, unidadeId } }
 }
 

@@ -23,15 +23,7 @@ import {
   type PDFPage,
 } from 'pdf-lib'
 
-import {
-  codigoDa,
-  hojeBrasilia,
-  marcaDoPdf,
-  MORA_COM,
-  TURNOS,
-  VINCULOS,
-  type Ficha,
-} from './ficha'
+import { codigoDa, hojeBrasilia, marcaDoPdf, MORA_COM, TURNOS, VINCULOS, type Ficha } from './ficha'
 
 export const TERMOS = [
   'Eximir a ADAM de eventuais acidentes – tais como lesões, machucados, torções etc. – decorrentes da prática do futebol, sejam em treinamentos ou em jogos externos. Se ocorrer, é dever da ADAM prestar os primeiros socorros e comunicar o fato ao responsável, que deverá se dirigir ao local indicado a fim de que seja dada continuidade ao atendimento;',
@@ -55,16 +47,31 @@ export const LGPD =
   'nos termos do Artigo 14, § 1º, da Lei Geral de Proteção de Dados (LGPD – Lei nº 13.709, de 14 de agosto de 2018): “O tratamento de dados pessoais de crianças deverá ser realizado com o consentimento específico e em destaque dado por pelo menos um dos pais ou pelo responsável legal.”'
 
 const MESES = [
-  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
-  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
+  'janeiro',
+  'fevereiro',
+  'março',
+  'abril',
+  'maio',
+  'junho',
+  'julho',
+  'agosto',
+  'setembro',
+  'outubro',
+  'novembro',
+  'dezembro',
 ]
 
 const br = (iso: string) => (iso ? iso.split('-').reverse().join('/') : '')
 const fone = (d: string) =>
-  !d ? '' : d.length === 11 ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}` : `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
+  !d
+    ? ''
+    : d.length === 11
+      ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+      : `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
 const cpf = (d: string) => `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
 const cep = (d: string) => (d.length === 8 ? `${d.slice(0, 5)}-${d.slice(5)}` : d)
-const simNao = (v: string) => (v === 'sim' ? 'Sim' : v === 'nao' ? 'Não' : v === 'as_vezes' ? 'Às vezes' : '—')
+const simNao = (v: string) =>
+  v === 'sim' ? 'Sim' : v === 'nao' ? 'Não' : v === 'as_vezes' ? 'Às vezes' : '—'
 
 /**
  * A fonte padrao do PDF (Helvetica) so escreve o alfabeto latino: o resto
@@ -141,7 +148,13 @@ class Escritor {
 
   texto(
     texto: string,
-    o: { tamanho?: number; negrito?: boolean; cor?: ReturnType<typeof rgb>; recuo?: number; depois?: number } = {},
+    o: {
+      tamanho?: number
+      negrito?: boolean
+      cor?: ReturnType<typeof rgb>
+      recuo?: number
+      depois?: number
+    } = {},
   ) {
     const tamanho = o.tamanho ?? 9.5
     const fonte = o.negrito ? this.negrito : this.normal
@@ -150,7 +163,13 @@ class Escritor {
     for (const linha of this.linhas(texto, tamanho, fonte, LARGURA - 2 * MARGEM - recuo)) {
       this.espaco(altura)
       this.y -= altura
-      this.pagina.drawText(linha, { x: MARGEM + recuo, y: this.y, size: tamanho, font: fonte, color: o.cor ?? rgb(0, 0, 0) })
+      this.pagina.drawText(linha, {
+        x: MARGEM + recuo,
+        y: this.y,
+        size: tamanho,
+        font: fonte,
+        color: o.cor ?? rgb(0, 0, 0),
+      })
     }
     this.y -= o.depois ?? 0
   }
@@ -167,12 +186,23 @@ class Escritor {
     const altura = tamanho * 1.35
     const r = escrevivel(`${rotulo}: `)
     const larguraRotulo = this.negrito.widthOfTextAtSize(r, tamanho)
-    const linhas = this.linhas(valor || '—', tamanho, this.normal, LARGURA - 2 * MARGEM - larguraRotulo)
+    const linhas = this.linhas(
+      valor || '—',
+      tamanho,
+      this.normal,
+      LARGURA - 2 * MARGEM - larguraRotulo,
+    )
     linhas.forEach((linha, i) => {
       this.espaco(altura)
       this.y -= altura
-      if (i === 0) this.pagina.drawText(r, { x: MARGEM, y: this.y, size: tamanho, font: this.negrito })
-      this.pagina.drawText(linha, { x: MARGEM + larguraRotulo, y: this.y, size: tamanho, font: this.normal })
+      if (i === 0)
+        this.pagina.drawText(r, { x: MARGEM, y: this.y, size: tamanho, font: this.negrito })
+      this.pagina.drawText(linha, {
+        x: MARGEM + larguraRotulo,
+        y: this.y,
+        size: tamanho,
+        font: this.normal,
+      })
     })
   }
 
@@ -241,7 +271,10 @@ export async function montarPdf(
   e.campo('CEP', cep(c.cep))
   e.campo('Bairro', c.bairro)
   e.campo('Cidade', c.cidade)
-  e.campo('Aulas semanais no projeto', c.aulasPorSemana ? `${c.aulasPorSemana} ${c.aulasPorSemana === '1' ? 'vez' : 'vezes'}` : '—')
+  e.campo(
+    'Aulas semanais no projeto',
+    c.aulasPorSemana ? `${c.aulasPorSemana} ${c.aulasPorSemana === '1' ? 'vez' : 'vezes'}` : '—',
+  )
   e.campo('Dias que vai', c.dias)
   e.campo('Escola em que estuda', c.escola)
   e.campo('Turno', c.turno ? TURNOS[c.turno] : '—')
@@ -250,10 +283,16 @@ export async function montarPdf(
   e.titulo('Família e contatos')
   e.campo('Nome da mãe', f.nomeMae)
   e.campo('Nome do pai', f.nomePai)
-  e.campo('Mora com', f.moraCom ? MORA_COM[f.moraCom] + (f.moraComQuem ? ` (${f.moraComQuem})` : '') : '—')
+  e.campo(
+    'Mora com',
+    f.moraCom ? MORA_COM[f.moraCom] + (f.moraComQuem ? ` (${f.moraComQuem})` : '') : '—',
+  )
   e.campo('Tem irmãos', simNao(f.irmaos) + (f.irmaosQuantos ? ` · ${f.irmaosQuantos}` : ''))
   e.campo('Frequenta igreja', simNao(f.igreja) + (f.igrejaQual ? ` · ${f.igrejaQual}` : ''))
-  e.campo('Família atendida pelo CRAS Atibaia', simNao(f.cras) + (f.crasUnidade ? ` · ${f.crasUnidade}` : ''))
+  e.campo(
+    'Família atendida pelo CRAS Atibaia',
+    simNao(f.cras) + (f.crasUnidade ? ` · ${f.crasUnidade}` : ''),
+  )
   ficha.responsaveis.forEach((r, i) => {
     e.campo(
       `Responsável ${i + 1}`,
@@ -322,7 +361,10 @@ export async function montarPdf(
       { tamanho: 8, cor: CINZA },
     )
   } else {
-    e.texto('Assinatura digital gov.br do responsável (assinador.iti.br).', { tamanho: 8, cor: CINZA })
+    e.texto('Assinatura digital gov.br do responsável (assinador.iti.br).', {
+      tamanho: 8,
+      cor: CINZA,
+    })
   }
 
   // sem object streams: a marca fica legivel no arquivo (ver o comentario do topo)

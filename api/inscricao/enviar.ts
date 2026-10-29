@@ -10,9 +10,9 @@
  * - na tela: chega a imagem da assinatura; o PDF guardado e montado aqui,
  *   com a imagem, a data e a hora e o registro do envio.
  */
-import { conferirPdfAssinado } from '../lib/assinatura'
-import { codigoDa, conferirFicha } from '../lib/ficha'
-import { montarPdf } from '../lib/pdf'
+import { conferirPdfAssinado } from '../_inscricao/assinatura'
+import { codigoDa, conferirFicha } from '../_inscricao/ficha'
+import { montarPdf } from '../_inscricao/pdf'
 import {
   admin,
   BUCKET,
@@ -26,7 +26,7 @@ import {
   TAMANHO_MAXIMO,
   UUID,
   type CampoDeArquivo,
-} from '../lib/servidor'
+} from '../_inscricao/servidor'
 
 /** Menos que isto entre abrir o formulario e enviar e robo, nao gente. */
 const TEMPO_MINIMO = 45_000
@@ -63,7 +63,9 @@ export async function POST(request: Request) {
       return resposta({ ok: true, codigo: codigoDa(jaEnviada.data.hash as string) })
     }
     if (tentativa.error || !tentativa.data) {
-      return falha('Este envio expirou. Recarregue a página e envie de novo (os dados continuam preenchidos).')
+      return falha(
+        'Este envio expirou. Recarregue a página e envie de novo (os dados continuam preenchidos).',
+      )
     }
 
     const daInscricao = await unidadeDaInscricao()
@@ -97,7 +99,10 @@ export async function POST(request: Request) {
       if (baixado.error || !baixado.data) {
         return falha('Não foi possível ler a ficha assinada. Envie de novo.', 500, baixado.error)
       }
-      const conferencia = conferirPdfAssinado(new Uint8Array(await baixado.data.arrayBuffer()), hash)
+      const conferencia = conferirPdfAssinado(
+        new Uint8Array(await baixado.data.arrayBuffer()),
+        hash,
+      )
       if (!conferencia.ok) return falha(conferencia.erro)
       reconhecida = conferencia.reconhecida
       fichaPath = caminho
@@ -121,7 +126,8 @@ export async function POST(request: Request) {
       const enviado = await banco.storage
         .from(BUCKET)
         .upload(fichaPath, pdf, { contentType: 'application/pdf', upsert: true })
-      if (enviado.error) return falha('Não foi possível guardar a ficha assinada.', 500, enviado.error)
+      if (enviado.error)
+        return falha('Não foi possível guardar a ficha assinada.', 500, enviado.error)
       delete arquivos.ficha_govbr
     } else {
       return falha('Falta assinar a ficha.')

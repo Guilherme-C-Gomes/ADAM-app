@@ -7,6 +7,12 @@
   "functions": {
     "api/backup.ts": {
       "maxDuration": 60
+    },
+    "api/inscricao/enviar.ts": {
+      "maxDuration": 30
+    },
+    "api/inscricao/ficha.ts": {
+      "maxDuration": 15
     }
   },
   "crons": [

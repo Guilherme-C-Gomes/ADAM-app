@@ -21,7 +21,7 @@ import {
   TAMANHO_MAXIMO,
   TIPOS_ACEITOS,
   type CampoDeArquivo,
-} from '../lib/servidor'
+} from '../_inscricao/servidor'
 
 const POR_APARELHO_POR_DIA = 10
 const POR_DIA = 300
@@ -63,7 +63,11 @@ export async function POST(request: Request) {
         .gte('criado_em', umDiaAtras),
     ])
     if (doAparelho.error || doDia.error) {
-      return falha('O formulário está em manutenção. Tente mais tarde.', 503, doAparelho.error ?? doDia.error)
+      return falha(
+        'O formulário está em manutenção. Tente mais tarde.',
+        503,
+        doAparelho.error ?? doDia.error,
+      )
     }
     if ((doAparelho.count ?? 0) >= POR_APARELHO_POR_DIA) {
       return falha('Muitos envios deste aparelho hoje. Tente amanhã ou fale com a ADAM.', 429)
@@ -74,14 +78,16 @@ export async function POST(request: Request) {
 
     const id = randomUUID()
     const anotada = await banco.from('inscricao_tentativas').insert({ id, ip_hash: ipHash })
-    if (anotada.error) return falha('Não foi possível começar o envio. Tente de novo.', 500, anotada.error)
+    if (anotada.error)
+      return falha('Não foi possível começar o envio. Tente de novo.', 500, anotada.error)
 
     const envios: Record<string, string> = {}
     for (const a of arquivos) {
       const { data, error } = await banco.storage
         .from(BUCKET)
         .createSignedUploadUrl(`${id}/${a.campo}.${a.extensao}`, { upsert: true })
-      if (error || !data) return falha('Não foi possível preparar o envio dos arquivos.', 500, error)
+      if (error || !data)
+        return falha('Não foi possível preparar o envio dos arquivos.', 500, error)
       envios[a.campo] = data.signedUrl
     }
     return resposta({ id, envios })

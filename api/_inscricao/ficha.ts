@@ -97,7 +97,8 @@ export const VINCULOS: Record<Ficha['declarante']['vinculo'], string> = {
 
 type Bruto = Record<string, unknown>
 
-const obj = (v: unknown): Bruto => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Bruto) : {})
+const obj = (v: unknown): Bruto =>
+  v && typeof v === 'object' && !Array.isArray(v) ? (v as Bruto) : {}
 /** Texto limpo: sem espacos sobrando, sem caracteres de controle, com teto. */
 const txt = (v: unknown, max: number) =>
   typeof v === 'string'
@@ -261,7 +262,8 @@ export function conferirFicha(entrada: unknown): Conferida {
     autorizaImagem: d.autorizaImagem === true,
     aceitaTermos: true,
   }
-  if (declarante.nome.split(' ').length < 2) erros.push('Escreva o seu nome completo na declaração.')
+  if (declarante.nome.split(' ').length < 2)
+    erros.push('Escreva o seu nome completo na declaração.')
   if (!declarante.rg) erros.push('Falta o seu RG na declaração.')
   if (!cpfValido(declarante.cpf)) erros.push('Confira o seu CPF: o número não confere.')
   if (!umDe(d.vinculo, Object.keys(VINCULOS) as (keyof typeof VINCULOS)[])) {

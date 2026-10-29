@@ -3,10 +3,12 @@
   "buildCommand": "",
   "outputDirectory": "public",
   "cleanUrls": true,
-  "functions": {
-    "api/enviar.ts": { "maxDuration": 30 },
-    "api/ficha.ts": { "maxDuration": 15 }
-  },
+  "rewrites": [
+    {
+      "source": "/api/:caminho*",
+      "destination": "https://adam-beige-eight.vercel.app/api/inscricao/:caminho*"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

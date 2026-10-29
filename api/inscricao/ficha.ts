@@ -3,9 +3,9 @@
  * e assinar no gov.br. Nada fica gravado: a ficha so entra no sistema pelo
  * /api/enviar.
  */
-import { conferirFicha } from '../lib/ficha'
-import { montarPdf } from '../lib/pdf'
-import { comUnidade, falha, lerJson, unidadeDaInscricao } from '../lib/servidor'
+import { conferirFicha } from '../_inscricao/ficha'
+import { montarPdf } from '../_inscricao/pdf'
+import { comUnidade, falha, lerJson, unidadeDaInscricao } from '../_inscricao/servidor'
 
 export async function POST(request: Request) {
   try {

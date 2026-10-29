@@ -14,16 +14,17 @@
  */
 import { marcaDoPdf } from './ficha'
 
-export type Conferencia =
-  | { ok: true; reconhecida: boolean }
-  | { ok: false; erro: string }
+export type Conferencia = { ok: true; reconhecida: boolean } | { ok: false; erro: string }
 
 const latin1 = (bytes: Uint8Array) => Buffer.from(bytes).toString('latin1')
 
 export function conferirPdfAssinado(bytes: Uint8Array, hash: string): Conferencia {
   const texto = latin1(bytes)
   if (!texto.startsWith('%PDF')) {
-    return { ok: false, erro: 'O arquivo enviado não é um PDF. Envie a ficha assinada que o gov.br devolveu.' }
+    return {
+      ok: false,
+      erro: 'O arquivo enviado não é um PDF. Envie a ficha assinada que o gov.br devolveu.',
+    }
   }
   if (!texto.includes(marcaDoPdf(hash))) {
     return {
@@ -33,7 +34,8 @@ export function conferirPdfAssinado(bytes: Uint8Array, hash: string): Conferenci
   }
 
   const faixas = [...texto.matchAll(/\/ByteRange\s*\[\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*\]/g)]
-  const temFiltro = /\/SubFilter\s*\/(adbe\.pkcs7\.detached|ETSI\.CAdES\.detached|adbe\.pkcs7\.sha1)/.test(texto)
+  const temFiltro =
+    /\/SubFilter\s*\/(adbe\.pkcs7\.detached|ETSI\.CAdES\.detached|adbe\.pkcs7\.sha1)/.test(texto)
   if (!faixas.length || !temFiltro) {
     return {
       ok: false,
