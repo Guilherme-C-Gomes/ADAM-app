@@ -7,7 +7,12 @@ import { Aviso, Bloco, Grupo, Linha, Link, TelaForm } from '@/components/ui/form
 import { mostrarRecado } from '@/components/ui/recado'
 import { Segmentado } from '@/components/ui/setor'
 import { idadeDe, paraBR } from '@/data/fichas'
-import { LINK_INSCRICAO, useInscricoes, type StatusInscricao } from '@/data/inscricoes'
+import {
+  contarPendentes,
+  LINK_INSCRICAO,
+  useInscricoes,
+  type StatusInscricao,
+} from '@/data/inscricoes'
 import { color, space, type } from '@/theme/tokens'
 
 /**
@@ -25,10 +30,12 @@ export default function Inscricoes() {
   const [aba, setAba] = useState<(typeof ABAS)[number]>('Novas')
   const { lista, carregando, erro, recarregar } = useInscricoes(STATUS[aba])
 
-  // voltar de uma inscricao cadastrada ou recusada traz a lista nova
+  // voltar de uma inscricao cadastrada ou recusada traz a lista nova (e o
+  // numero da barra de menu)
   useFocusEffect(
     useCallback(() => {
       recarregar()
+      contarPendentes()
     }, [recarregar]),
   )
 

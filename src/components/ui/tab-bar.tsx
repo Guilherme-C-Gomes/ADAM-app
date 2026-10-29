@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native'
+import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native'
 import Animated, {
   ReduceMotion,
   useAnimatedStyle,
@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { IconeChamada, IconeEstudo, IconeJogo, IconeSecretaria } from '@/components/ui/icones'
 import { molaPop, usePilulaDeslizante } from '@/components/ui/movimento'
+import { usePendentes } from '@/data/inscricoes'
 import { criarRascunho } from '@/hooks/use-rascunho'
 import { color, onDark, radius, space, target } from '@/theme/tokens'
 
@@ -108,6 +109,8 @@ function caminhoFocado(estado: EstadoRota): string[] {
 
 export function TabBar({ state, navigation }: PropsBarra) {
   const insets = useSafeAreaInsets()
+  // inscricoes pelo link esperando cadastro: numero no icone da Secretaria
+  const { total: inscricoesNovas } = usePendentes()
 
   // O primeiro segmento e o setor; do segundo em diante e a pilha dele.
   const dentroDoSetor = caminhoFocado(state).slice(1)
@@ -156,6 +159,7 @@ export function TabBar({ state, navigation }: PropsBarra) {
                 key={route.key}
                 nome={nome}
                 ativo={ativo}
+                selo={nome === 'secretaria' ? (inscricoesNovas ?? 0) : 0}
                 // ate a pilula ser medida, o item ativo pinta o proprio fundo
                 fundo={ativo && !pilula.medida}
                 onLayout={pilula.medir(route.key ?? route.name)}
@@ -182,12 +186,15 @@ export function TabBar({ state, navigation }: PropsBarra) {
 function ItemBarra({
   nome,
   ativo,
+  selo,
   fundo,
   onLayout,
   onPress,
 }: {
   nome: keyof typeof ICONES
   ativo: boolean
+  /** numero pequeno no canto do icone (0 = sem) */
+  selo: number
   fundo: boolean
   onLayout: (e: LayoutChangeEvent) => void
   onPress: () => void
@@ -220,15 +227,39 @@ function ItemBarra({
       style={({ pressed }) => [s.item, fundo && s.itemAtivo, pressed && s.pressed]}
       accessibilityRole="button"
       accessibilityState={{ selected: ativo }}
-      accessibilityLabel={ROTULOS[nome]}>
+      accessibilityLabel={
+        selo
+          ? `${ROTULOS[nome]}, ${selo} ${selo === 1 ? 'inscrição nova' : 'inscrições novas'}`
+          : ROTULOS[nome]
+      }>
       <Animated.View style={pulo}>
         <Icone cor={ativo ? color.text : color.muted} />
+        {selo ? (
+          <View style={s.selo}>
+            <Text style={s.seloTexto}>{selo > 9 ? '9+' : selo}</Text>
+          </View>
+        ) : null}
       </Animated.View>
     </Pressable>
   )
 }
 
 const s = StyleSheet.create({
+  selo: {
+    position: 'absolute',
+    top: -6,
+    right: -10,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color.primary,
+    borderWidth: 2,
+    borderColor: color.surface2,
+  },
+  seloTexto: { fontSize: 10, lineHeight: 12, fontFamily: 'Inter_700Bold', color: color.text },
   wrapper: {
     position: 'absolute',
     left: 0,

@@ -20,6 +20,8 @@ type Pedido = {
   texto: string
   /** o rotulo do botao que confirma */
   confirmar: string
+  /** o rotulo do outro botao; sem ele, "Cancelar" */
+  cancelar?: string
   perigo?: boolean
 }
 
@@ -42,6 +44,9 @@ export function pedirConfirmacao(p: Pedido) {
     })
   })
 }
+
+/** Ja tem um "tem certeza?" na tela (um aviso automatico nao passa por cima). */
+export const haConfirmacaoAberta = () => pedido.ler().atual !== null
 
 export function Confirmacao() {
   const { atual } = pedido.useValor()
@@ -75,7 +80,11 @@ export function Confirmacao() {
             variante={atual.perigo ? 'perigo' : 'primario'}
             onPress={() => atual.responder(true)}
           />
-          <Botao rotulo="Cancelar" variante="secundario" onPress={() => atual.responder(false)} />
+          <Botao
+            rotulo={atual.cancelar ?? 'Cancelar'}
+            variante="secundario"
+            onPress={() => atual.responder(false)}
+          />
         </View>
       </Animated.View>
     </Animated.View>

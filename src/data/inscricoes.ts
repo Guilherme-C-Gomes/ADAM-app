@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { DOCUMENTOS, paraBR } from '@/data/fichas'
 import { sessao } from '@/data/perfis'
 import { FICHA_VAZIA, rascunhoFicha, type Anexo, type Contato } from '@/data/rascunhos'
+import { criarRascunho } from '@/hooks/use-rascunho'
 import { supabase } from '@/lib/supabase'
 import { mascaraTelefone } from '@/lib/telefone'
 
@@ -182,24 +183,31 @@ export function useInscricoes(status: StatusInscricao) {
   return { ...estado, recarregar }
 }
 
-/** Quantas estao esperando a Secretaria (null: nao deu para contar). */
+/**
+ * Quantas estao esperando a Secretaria (null: nao deu para contar). Um valor
+ * so para o app todo: o numero na barra de menu, a linha da Secretaria e o
+ * aviso ao abrir o app (components/aviso-inscricoes.tsx) leem daqui.
+ */
+const pendentes = criarRascunho({ total: null as number | null })
+
+export async function contarPendentes() {
+  const { count, error } = await supabase
+    .from('inscricoes')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'pendente')
+  const total = error ? null : (count ?? 0)
+  pendentes.definir({ total })
+  return total
+}
+
+/** Quem sai da conta (ou nao ve fichas) nao fica com o numero de outra conta. */
+export const esquecerPendentes = () => pendentes.definir({ total: null })
+
 export function usePendentes() {
-  const [total, setTotal] = useState<number | null>(null)
-  const [vez, setVez] = useState(0)
-  const recarregar = useCallback(() => setVez((v) => v + 1), [])
-  useEffect(() => {
-    let ativo = true
-    supabase
-      .from('inscricoes')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pendente')
-      .then(({ count, error }) => {
-        if (ativo) setTotal(error ? null : (count ?? 0))
-      })
-    return () => {
-      ativo = false
-    }
-  }, [vez])
+  const { total } = pendentes.useValor()
+  const recarregar = useCallback(() => {
+    contarPendentes()
+  }, [])
   return { total, recarregar }
 }
 

@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router'
 
+import { AvisoInscricoes } from '@/components/aviso-inscricoes'
 import { GuardaSessao } from '@/components/guarda-sessao'
 import { TabBar, useEspacoDaBarra } from '@/components/ui/tab-bar'
 import { usePerfil } from '@/data/perfis'
@@ -48,6 +49,7 @@ export default function TabsLayout() {
           <Tabs.Screen name="estudo" />
         </Tabs.Protected>
       </Tabs>
+      <AvisoInscricoes />
     </GuardaSessao>
   )
 }
