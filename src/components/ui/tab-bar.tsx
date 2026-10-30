@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect'
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native'
 import Animated, {
   interpolateColor,
   ReduceMotion,
@@ -160,8 +161,16 @@ export function TabBar({ state, navigation }: PropsBarra) {
 }
 
 /**
- * Um botao da barra. Ao virar o ativo, o fundo se enche de roxo e o icone
- * da um pulinho (escala 1.15 e volta).
+ * O Liquid Glass de verdade (iOS 26). Fora dele (web, iOS mais antigo) o
+ * botao e um vidro fosco feito a mao: fundo translucido e, na web, desfoque
+ * do que passa por baixo.
+ */
+const VIDRO = isLiquidGlassAvailable()
+
+/**
+ * Um botao da barra, de vidro: o conteudo da tela aparece por baixo. Ao
+ * virar o ativo, o vidro fica roxo e o icone da um pulinho (escala 1.15 e
+ * volta).
  */
 function ItemBarra({
   nome,
@@ -200,8 +209,8 @@ function ItemBarra({
 
   const pulo = useAnimatedStyle(() => ({ transform: [{ scale: escala.get() }] }))
   const fundo = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(cheio.get(), [0, 1], [color.surface2, color.primary]),
-    borderColor: interpolateColor(cheio.get(), [0, 1], [color.border, color.primary]),
+    backgroundColor: interpolateColor(cheio.get(), [0, 1], [VIDRO_FOSCO, color.primary]),
+    borderColor: interpolateColor(cheio.get(), [0, 1], [BORDA_DO_VIDRO, color.primary]),
   }))
 
   return (
@@ -215,19 +224,33 @@ function ItemBarra({
           ? `${ROTULOS[nome]}, ${selo} ${selo === 1 ? 'inscrição nova' : 'inscrições novas'}`
           : ROTULOS[nome]
       }>
-      <Animated.View style={[s.item, fundo]}>
+      <View style={[s.item, !VIDRO && s.sombra]}>
+        {VIDRO ? (
+          <GlassView
+            style={s.vidro}
+            glassEffectStyle="regular"
+            colorScheme="dark"
+            tintColor={ativo ? color.primary : undefined}
+            isInteractive
+          />
+        ) : (
+          <Animated.View style={[s.vidro, s.vidroFosco, fundo]} />
+        )}
         <Animated.View style={pulo}>
-          <Icone cor={ativo ? color.text : color.muted} />
+          <Icone cor={ativo ? color.text : 'rgba(255, 255, 255, 0.72)'} />
         </Animated.View>
         {selo ? (
           <View style={s.selo}>
             <Text style={s.seloTexto}>{selo > 9 ? '9+' : selo}</Text>
           </View>
         ) : null}
-      </Animated.View>
+      </View>
     </Pressable>
   )
 }
+
+const VIDRO_FOSCO = 'rgba(30, 30, 43, 0.55)'
+const BORDA_DO_VIDRO = 'rgba(255, 255, 255, 0.14)'
 
 const s = StyleSheet.create({
   selo: {
@@ -242,7 +265,7 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: color.primary,
     borderWidth: 2,
-    borderColor: color.surface2,
+    borderColor: color.bg,
   },
   seloTexto: { fontSize: 10, lineHeight: 12, fontFamily: 'Inter_700Bold', color: color.text },
   wrapper: {
@@ -253,7 +276,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     paddingTop: FOLGA_TOPO,
     paddingHorizontal: space.lg,
-    backgroundColor: color.bg,
+    // sem fundo: a faixa e transparente e so os botoes de vidro aparecem
   },
   // botoes soltos, lado a lado no centro: cada um e o seu proprio quadrado
   barra: {
@@ -266,12 +289,26 @@ const s = StyleSheet.create({
   item: {
     width: LADO,
     height: LADO,
-    borderRadius: 18,
-    borderCurve: 'continuous',
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    // a sombra destaca o botao do fundo escuro (no iPhone; no Android, elevation)
+  },
+  vidro: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderRadius: 18,
+    borderCurve: 'continuous',
+    overflow: 'hidden',
+  },
+  vidroFosco: {
+    borderWidth: 1,
+    // web: desfoca o que passa por baixo (no app, o fundo translucido basta)
+    ...(Platform.OS === 'web' ? ({ backdropFilter: 'blur(18px) saturate(160%)' } as object) : null),
+  },
+  // a sombra separa o vidro do conteudo (no Liquid Glass ela ja vem junto)
+  sombra: {
     shadowColor: '#000',
     shadowOpacity: 0.35,
     shadowRadius: 10,

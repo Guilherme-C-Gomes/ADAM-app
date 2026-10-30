@@ -11,7 +11,7 @@ import { Icone } from '@/components/ui/icone'
 import { Pressionavel } from '@/components/ui/movimento'
 import { useUnidades } from '@/data/chamada'
 import { emQueda, useParticipantes, type Participante } from '@/data/fichas'
-import { color, radius, space, type } from '@/theme/tokens'
+import { color, ESPACO_FIM_DA_TELA, radius, space, type } from '@/theme/tokens'
 import { COR_FOCO, useFoco } from '@/hooks/use-foco'
 
 const TODOS = 'Todos'
@@ -279,7 +279,7 @@ const st = StyleSheet.create({
   },
   focado: { borderColor: COR_FOCO },
   filtros: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
-  lista: { padding: space.lg },
+  lista: { padding: space.lg, paddingBottom: ESPACO_FIM_DA_TELA },
   separador: { height: space.md },
   cabecalhoGrupo: {
     ...type.caption,

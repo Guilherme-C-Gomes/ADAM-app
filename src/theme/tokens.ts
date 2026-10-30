@@ -60,11 +60,12 @@ export const space = {
 } as const
 
 /**
- * Respiro no fim do conteudo rolavel das telas. A barra de menu nao
- * sobrepoe mais a tela (a cena termina acima dela), entao isto e so folga
- * para o ultimo card nao colar no fim.
+ * Respiro no fim do conteudo rolavel das telas com a barra de menu. A barra
+ * e de vidro e o conteudo passa por baixo dela: o fim da lista precisa
+ * subir acima dos botoes (faixa da barra, ate ~100 no iPhone) e ainda
+ * sobrar folga para o ultimo card nao colar neles.
  */
-export const ESPACO_FIM_DA_TELA = 40 // space.xxxl
+export const ESPACO_FIM_DA_TELA = 140
 
 export const radius = {
   campo: 12,

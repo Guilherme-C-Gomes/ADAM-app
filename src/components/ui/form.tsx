@@ -59,21 +59,30 @@ export function TelaForm({
   rodape?: React.ReactNode
   children: React.ReactNode
 }) {
-  // Dentro das abas com a barra de menu na tela, a cena ja termina acima
-  // da barra (que ocupa a margem de baixo do iPhone): aplicar a margem de
-  // baixo de novo deixaria um vao. Ajustes mora fora das abas e sempre a usa.
+  // Dentro das abas com a barra de menu na tela, a barra de vidro flutua
+  // por cima do fim da tela (e ja cobre a margem de baixo do iPhone): o
+  // conteudo ganha folga do tamanho da faixa dela e o rodape sobe acima
+  // dela. Ajustes mora fora das abas e sempre usa a margem de baixo.
   const segmentos = useSegments()
-  const comBarra = useEspacoDaBarra() > 0 && segmentos[0] === '(tabs)'
+  const faixaDaBarra = useEspacoDaBarra()
+  const comBarra = faixaDaBarra > 0 && segmentos[0] === '(tabs)'
   return (
     <SafeAreaView style={s.tela} edges={comBarra ? ['top'] : ['top', 'bottom']}>
       <HeroVoltar titulo={titulo} subtitulo={subtitulo} acao={acao} voltarPara={voltarPara} />
       <ScrollView
-        contentContainerStyle={s.conteudo}
+        contentContainerStyle={[
+          s.conteudo,
+          comBarra && !rodape && { paddingBottom: faixaDaBarra + space.xxxl },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
         {children}
       </ScrollView>
-      {rodape ? <View style={s.rodape}>{rodape}</View> : null}
+      {rodape ? (
+        <View style={[s.rodape, comBarra && { paddingBottom: faixaDaBarra + space.sm }]}>
+          {rodape}
+        </View>
+      ) : null}
     </SafeAreaView>
   )
 }
