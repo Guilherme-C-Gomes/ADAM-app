@@ -503,6 +503,11 @@ begin
             -- a propria funcao recusou (ex.: 'acesso inativo')
             v_obtido := 'negado';
             v_obs := concat_ws(' | ', v_obs, 'recusado: ' || v_msg);
+          elsif v_estado in ('AD001', 'AD002', 'AD003') then
+            -- as travas de protecao (20261023120000_protecao_adm.sql)
+            -- recusaram com o codigo proprio delas: e o bloqueio esperado
+            v_obtido := 'negado';
+            v_obs := concat_ws(' | ', v_obs, 'trava ' || v_estado || ': ' || v_msg);
           else
             v_obtido := 'erro';
             v_obs := concat_ws(' | ', v_obs, v_estado || ': ' || v_msg);
