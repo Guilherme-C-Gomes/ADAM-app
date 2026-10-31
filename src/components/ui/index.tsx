@@ -86,7 +86,7 @@ export function Overline({ children }: { children: string }) {
  * e desliza por translateX — sem animar width, que recalcula o layout a
  * cada quadro, e sem achatar a ponta arredondada como faria um scaleX.
  */
-export function Barra({ pct, cor = onDark.fill }: { pct: number; cor?: string }) {
+export function Barra({ pct, cor = color.primary }: { pct: number; cor?: string }) {
   const alvo = Math.min(100, Math.max(0, pct))
   const valor = useAnimarAte(alvo)
 
@@ -289,7 +289,7 @@ const s = StyleSheet.create({
 
   avatar: {
     overflow: 'hidden',
-    backgroundColor: color.primary,
+    backgroundColor: color.cheio,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -210,7 +210,7 @@ function ItemBarra({
   const pulo = useAnimatedStyle(() => ({ transform: [{ scale: escala.get() }] }))
   const aceso = useAnimatedStyle(() => ({ opacity: cheio.get() }))
   const fundo = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(cheio.get(), [0, 1], [VIDRO_FOSCO, color.primary]),
+    backgroundColor: interpolateColor(cheio.get(), [0, 1], [VIDRO_FOSCO, color.cheio]),
     borderColor: interpolateColor(cheio.get(), [0, 1], [BORDA_DO_VIDRO, color.primary]),
   }))
 
@@ -307,7 +307,7 @@ const s = StyleSheet.create({
     borderCurve: 'continuous',
     overflow: 'hidden',
   },
-  roxo: { backgroundColor: color.primary },
+  roxo: { backgroundColor: color.cheio },
   vidroFosco: {
     borderWidth: 1,
     // web: desfoca o que passa por baixo (no app, o fundo translucido basta)

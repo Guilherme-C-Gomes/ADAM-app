@@ -600,7 +600,7 @@ const st = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: color.primary,
+    backgroundColor: color.cheio,
     alignItems: 'center',
     justifyContent: 'center',
   },

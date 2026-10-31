@@ -94,7 +94,7 @@ export default function Documentos() {
                 legendaTom={entregue ? undefined : 'ambar'}
                 esquerda={
                   <View style={[st.marca, entregue && st.marcaOk]}>
-                    {entregue ? <Icone nome="check" cor={color.onPrimary} tamanho={14} /> : null}
+                    {entregue ? <Icone nome="check" cor={color.bg} tamanho={14} /> : null}
                   </View>
                 }
                 onPress={() =>

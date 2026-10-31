@@ -605,7 +605,7 @@ const st = StyleSheet.create({
     paddingVertical: space.xs,
     borderRadius: radius.chip,
     borderCurve: 'continuous',
-    backgroundColor: color.primary,
+    backgroundColor: color.cheio,
   },
   seloCategoriaRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 
@@ -630,9 +630,9 @@ const st = StyleSheet.create({
     borderRadius: radius.botao,
     borderCurve: 'continuous',
     // o mesmo secundario do app: roxo a 40%, abaixo do principal (roxo cheio)
-    backgroundColor: color.primarySoft,
+    backgroundColor: color.surface2,
     borderWidth: 1,
-    borderColor: color.primary,
+    borderColor: color.border,
   },
-  botaoSecundarioRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.onSoft },
+  botaoSecundarioRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
 })

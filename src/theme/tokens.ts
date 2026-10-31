@@ -38,8 +38,14 @@ const ESCURO = {
   primaryDk: '#3A0A52',
   /** fundo do botao secundario e de faixas: o roxo da marca a 40% */
   primarySoft: 'rgba(158, 6, 209, 0.4)',
-  /** letra e icone em cima do roxo cheio (botao, chip ativo, selo) */
-  onPrimary: '#FFFFFF',
+  /**
+   * Fundo dos destaques (botao principal, item ativo, chip e selo ativos,
+   * avatar): cinza um tom acima das superficies. O roxo fica so nos
+   * detalhes — letra, icone, borda fina.
+   */
+  cheio: '#2A2A3A',
+  /** letra e icone em cima do `cheio`: o roxo da marca clareado (4,65:1) */
+  onPrimary: '#C870E8',
   /** letra do botao secundario */
   onSoft: '#FFFFFF',
 
@@ -70,8 +76,10 @@ const CLARO: typeof ESCURO = {
   primaryCh: '#9E06D1',
   primaryDk: '#F0DDF8',
   primarySoft: 'rgba(158, 6, 209, 0.14)',
-  onPrimary: '#FFFFFF',
-  onSoft: '#7A04A3',
+  cheio: '#E3E0EB',
+  /** o roxo exato da logo: 4,74:1 sobre o `cheio` claro */
+  onPrimary: '#9E06D1',
+  onSoft: '#16131D',
 
   success: '#13854F',
   warn: '#A86400',
@@ -90,7 +98,8 @@ export const color = escuro ? ESCURO : CLARO
  * Texto e dado em roxo usam primaryLt, que passa 4.5:1 (criterio AA).
  */
 export const onDark = {
-  fill: color.primary,
+  /** o fundo dos destaques: cinza (o roxo e so detalhe) */
+  fill: color.cheio,
   text: color.primaryLt,
 } as const
 

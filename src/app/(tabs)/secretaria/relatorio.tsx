@@ -13,7 +13,7 @@ import { Esqueleto, SkeletonCard, SkeletonFaixa } from '@/components/ui/skeleton
 import { emQueda, useParticipantes } from '@/data/fichas'
 import { useFiltroSecretaria } from '@/data/filtro-secretaria'
 import { useMetricas } from '@/data/metricas'
-import { color, onDark, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
+import { color, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 
 /**
  * Telas 07, 07b, 07d, 07p e 07q. Quatro recortes do mesmo periodo:
@@ -343,7 +343,7 @@ export default function Relatorio() {
                         <NotaBarra
                           rotulo="Entenderam"
                           valor={m.qualidade.entenderam}
-                          cor={onDark.fill}
+                          cor={color.primary}
                         />
                         <NotaBarra
                           rotulo="Dificuldade"

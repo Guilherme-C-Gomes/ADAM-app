@@ -242,7 +242,7 @@ export function Grupo({ children, style }: { children: React.ReactNode; style?: 
 export type Tom = 'roxo' | 'verde' | 'ambar' | 'vermelho' | 'neutro'
 
 const TONS: Record<Tom, { fundo: string; texto: string }> = {
-  roxo: { fundo: color.primary, texto: color.onPrimary },
+  roxo: { fundo: color.cheio, texto: color.onPrimary },
   verde: { fundo: 'rgba(61, 214, 140, 0.14)', texto: color.success },
   ambar: { fundo: 'rgba(245, 165, 36, 0.14)', texto: color.warn },
   vermelho: { fundo: 'rgba(255, 122, 181, 0.14)', texto: color.danger },
@@ -968,9 +968,9 @@ const s = StyleSheet.create({
   // Secundario: o roxo da marca a 40% com borda no roxo cheio — destaca sem
   // disputar com o principal (roxo cheio). Letra branca.
   botaoSecundario: {
-    backgroundColor: color.primarySoft,
+    backgroundColor: color.surface2,
     borderWidth: 1,
-    borderColor: color.primary,
+    borderColor: color.border,
   },
   botaoPerigo: {
     backgroundColor: 'rgba(255, 122, 181, 0.1)',
@@ -978,7 +978,7 @@ const s = StyleSheet.create({
     borderColor: 'rgba(255, 122, 181, 0.5)',
   },
   botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
-  textoSecundario: { color: color.onSoft },
+  textoSecundario: { color: color.text },
   // com vidro: a borda colorida fica, o fundo translucido sai (o vidro faz)
   vidroNoFundo: { backgroundColor: 'transparent' },
   textoPerigo: { color: color.danger },
@@ -1098,7 +1098,7 @@ const s = StyleSheet.create({
     backgroundColor: color.surface2,
     overflow: 'hidden',
   },
-  chaveAcesa: { backgroundColor: onDark.fill },
+  chaveAcesa: { backgroundColor: color.primary },
   chavePolegar: {
     position: 'absolute',
     top: 2,

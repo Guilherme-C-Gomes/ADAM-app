@@ -267,7 +267,7 @@ const st = StyleSheet.create({
     minWidth: 56,
     justifyContent: 'center',
   },
-  chipAtivo: { backgroundColor: color.primary, borderColor: color.primary },
+  chipAtivo: { backgroundColor: color.cheio, borderColor: color.primary },
   chipAmbar: { backgroundColor: 'rgba(245, 165, 36, 0.12)', borderColor: color.warn },
   chipRotulo: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.muted },
   chipRotuloAtivo: { color: color.onPrimary },

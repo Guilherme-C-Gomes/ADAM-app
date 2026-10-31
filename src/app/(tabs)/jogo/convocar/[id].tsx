@@ -265,7 +265,7 @@ const st = StyleSheet.create({
     paddingVertical: space.xs,
     borderRadius: radius.chip,
     borderCurve: 'continuous',
-    backgroundColor: color.primary,
+    backgroundColor: color.cheio,
   },
   seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 

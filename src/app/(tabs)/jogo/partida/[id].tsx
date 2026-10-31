@@ -375,7 +375,7 @@ const st = StyleSheet.create({
     borderRadius: FICHA / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: color.primary,
+    backgroundColor: color.cheio,
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.35)',
   },
