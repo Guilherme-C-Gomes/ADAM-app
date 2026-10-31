@@ -25,7 +25,8 @@ export type Ficha = {
     /** "AAAA-MM-DD" */
     nascimento: string
     unidadeId: string
-    endereco: string
+    rua: string
+    numero: string
     cep: string
     bairro: string
     cidade: string
@@ -33,6 +34,7 @@ export type Ficha = {
     turno: '' | 'manha' | 'tarde' | 'noite' | 'integral_manha_tarde' | 'integral_tarde_noite'
     serie: string
     aulasPorSemana: '' | '1' | '2' | '3'
+    /** "quarta", "sabado" ou "quarta,sabado" */
     dias: string
   }
   familia: {
@@ -46,7 +48,6 @@ export type Ficha = {
     igrejaQual: string
     cras: '' | SimNao
     crasUnidade: string
-    telResidencial: string
     urgenciaNome: string
     urgenciaTelefone: string
   }
@@ -166,7 +167,8 @@ export function conferirFicha(entrada: unknown): Conferida {
     nome: txt(c.nome, 120),
     nascimento: /^\d{4}-\d{2}-\d{2}$/.test(String(c.nascimento)) ? String(c.nascimento) : '',
     unidadeId: UUID.test(String(c.unidadeId)) ? String(c.unidadeId).toLowerCase() : '',
-    endereco: txt(c.endereco, 200),
+    rua: txt(c.rua, 160),
+    numero: txt(c.numero, 12),
     cep: digitos(c.cep, 8),
     bairro: txt(c.bairro, 80),
     cidade: txt(c.cidade, 80),
@@ -174,7 +176,7 @@ export function conferirFicha(entrada: unknown): Conferida {
     turno: umDe(c.turno, Object.keys(TURNOS) as (keyof typeof TURNOS)[]),
     serie: txt(c.serie, 40),
     aulasPorSemana: umDe(c.aulasPorSemana, ['1', '2', '3'] as const),
-    dias: txt(c.dias, 120),
+    dias: ['quarta', 'sabado'].filter((d) => String(c.dias).split(',').includes(d)).join(','),
   }
   if (crianca.nome.split(' ').length < 2) erros.push('Escreva o nome completo da criança.')
   if (!crianca.nascimento) erros.push('Falta a data de nascimento da criança.')
@@ -185,7 +187,8 @@ export function conferirFicha(entrada: unknown): Conferida {
     }
   }
   if (!crianca.unidadeId) erros.push('Escolha a unidade onde a criança vai treinar.')
-  if (!crianca.endereco) erros.push('Falta o endereço.')
+  if (!crianca.rua) erros.push('Falta a rua.')
+  if (!crianca.numero) erros.push('Falta o número da casa (ou S/N).')
   if (!crianca.cidade) erros.push('Falta a cidade.')
   if (!crianca.escola) erros.push('Falta a escola em que a criança estuda.')
 
@@ -200,7 +203,6 @@ export function conferirFicha(entrada: unknown): Conferida {
     igrejaQual: txt(f.igrejaQual, 120),
     cras: umDe(f.cras, ['sim', 'nao'] as const),
     crasUnidade: txt(f.crasUnidade, 120),
-    telResidencial: telefone(f.telResidencial),
     urgenciaNome: txt(f.urgenciaNome, 120),
     urgenciaTelefone: telefone(f.urgenciaTelefone),
   }
@@ -208,9 +210,6 @@ export function conferirFicha(entrada: unknown): Conferida {
   if (familia.irmaos !== 'sim') familia.irmaosQuantos = ''
   if (familia.igreja === 'nao' || !familia.igreja) familia.igrejaQual = ''
   if (familia.cras !== 'sim') familia.crasUnidade = ''
-  if (familia.telResidencial && !telefoneOk(familia.telResidencial)) {
-    erros.push('Confira o telefone residencial (DDD + número).')
-  }
   if (!familia.urgenciaNome || !telefoneOk(familia.urgenciaTelefone)) {
     erros.push('Diga quem chamar em caso de urgência, com telefone (DDD + número).')
   }

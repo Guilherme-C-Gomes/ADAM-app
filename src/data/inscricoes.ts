@@ -27,7 +27,10 @@ export type FichaInscricao = {
     nome: string
     nascimento: string
     unidadeId: string
-    endereco: string
+    rua?: string
+    numero?: string
+    /** inscricoes antigas: rua e numero juntos */
+    endereco?: string
     cep: string
     bairro: string
     cidade: string
@@ -48,7 +51,6 @@ export type FichaInscricao = {
     igrejaQual: string
     cras: string
     crasUnidade: string
-    telResidencial: string
     urgenciaNome: string
     urgenciaTelefone: string
   }

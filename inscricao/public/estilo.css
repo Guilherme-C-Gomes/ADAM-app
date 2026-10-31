@@ -96,6 +96,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--primary-lt); box
 .invalido { border-color: var(--warn) !important; }
 textarea { resize: vertical; }
 .dupla { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dupla.rua { grid-template-columns: 2fr 1fr; }
 @media (max-width: 360px) { .dupla { grid-template-columns: 1fr; } }
 
 .opcoes { display: grid; gap: 8px; }

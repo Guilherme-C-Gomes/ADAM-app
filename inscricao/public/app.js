@@ -164,6 +164,7 @@ document.addEventListener('input', (e) => {
   el.classList.remove('invalido')
   gravar(el.name, valorDoCampo(el))
   if (el.name === 'crianca.cep' && so(el.value).length === 8) buscarCep(so(el.value))
+  if (['crianca.rua', 'crianca.bairro', 'crianca.cidade'].includes(el.name)) buscarCepDaRua()
   condicionais()
   if (el.name === 'assinatura.tipo') mostrarVia()
   mensagem('')
@@ -175,18 +176,57 @@ document.addEventListener('change', (e) => {
   }
 })
 
+// ─── CEP (viacep.com.br, gratuito) ───────────────────────────────────
+// CEP -> rua, bairro e cidade; sem CEP, rua + bairro -> CEP.
+
+const avisoCep = (t) => ($('#aviso-cep').textContent = t)
+let cepBuscado = ''
+
 async function buscarCep(cep) {
+  if (cep === cepBuscado) return
+  cepBuscado = cep
   try {
     const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
     const j = await r.json()
-    if (j.erro) return
+    if (j.erro) return avisoCep('CEP não encontrado. Confira ou preencha o endereço.')
     const c = estado.dados.crianca
-    if (!c.endereco && j.logradouro) c.endereco = `${j.logradouro}, `
-    if (!c.bairro && j.bairro) c.bairro = j.bairro
+    if (j.logradouro) c.rua = j.logradouro
+    if (j.bairro) c.bairro = j.bairro
     if (j.localidade) c.cidade = j.localidade
     guardar()
     preencherCampos()
+    avisoCep(c.numero ? 'Endereço preenchido pelo CEP.' : 'Endereço preenchido pelo CEP. Falta só o número.')
   } catch {}
+}
+
+const SEM_ACENTO = { á: 'a', à: 'a', â: 'a', ã: 'a', é: 'e', ê: 'e', í: 'i', ó: 'o', ô: 'o', õ: 'o', ú: 'u', ü: 'u', ç: 'c' }
+const simples = (t) =>
+  String(t || '').toLowerCase().replace(/[áàâãéêíóôõúüç]/g, (c) => SEM_ACENTO[c] || c).replace(/\s+/g, ' ').trim()
+
+let esperaRua = 0
+function buscarCepDaRua() {
+  clearTimeout(esperaRua)
+  const c = estado.dados.crianca
+  const nome = String(c.rua || '').split(',')[0].replace(/\d+/g, '').trim()
+  if (so(c.cep).length === 8 || nome.length < 3) return
+  // espera a pessoa parar de digitar
+  esperaRua = setTimeout(async () => {
+    try {
+      const cidade = String(c.cidade || 'Atibaia').trim()
+      const r = await fetch(`https://viacep.com.br/ws/SP/${encodeURIComponent(cidade)}/${encodeURIComponent(nome)}/json/`)
+      const lista = await r.json()
+      if (!Array.isArray(lista) || !lista.length) return avisoCep('Não achei o CEP dessa rua. Pode digitar o CEP.')
+      const doBairro = c.bairro ? lista.find((e) => simples(e.bairro) === simples(c.bairro)) : null
+      const ceps = [...new Set(lista.map((e) => e.cep))]
+      const achado = doBairro ? doBairro.cep : ceps.length === 1 ? ceps[0] : null
+      if (!achado) return avisoCep(c.bairro ? 'Não achei o CEP dessa rua nesse bairro. Pode digitar o CEP.' : 'Escreva o bairro para achar o CEP.')
+      c.cep = mascaraCep(achado)
+      cepBuscado = so(achado)
+      guardar()
+      preencherCampos()
+      avisoCep('CEP encontrado pela rua e bairro.')
+    } catch {}
+  }, 900)
 }
 
 // ─── passos ──────────────────────────────────────────────────────────
@@ -239,7 +279,8 @@ function conferir(passo) {
     exige(palavras(d.crianca.nome) >= 2, 'crianca.nome', 'Escreva o nome completo da criança.')
     exige(d.crianca.nascimento, 'crianca.nascimento', 'Falta a data de nascimento.')
     exige(String(d.crianca.cidade || '').trim(), 'crianca.cidade', 'Falta a cidade.')
-    exige(String(d.crianca.endereco || '').trim(), 'crianca.endereco', 'Falta o endereço.')
+    exige(String(d.crianca.rua || '').trim(), 'crianca.rua', 'Falta a rua.')
+    exige(String(d.crianca.numero || '').trim(), 'crianca.numero', 'Falta o número da casa (ou S/N).')
     exige(String(d.crianca.escola || '').trim(), 'crianca.escola', 'Falta a escola.')
   }
   if (passo === 'responsaveis') {
@@ -251,9 +292,6 @@ function conferir(passo) {
       exige(String(r[1]?.nome || '').trim(), 'responsaveis.1.nome', 'Falta o nome do responsável 2.')
       exige(String(r[1]?.parentesco || '').trim(), 'responsaveis.1.parentesco', 'Falta o parentesco do responsável 2.')
       exige(telefoneOk(r[1]?.telefone), 'responsaveis.1.telefone', 'Confira o celular do responsável 2.')
-    }
-    if (so(d.familia.telResidencial)) {
-      exige(telefoneOk(d.familia.telResidencial), 'familia.telResidencial', 'Confira o telefone residencial.')
     }
     exige(String(d.familia.urgenciaNome || '').trim(), 'familia.urgenciaNome', 'Diga quem chamar em caso de urgência.')
     exige(telefoneOk(d.familia.urgenciaTelefone), 'familia.urgenciaTelefone', 'Confira o celular de urgência.')
@@ -326,6 +364,12 @@ function mostrarVia() {
 function fichaParaEnvio() {
   const d = JSON.parse(JSON.stringify(estado.dados))
   d.responsaveis = estado.resp2 ? d.responsaveis.slice(0, 2) : d.responsaveis.slice(0, 1)
+  // os dias marcados viram "quarta,sabado"
+  d.crianca.dias = [d.crianca.diaQuarta && 'quarta', d.crianca.diaSabado && 'sabado'].filter(Boolean).join(',')
+  delete d.crianca.diaQuarta
+  delete d.crianca.diaSabado
+  delete d.crianca.endereco
+  delete d.familia.telResidencial
   return d
 }
 

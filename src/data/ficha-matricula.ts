@@ -15,11 +15,11 @@ import { mascaraTelefone } from '@/lib/telefone'
  * saem da mesma lista de campos, PARTES, abaixo.
  */
 export type FichaMatricula = {
-  endereco: string
   cep: string
+  rua: string
+  numero: string
   bairro: string
   cidade: string
-  telResidencial: string
   escola: string
   turno: string
   serie: string
@@ -58,11 +58,11 @@ export type FichaMatricula = {
 export type Chave = keyof FichaMatricula
 
 export const MATRICULA_VAZIA: FichaMatricula = {
-  endereco: '',
   cep: '',
+  rua: '',
+  numero: '',
   bairro: '',
   cidade: 'Atibaia',
-  telResidencial: '',
   escola: '',
   turno: '',
   serie: '',
@@ -105,6 +105,8 @@ export function completar(dados: unknown): FichaMatricula {
   for (const chave of Object.keys(MATRICULA_VAZIA) as Chave[]) {
     if (typeof d[chave] === 'string') ficha[chave] = d[chave] as string
   }
+  // ficha gravada antes de rua e numero serem separados: tudo era "endereco"
+  if (!ficha.rua && typeof d.endereco === 'string') ficha.rua = d.endereco
   return ficha
 }
 
@@ -116,6 +118,8 @@ export type Campo = {
   tipo?: 'texto' | 'multilinha' | 'telefone' | 'cep' | 'cpf' | 'numero'
   /** escolha entre opcoes: [valor, rotulo] */
   opcoes?: [string, string][]
+  /** com opcoes: marca mais de uma (gravado separado por virgula) */
+  multipla?: boolean
   /** so aparece quando outro campo tem um destes valores */
   se?: [Chave, string[]]
   placeholder?: string
@@ -129,13 +133,13 @@ const SIM_NAO: [string, string][] = [
 export const PARTES = {
   endereco: {
     titulo: 'Endereço',
-    legenda: 'Onde a criança mora e telefone de casa',
+    legenda: 'CEP, rua, número, bairro e cidade',
     campos: [
-      { chave: 'endereco', rotulo: 'Endereço (rua e número)' },
       { chave: 'cep', rotulo: 'CEP', tipo: 'cep', placeholder: '12940-000' },
+      { chave: 'rua', rotulo: 'Rua' },
+      { chave: 'numero', rotulo: 'Número', placeholder: 'Ex.: 120 ou S/N' },
       { chave: 'bairro', rotulo: 'Bairro' },
       { chave: 'cidade', rotulo: 'Cidade' },
-      { chave: 'telResidencial', rotulo: 'Telefone residencial', tipo: 'telefone' },
     ],
   },
   escola: {
@@ -164,7 +168,15 @@ export const PARTES = {
           ['3', '3 vezes'],
         ],
       },
-      { chave: 'dias', rotulo: 'Quais dias vai', placeholder: 'Ex.: terça e quinta' },
+      {
+        chave: 'dias',
+        rotulo: 'Quais dias vai',
+        multipla: true,
+        opcoes: [
+          ['quarta', 'Quarta'],
+          ['sabado', 'Sábado'],
+        ],
+      },
     ],
   },
   familia: {
@@ -276,6 +288,13 @@ export const mascaraCep = (t: string) =>
     .slice(0, 8)
     .replace(/^(\d{5})(\d)/, '$1-$2')
 
+/** Os valores marcados de um campo de varias escolhas ("quarta,sabado"). */
+export const marcados = (v: string) =>
+  v
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean)
+
 /** O valor para ler: o rotulo da opcao, ou o texto ja formatado. Vazio = ''. */
 export function valorLegivel(c: Campo, f: FichaMatricula) {
   const v = f[c.chave].trim()
@@ -283,7 +302,9 @@ export function valorLegivel(c: Campo, f: FichaMatricula) {
   if (c.tipo === 'telefone') return mascaraTelefone(v)
   if (c.tipo === 'cpf') return mascaraCpf(v)
   if (c.tipo === 'cep') return mascaraCep(v)
-  return c.opcoes?.find(([valor]) => valor === v)?.[1] ?? v
+  const rotulo = (x: string) => c.opcoes?.find(([valor]) => valor === x)?.[1] ?? x
+  if (c.multipla) return marcados(v).map(rotulo).join(' e ')
+  return rotulo(v)
 }
 
 // ─── banco ───────────────────────────────────────────────────────────
@@ -371,11 +392,11 @@ export function deInscricao(d: Inscrita): FichaMatricula {
   const decl = d.declarante ?? {}
   const t = (v: unknown) => (typeof v === 'string' ? v : '')
   return completar({
-    endereco: c.endereco,
     cep: c.cep,
+    rua: c.rua ?? c.endereco,
+    numero: c.numero,
     bairro: c.bairro,
     cidade: c.cidade,
-    telResidencial: f.telResidencial,
     escola: c.escola,
     turno: c.turno,
     serie: c.serie,

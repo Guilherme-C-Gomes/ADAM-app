@@ -52,6 +52,7 @@ const VINCULO: Record<string, string> = {
   pai: 'Pai',
   responsavel_legal: 'Responsável legal',
 }
+const DIAS: Record<string, string> = { quarta: 'Quarta', sabado: 'Sábado' }
 const SIM_NAO: Record<string, string> = { sim: 'Sim', nao: 'Não', as_vezes: 'Às vezes' }
 
 const cpf = (d: string) => d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4')
@@ -226,7 +227,14 @@ export default function InscricaoDetalhe() {
           <LinhaValor rotulo="Unidade" valor={i.unidade || '—'} />
           <Linha
             titulo="Endereço"
-            legenda={[d.crianca.endereco, d.crianca.bairro, d.crianca.cidade, cep(d.crianca.cep)]
+            legenda={[
+              d.crianca.rua
+                ? [d.crianca.rua, d.crianca.numero].filter(Boolean).join(', ')
+                : d.crianca.endereco,
+              d.crianca.bairro,
+              d.crianca.cidade,
+              cep(d.crianca.cep),
+            ]
               .filter(Boolean)
               .join(' · ')}
             semSeta
@@ -243,7 +251,11 @@ export default function InscricaoDetalhe() {
             valor={
               [
                 d.crianca.aulasPorSemana && `${d.crianca.aulasPorSemana}x por semana`,
-                d.crianca.dias,
+                d.crianca.dias
+                  .split(',')
+                  .filter(Boolean)
+                  .map((x) => DIAS[x] ?? x)
+                  .join(' e '),
               ]
                 .filter(Boolean)
                 .join(' · ') || '—'
@@ -269,12 +281,6 @@ export default function InscricaoDetalhe() {
             legenda={`${d.familia.urgenciaNome} · ${mascaraTelefone(d.familia.urgenciaTelefone)}`}
             semSeta
           />
-          {d.familia.telResidencial ? (
-            <LinhaValor
-              rotulo="Telefone residencial"
-              valor={mascaraTelefone(d.familia.telResidencial)}
-            />
-          ) : null}
         </Grupo>
       </Bloco>
 

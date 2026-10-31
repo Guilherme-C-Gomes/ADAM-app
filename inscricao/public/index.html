@@ -52,20 +52,26 @@
       <label class="campo">Data de nascimento
         <input name="crianca.nascimento" type="date" required />
       </label>
+      <label class="campo">CEP <span class="fraco">(preenche a rua, o bairro e a cidade)</span>
+        <input name="crianca.cep" inputmode="numeric" data-mascara="cep" placeholder="12940-000" />
+      </label>
+      <div class="dupla rua">
+        <label class="campo">Rua
+          <input name="crianca.rua" autocapitalize="words" maxlength="160" required />
+        </label>
+        <label class="campo">Número
+          <input name="crianca.numero" maxlength="12" placeholder="120 ou S/N" required />
+        </label>
+      </div>
       <div class="dupla">
-        <label class="campo">CEP
-          <input name="crianca.cep" inputmode="numeric" data-mascara="cep" placeholder="12940-000" />
+        <label class="campo">Bairro
+          <input name="crianca.bairro" autocapitalize="words" maxlength="80" />
         </label>
         <label class="campo">Cidade
           <input name="crianca.cidade" autocapitalize="words" maxlength="80" required />
         </label>
       </div>
-      <label class="campo">Endereço (rua e número)
-        <input name="crianca.endereco" autocapitalize="words" maxlength="200" required />
-      </label>
-      <label class="campo">Bairro
-        <input name="crianca.bairro" autocapitalize="words" maxlength="80" />
-      </label>
+      <p class="fraco" id="aviso-cep" aria-live="polite"></p>
       <label class="campo">Escola em que estuda
         <input name="crianca.escola" autocapitalize="words" maxlength="120" required />
       </label>
@@ -90,9 +96,13 @@
           <label><input type="radio" name="crianca.aulasPorSemana" value="3" /> 3 vezes</label>
         </div>
       </fieldset>
-      <label class="campo">Quais dias vai
-        <input name="crianca.dias" maxlength="120" placeholder="Ex.: terça e quinta" />
-      </label>
+      <fieldset class="campo">
+        <legend>Quais dias vai</legend>
+        <div class="opcoes linha">
+          <label><input type="checkbox" name="crianca.diaQuarta" /> Quarta</label>
+          <label><input type="checkbox" name="crianca.diaSabado" /> Sábado</label>
+        </div>
+      </fieldset>
     </section>
 
     <!-- 2 · familia -->
@@ -188,9 +198,6 @@
       </datalist>
       <div class="cartao">
         <h2>Outros contatos</h2>
-        <label class="campo">Telefone residencial <span class="fraco">(se tiver)</span>
-          <input name="familia.telResidencial" type="tel" inputmode="tel" data-mascara="telefone" placeholder="+55 (11) 4411-2648" />
-        </label>
         <label class="campo">Em caso de urgência, chamar
           <input name="familia.urgenciaNome" autocapitalize="words" maxlength="120" placeholder="Nome" required />
         </label>

@@ -268,7 +268,7 @@ export async function montarPdf(
   e.campo('Nome do atleta', c.nome)
   e.campo('Nascimento', br(c.nascimento))
   e.campo('Unidade', unidade)
-  e.campo('Endereço', c.endereco)
+  e.campo('Endereço', `${c.rua}, ${c.numero}`)
   e.campo('CEP', cep(c.cep))
   e.campo('Bairro', c.bairro)
   e.campo('Cidade', c.cidade)
@@ -276,7 +276,14 @@ export async function montarPdf(
     'Aulas semanais no projeto',
     c.aulasPorSemana ? `${c.aulasPorSemana} ${c.aulasPorSemana === '1' ? 'vez' : 'vezes'}` : '—',
   )
-  e.campo('Dias que vai', c.dias)
+  e.campo(
+    'Dias que vai',
+    c.dias
+      .split(',')
+      .filter(Boolean)
+      .map((d) => (d === 'sabado' ? 'Sábado' : 'Quarta'))
+      .join(' e '),
+  )
   e.campo('Escola em que estuda', c.escola)
   e.campo('Turno', c.turno ? TURNOS[c.turno] : '—')
   e.campo('Série atual', c.serie)
@@ -300,7 +307,6 @@ export async function montarPdf(
       `${r.nome} (${r.parentesco}) · celular ${fone(r.telefone)}${r.whatsapp ? ' · WhatsApp' : ''}`,
     )
   })
-  e.campo('Telefone residencial', fone(f.telResidencial))
   e.campo('Em caso de urgência chamar', `${f.urgenciaNome} · ${fone(f.urgenciaTelefone)}`)
 
   e.titulo('Saúde')
