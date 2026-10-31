@@ -26,7 +26,8 @@ import { turmaDaIdade } from '@/data/estudo'
 import {
   abrirFicha,
   desativarFicha,
-  DOCUMENTOS,
+  DOCUMENTOS_EXIGIDOS,
+  exigidosEntregues,
   idadeDe,
   MOTIVO_DESATIVADA,
   novaFicha,
@@ -159,7 +160,7 @@ export default function FichaDaCrianca() {
   const nascimentoISO = paraISO(ficha.nascimento)
   const idade = nascimentoISO ? idadeDe(nascimentoISO) : null
   const turma = idade === null || idade < 0 ? null : turmaDaIdade(idade)
-  const entregues = ficha.documentos.length
+  const entregues = exigidosEntregues(ficha.documentos)
   const iniciais = iniciaisDe(ficha.nome || 'AD')
   const foto = ficha.fotoUri ?? fotoGuardada
 
@@ -355,8 +356,8 @@ export default function FichaDaCrianca() {
             titulo="Documentos"
             legenda="O que a família precisa trazer"
             selo={{
-              rotulo: `${entregues} de ${DOCUMENTOS.length}`,
-              tom: entregues === DOCUMENTOS.length ? 'verde' : 'ambar',
+              rotulo: `${entregues} de ${DOCUMENTOS_EXIGIDOS}`,
+              tom: entregues === DOCUMENTOS_EXIGIDOS ? 'verde' : 'ambar',
             }}
             onPress={() => router.push('/secretaria/participantes/documentos')}
           />

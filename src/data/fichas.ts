@@ -21,13 +21,28 @@ import { supabase } from '@/lib/supabase'
 
 // ─── documentos ───────────────────────────────────────────────────────
 
-/** A lista fixa da ficha. A ordem e a das telas (o indice do rascunho). */
+/**
+ * A lista fixa da ficha. A ordem e a das telas (o indice do rascunho).
+ * `opcional`: aparece para marcar, mas nao conta como pendencia (o
+ * comprovante de residencia, por pedido da coordenacao).
+ */
 export const DOCUMENTOS = [
-  { tipo: 'rg_certidao', nome: 'RG ou certidão de nascimento' },
-  { tipo: 'comprovante_residencia', nome: 'Comprovante de residência' },
-  { tipo: 'isencao_responsabilidade', nome: 'Isenção de responsabilidade' },
-  { tipo: 'direito_imagem', nome: 'Direito de imagem' },
+  { tipo: 'rg_certidao', nome: 'RG ou certidão de nascimento', opcional: false },
+  { tipo: 'comprovante_residencia', nome: 'Comprovante de residência', opcional: true },
+  { tipo: 'isencao_responsabilidade', nome: 'Isenção de responsabilidade', opcional: false },
+  { tipo: 'direito_imagem', nome: 'Direito de imagem', opcional: false },
 ] as const
+
+/** Os tipos que contam como pendencia quando faltam. */
+const TIPOS_EXIGIDOS: ReadonlySet<string> = new Set(
+  DOCUMENTOS.filter((d) => !d.opcional).map((d) => d.tipo),
+)
+/** Quantos documentos a ficha exige (o "de N" das contagens). */
+export const DOCUMENTOS_EXIGIDOS = TIPOS_EXIGIDOS.size
+
+/** Dos indices marcados no rascunho, quantos sao dos exigidos. */
+export const exigidosEntregues = (indices: number[]) =>
+  indices.filter((i) => DOCUMENTOS[i] && !DOCUMENTOS[i].opcional).length
 
 // ─── datas, sem Intl (o Hermes do Expo Go cai com pt-BR) ─────────────
 
@@ -260,7 +275,10 @@ async function lerParticipantes(id?: string, saidas = false): Promise<Participan
       presencas,
       chamadas: daTurma.length,
       semanas,
-      documentosEntregues: new Set(c.documentos.map((d) => d.tipo)).size,
+      // so os exigidos: o opcional entregue nao passa do total
+      documentosEntregues: new Set(
+        c.documentos.map((d) => d.tipo).filter((t) => TIPOS_EXIGIDOS.has(t)),
+      ).size,
       temResponsavel: c.responsaveis.length > 0,
       ativa: c.ativa,
       saiuEm: c.saiu_em ?? null,

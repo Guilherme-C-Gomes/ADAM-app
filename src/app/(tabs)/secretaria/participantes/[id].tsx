@@ -13,7 +13,7 @@ import { mostrarRecado } from '@/components/ui/recado'
 import { Esqueleto, SkeletonCard } from '@/components/ui/skeleton'
 import { HeroPerfil } from '@/components/ui/setor'
 import {
-  DOCUMENTOS,
+  DOCUMENTOS_EXIGIDOS,
   emQueda,
   excluirFicha,
   hojeISO,
@@ -113,7 +113,7 @@ export default function PerfilParticipante() {
 
   const semChamada = p.frequencia === null
   const baixa = emQueda(p)
-  const faltamDocs = DOCUMENTOS.length - p.documentosEntregues
+  const faltamDocs = DOCUMENTOS_EXIGIDOS - p.documentosEntregues
   const pendencias = faltamDocs + (p.temResponsavel ? 0 : 1)
   const situacaoCadastro = pendencias
     ? `${pendencias} ${pendencias === 1 ? 'pendência' : 'pendências'}`
@@ -125,7 +125,7 @@ export default function PerfilParticipante() {
     { rotulo: 'Idade', valor: `${p.idade} anos` },
     { rotulo: 'Participa desde', valor: p.desde },
     { rotulo: 'Responsável', valor: p.temResponsavel ? 'cadastrado' : 'falta cadastrar' },
-    { rotulo: 'Documentos', valor: `${p.documentosEntregues} de ${DOCUMENTOS.length}` },
+    { rotulo: 'Documentos', valor: `${p.documentosEntregues} de ${DOCUMENTOS_EXIGIDOS}` },
   ]
 
   return (

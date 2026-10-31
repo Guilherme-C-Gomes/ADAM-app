@@ -7,7 +7,13 @@ import { Aviso, Bloco, Botao, Grupo, Linha, Rotulo, TelaForm } from '@/component
 import { Icone } from '@/components/ui/icone'
 import { mostrarRecado } from '@/components/ui/recado'
 import { useUnidades } from '@/data/chamada'
-import { DOCUMENTOS, novaFicha, salvarFicha } from '@/data/fichas'
+import {
+  DOCUMENTOS,
+  DOCUMENTOS_EXIGIDOS,
+  exigidosEntregues,
+  novaFicha,
+  salvarFicha,
+} from '@/data/fichas'
 import { rascunhoFicha } from '@/data/rascunhos'
 import { abrirFichaSalva } from '@/lib/navegacao'
 import { color, radius, space, type } from '@/theme/tokens'
@@ -24,8 +30,9 @@ export default function Documentos() {
   const unidades = useUnidades()
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
-  const entregues = ficha.documentos.length
-  const total = DOCUMENTOS.length
+  // o opcional (comprovante de residencia) nao entra na conta
+  const entregues = exigidosEntregues(ficha.documentos)
+  const total = DOCUMENTOS_EXIGIDOS
   const faltam = total - entregues
 
   const salvar = async () => {
@@ -90,9 +97,15 @@ export default function Documentos() {
                 key={d.nome}
                 titulo={d.nome}
                 legenda={
-                  entregue ? (anexo ? `${anexo.nome} · sobe ao salvar` : 'entregue') : 'pendente'
+                  entregue
+                    ? anexo
+                      ? `${anexo.nome} · sobe ao salvar`
+                      : 'entregue'
+                    : d.opcional
+                      ? 'opcional'
+                      : 'pendente'
                 }
-                legendaTom={entregue ? undefined : 'ambar'}
+                legendaTom={entregue || d.opcional ? undefined : 'ambar'}
                 esquerda={
                   <View style={[st.marca, entregue && st.marcaOk]}>
                     {entregue ? <Icone nome="check" cor={color.bg} tamanho={14} /> : null}

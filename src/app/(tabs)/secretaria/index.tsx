@@ -11,7 +11,7 @@ import { CardQueda, Variacao } from '@/components/ui/metricas'
 import { entrada, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { HeroSetor, Segmentado } from '@/components/ui/setor'
 import { Esqueleto, SkeletonCard, SkeletonFaixa, SkeletonLista } from '@/components/ui/skeleton'
-import { DOCUMENTOS, emQueda, useParticipantes } from '@/data/fichas'
+import { DOCUMENTOS_EXIGIDOS, emQueda, useParticipantes } from '@/data/fichas'
 import { useFiltroSecretaria } from '@/data/filtro-secretaria'
 import { usePendentes } from '@/data/inscricoes'
 import { useMetricas } from '@/data/metricas'
@@ -48,7 +48,7 @@ export default function Secretaria() {
     (p) => !filtro.unidadeId || p.unidadeId === filtro.unidadeId,
   )
   const pendentes = daUnidade.filter(
-    (p) => p.documentosEntregues < DOCUMENTOS.length || !p.temResponsavel,
+    (p) => p.documentosEntregues < DOCUMENTOS_EXIGIDOS || !p.temResponsavel,
   ).length
   const completas = daUnidade.length - pendentes
   const quedas = daUnidade.filter(emQueda).length

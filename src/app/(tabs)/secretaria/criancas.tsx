@@ -7,7 +7,7 @@ import { Avatar, Chip } from '@/components/ui'
 import { Aviso, Bloco, Botao, Busca, Grupo, Linha, TelaForm } from '@/components/ui/form'
 import { entrada } from '@/components/ui/movimento'
 import { useUnidades } from '@/data/chamada'
-import { DOCUMENTOS, paraBR, useParticipantes } from '@/data/fichas'
+import { DOCUMENTOS_EXIGIDOS, paraBR, useParticipantes } from '@/data/fichas'
 import { color, space } from '@/theme/tokens'
 
 /**
@@ -75,7 +75,7 @@ export default function CriancasCadastradas() {
           <Grupo>
             {lista.map((p, i) => {
               const pendencias =
-                DOCUMENTOS.length - p.documentosEntregues + (p.temResponsavel ? 0 : 1)
+                DOCUMENTOS_EXIGIDOS - p.documentosEntregues + (p.temResponsavel ? 0 : 1)
               return (
                 // cascata so sem busca: digitar nao refaz a entrada
                 <Animated.View key={p.id} entering={termo ? undefined : entrada(i, { base: 50 })}>

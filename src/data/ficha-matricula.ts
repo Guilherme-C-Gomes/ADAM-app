@@ -124,6 +124,8 @@ export type Campo = {
   multipla?: boolean
   /** so aparece quando outro campo tem um destes valores */
   se?: [Chave, string[]]
+  /** nao conta no "x de y" preenchidos: em branco nao e pendencia */
+  opcional?: boolean
   placeholder?: string
 }
 
@@ -228,7 +230,8 @@ export const PARTES = {
       { chave: 'altura', rotulo: 'Altura (m)', placeholder: '1,40' },
       {
         chave: 'tipoSanguineo',
-        rotulo: 'Tipo sanguíneo',
+        rotulo: 'Tipo sanguíneo (opcional)',
+        opcional: true,
         opcoes: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => [t, t]),
       },
       { chave: 'chuteira', rotulo: 'Tamanho da chuteira', tipo: 'numero' },
@@ -247,7 +250,7 @@ export const campoVisivel = (c: Campo, f: FichaMatricula) => !c.se || c.se[1].in
 
 /** Quantos campos da parte estao preenchidos, entre os que aparecem. */
 export function preenchidos(parte: Parte, f: FichaMatricula) {
-  const campos = (PARTES[parte].campos as Campo[]).filter((c) => campoVisivel(c, f))
+  const campos = (PARTES[parte].campos as Campo[]).filter((c) => campoVisivel(c, f) && !c.opcional)
   return { feitos: campos.filter((c) => f[c.chave].trim()).length, total: campos.length }
 }
 
