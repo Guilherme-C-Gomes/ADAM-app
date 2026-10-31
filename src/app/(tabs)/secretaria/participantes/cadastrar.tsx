@@ -1,7 +1,7 @@
 import { Image } from 'expo-image'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Keyboard, StyleSheet, Text, View } from 'react-native'
 
 import { Avatar, Chip } from '@/components/ui'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
@@ -295,9 +295,12 @@ export default function FichaDaCrianca() {
           <Entrada
             rotulo="Nascimento"
             value={ficha.nascimento}
-            onChangeText={(nascimento) =>
-              rascunhoFicha.definir({ nascimento: mascaraData(nascimento) })
-            }
+            onChangeText={(texto) => {
+              const nascimento = mascaraData(texto)
+              // DD/MM/AAAA completo: o teclado sai da frente sozinho
+              if (nascimento.length === 10 && ficha.nascimento.length < 10) Keyboard.dismiss()
+              rascunhoFicha.definir({ nascimento })
+            }}
             placeholder="DD/MM/AAAA"
             keyboardType="number-pad"
             maxLength={10}

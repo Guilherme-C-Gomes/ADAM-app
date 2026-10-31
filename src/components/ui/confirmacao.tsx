@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { useState } from 'react'
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 
 import { Botao } from '@/components/ui/form'
@@ -23,10 +24,17 @@ type Pedido = {
   /** o rotulo do outro botao; sem ele, "Cancelar" */
   cancelar?: string
   perigo?: boolean
+  /**
+   * Para o que nao tem volta de jeito nenhum (excluir a ficha da crianca):
+   * so confirma depois de a pessoa digitar exatamente esta palavra.
+   */
+  digitar?: string
 }
 
 const pedido = criarRascunho({
   atual: null as (Pedido & { responder: (sim: boolean) => void }) | null,
+  /** muda a cada pedido: o campo de digitar comeca vazio de novo */
+  vez: 0,
 })
 
 export function pedirConfirmacao(p: Pedido) {
@@ -34,6 +42,7 @@ export function pedirConfirmacao(p: Pedido) {
     // um pedido anterior sem resposta conta como "nao"
     pedido.ler().atual?.responder(false)
     pedido.definir({
+      vez: pedido.ler().vez + 1,
       atual: {
         ...p,
         responder: (sim) => {
@@ -49,8 +58,15 @@ export function pedirConfirmacao(p: Pedido) {
 export const haConfirmacaoAberta = () => pedido.ler().atual !== null
 
 export function Confirmacao() {
-  const { atual } = pedido.useValor()
+  const { atual, vez } = pedido.useValor()
   if (!atual) return null
+  return <Cartao key={vez} atual={atual} />
+}
+
+function Cartao({ atual }: { atual: Pedido & { responder: (sim: boolean) => void } }) {
+  const [digitado, setDigitado] = useState('')
+  // com palavra exigida: so libera quando bate exatamente (maiusculas)
+  const liberado = !atual.digitar || digitado === atual.digitar
 
   return (
     <Animated.View
@@ -74,10 +90,29 @@ export function Confirmacao() {
         </View>
         <Text style={st.titulo}>{atual.titulo}</Text>
         <Text style={st.texto}>{atual.texto}</Text>
+        {atual.digitar ? (
+          <View style={st.digitar}>
+            <Text style={st.texto}>
+              Para confirmar, escreva <Text style={st.palavra}>{atual.digitar}</Text> em letras
+              maiúsculas:
+            </Text>
+            <TextInput
+              value={digitado}
+              onChangeText={setDigitado}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              placeholder={atual.digitar}
+              placeholderTextColor={color.faint}
+              style={st.campo}
+              accessibilityLabel={`Escreva ${atual.digitar} para confirmar`}
+            />
+          </View>
+        ) : null}
         <View style={st.botoes}>
           <Botao
             rotulo={atual.confirmar}
             variante={atual.perigo ? 'perigo' : 'primario'}
+            desabilitado={!liberado}
             onPress={() => atual.responder(true)}
           />
           <Botao
@@ -92,6 +127,21 @@ export function Confirmacao() {
 }
 
 const st = StyleSheet.create({
+  digitar: { alignSelf: 'stretch', gap: space.sm },
+  palavra: { fontFamily: 'Inter_700Bold', color: color.danger },
+  campo: {
+    ...type.body,
+    fontFamily: 'Inter_600SemiBold',
+    color: color.text,
+    textAlign: 'center',
+    letterSpacing: 2,
+    paddingVertical: space.md,
+    paddingHorizontal: space.base,
+    borderRadius: radius.campo,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: color.surface2,
+  },
   fundo: {
     position: 'absolute',
     top: 0,

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Keyboard, StyleSheet, View } from 'react-native'
+import { useRef, useState } from 'react'
+import { Keyboard, StyleSheet, Text, View } from 'react-native'
 
 import { Chip } from '@/components/ui'
 import {
@@ -14,8 +14,9 @@ import {
   TelaForm,
 } from '@/components/ui/form'
 import { mascaraCpf } from '@/data/ficha-matricula'
+import { responsaveisPeloComeco, type ResponsavelAchado } from '@/data/fichas'
 import { rascunhoFicha, type Contato } from '@/data/rascunhos'
-import { space } from '@/theme/tokens'
+import { onDark, space, type } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
 import { digitarTelefone, mascaraTelefone, telefoneCompleto, telefoneValido } from '@/lib/telefone'
 
@@ -31,6 +32,19 @@ const ATALHOS = ['Mãe', 'Pai', 'Avó', 'Avô', 'Tia', 'Tio']
  * tocando no campo abre a lista, e "Outro" deixa escrever.
  */
 const ORGAO_PADRAO = 'SSP/SP'
+
+/** RG de Sao Paulo: 8 numeros + o digito (numero ou X) -> 12.345.678-9 */
+function mascaraRgSP(texto: string) {
+  const v = texto
+    .toUpperCase()
+    .replace(/[^0-9X]/g, '')
+    .slice(0, 9)
+  return v
+    .replace(/^(\w{2})(\w)/, '$1.$2')
+    .replace(/^(\w{2})\.(\w{3})(\w)/, '$1.$2.$3')
+    .replace(/\.(\w{3})(\w)$/, '.$1-$2')
+}
+const rgSPCompleto = (rg: string) => rg.replace(/[^0-9X]/gi, '').length === 9
 const ORGAOS = [
   'SSP/SP',
   'SSP/MG',
@@ -60,6 +74,45 @@ export default function ContatoDaFicha() {
   // a lista de orgaos aberta, e o campo livre ("Outro")
   const [escolhendoOrgao, setEscolhendoOrgao] = useState(false)
   const [orgaoLivre, setOrgaoLivre] = useState(!ORGAOS.includes(rgOrgao))
+  // responsaveis ja cadastrados com este comeco de celular (mae de irmaos)
+  const [sugestoes, setSugestoes] = useState<ResponsavelAchado[]>([])
+  // o cadastro que foi usado: os dados vieram de la
+  const [achado, setAchado] = useState<ResponsavelAchado | null>(null)
+  // so a resposta da ultima busca conta (a pessoa digita mais rapido que a rede)
+  const ultimaBusca = useRef('')
+
+  /** Puxa os dados de um responsavel ja cadastrado. */
+  const usar = (r: ResponsavelAchado, tudo: boolean) => {
+    // tocou na sugestao: vem tudo; sozinho (numero completo): so o que esta em branco
+    setNome((v) => (tudo ? r.nome : v.trim() || r.nome))
+    setParentesco((v) => (tudo ? r.parentesco || v : v.trim() || r.parentesco))
+    setCpf((v) => ((tudo || !v.replace(/\D/g, '')) && r.cpf ? mascaraCpf(r.cpf) : v))
+    setRg((v) => (tudo ? r.rg || v : v.trim() || r.rg))
+    if (r.rgOrgao && (tudo || !rg.trim())) {
+      setRgOrgao(r.rgOrgao)
+      setOrgaoLivre(!ORGAOS.includes(r.rgOrgao))
+    }
+    setWhatsapp(r.whatsapp)
+    setTelefone(r.telefone)
+    setAchado(r)
+    setSugestoes([])
+    Keyboard.dismiss()
+  }
+
+  /** A cada numero digitado: procura quem ja tem um celular com esse comeco. */
+  const procurar = (numero: string) => {
+    ultimaBusca.current = numero
+    setAchado(null)
+    responsaveisPeloComeco(numero).then((lista) => {
+      if (ultimaBusca.current !== numero) return
+      const exato = lista.find(
+        (r) => telefoneCompleto(numero) && r.telefone === mascaraTelefone(numero),
+      )
+      if (exato) usar(exato, false)
+      else setSugestoes(lista)
+    })
+  }
+
   // O primeiro contato nasce principal; so pode haver um por ficha.
   const [principal, setPrincipal] = useState(atual?.principal ?? indice === 0)
 
@@ -95,8 +148,9 @@ export default function ContatoDaFicha() {
         <Botao
           rotulo="Salvar contato"
           desabilitado={
+            // parentesco nao e obrigatorio: responsavel de ficha antiga
+            // (de antes do campo existir) salva sem ele
             !nome.trim() ||
-            !parentesco.trim() ||
             !telefoneValido(telefone) ||
             // CPF e opcional; se escreveu, tem que estar inteiro
             (cpf.replace(/\D/g, '').length > 0 && cpf.replace(/\D/g, '').length !== 11)
@@ -144,15 +198,60 @@ export default function ContatoDaFicha() {
             setTelefone(novo)
             // acabou de completar o numero: o teclado sai da frente sozinho
             if (telefoneCompleto(novo) && !telefoneCompleto(telefone)) Keyboard.dismiss()
+            if (novo !== telefone) procurar(novo)
           }}
           placeholder="+55 (11) 98765-4321"
           keyboardType="phone-pad"
         />
+        {sugestoes.length > 0 ? (
+          <>
+            <Text style={st.achado}>Já cadastrado com este celular? Toque para usar:</Text>
+            <Grupo>
+              {sugestoes.map((r) => (
+                <Linha
+                  key={r.telefone}
+                  titulo={r.nome}
+                  legenda={[
+                    r.telefone,
+                    r.criancas.length
+                      ? `${r.parentesco || 'Responsável'} de ${r.criancas.join(', ')}`
+                      : r.parentesco,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  selo={{ rotulo: 'Usar', tom: 'roxo' }}
+                  onPress={() => usar(r, true)}
+                />
+              ))}
+            </Grupo>
+          </>
+        ) : null}
+        {achado ? (
+          <Text style={st.achado}>
+            Cadastro de {achado.nome}
+            {achado.criancas.length ? `, responsável de ${achado.criancas.join(', ')}` : ''}: os
+            dados foram preenchidos. Confira e ajuste se precisar.
+          </Text>
+        ) : null}
       </Bloco>
 
       <Bloco ordem={3}>
         <Rotulo>Documentos de quem assina a ficha</Rotulo>
-        <Entrada rotulo="RG" value={rg} onChangeText={setRg} maxLength={20} />
+        <Entrada
+          rotulo="RG"
+          value={rg}
+          onChangeText={(t) => {
+            // SSP/SP: formata e, com os 9 caracteres, fecha o teclado
+            if (!orgaoLivre && rgOrgao === ORGAO_PADRAO) {
+              const novo = mascaraRgSP(t)
+              if (rgSPCompleto(novo) && !rgSPCompleto(rg)) Keyboard.dismiss()
+              setRg(novo)
+            } else setRg(t)
+          }}
+          placeholder={!orgaoLivre && rgOrgao === ORGAO_PADRAO ? '12.345.678-9' : undefined}
+          autoCapitalize="characters"
+          maxLength={20}
+        />
         <CampoSeletor
           rotulo="Órgão expedidor"
           valor={rgOrgao || ORGAO_PADRAO}
@@ -196,7 +295,14 @@ export default function ContatoDaFicha() {
         <Entrada
           rotulo="CPF"
           value={cpf}
-          onChangeText={(t) => setCpf(mascaraCpf(t))}
+          onChangeText={(t) => {
+            const novo = mascaraCpf(t)
+            // 11 numeros: o teclado sai da frente sozinho
+            if (novo.replace(/\D/g, '').length === 11 && cpf.replace(/\D/g, '').length < 11) {
+              Keyboard.dismiss()
+            }
+            setCpf(novo)
+          }}
           placeholder="000.000.000-00"
           keyboardType="number-pad"
         />
@@ -236,5 +342,6 @@ export default function ContatoDaFicha() {
 }
 
 const st = StyleSheet.create({
+  achado: { ...type.small, fontFamily: 'Inter_400Regular', color: onDark.text },
   chips: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
 })

@@ -235,9 +235,19 @@ export const PARTES = {
         opcoes: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => [t, t]),
       },
       { chave: 'chuteira', rotulo: 'Tamanho da chuteira', tipo: 'numero' },
-      { chave: 'convenio', rotulo: 'Convênio médico', opcoes: SIM_NAO },
-      { chave: 'convenioQual', rotulo: 'Qual convênio?', se: ['convenio', ['sim']] },
-      { chave: 'observacoes', rotulo: 'Observações da ficha', tipo: 'multilinha' },
+      { chave: 'convenio', rotulo: 'Convênio médico (opcional)', opcoes: SIM_NAO, opcional: true },
+      {
+        chave: 'convenioQual',
+        rotulo: 'Qual convênio?',
+        se: ['convenio', ['sim']],
+        opcional: true,
+      },
+      {
+        chave: 'observacoes',
+        rotulo: 'Observações da ficha (opcional)',
+        tipo: 'multilinha',
+        opcional: true,
+      },
     ],
   },
 } satisfies Record<string, { titulo: string; legenda: string; campos: Campo[] }>

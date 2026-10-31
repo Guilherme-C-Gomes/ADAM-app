@@ -76,6 +76,8 @@ export function TelaForm({
           comBarra && !rodape && { paddingBottom: faixaDaBarra + space.xxxl },
         ]}
         keyboardShouldPersistTaps="handled"
+        // iPhone: o conteudo sobe junto com o teclado, o campo em foco fica a vista
+        automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}>
         {children}
       </ScrollView>

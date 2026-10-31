@@ -9,6 +9,7 @@ import { deISO, paraISO as dataParaISO } from '@/data/metricas'
 import { sessao } from '@/data/perfis'
 import { porLotes, todasAsLinhas } from '@/lib/consulta'
 import { supabase } from '@/lib/supabase'
+import { digitosComPais, mascaraTelefone } from '@/lib/telefone'
 
 /**
  * A ficha da crianca, no banco: `criancas`, `responsaveis`, `documentos` e
@@ -431,6 +432,70 @@ export async function abrirFicha(id: string) {
 
 export function novaFicha() {
   rascunhoFicha.definir({ ...FICHA_VAZIA })
+}
+
+/** Um responsavel ja cadastrado, achado pelo celular (pode ter varias criancas). */
+export type ResponsavelAchado = {
+  telefone: string
+  nome: string
+  parentesco: string
+  whatsapp: boolean
+  cpf: string
+  rg: string
+  rgOrgao: string
+  /** as criancas de quem ja e responsavel (irmaos) */
+  criancas: string[]
+}
+
+/**
+ * Os responsaveis ja cadastrados cujo celular comeca com o que foi digitado
+ * (a partir do DDD + 4 numeros). A mesma mae em fichas de irmaos vira uma
+ * pessoa so, com as criancas juntas; os dados vem da ficha mais recente.
+ * O telefone foi gravado de jeitos diferentes ao longo do tempo (formatado,
+ * so numeros, com o 55), entao procura todas as formas.
+ */
+export async function responsaveisPeloComeco(telefone: string): Promise<ResponsavelAchado[]> {
+  const nacional = digitosComPais(telefone).slice(2)
+  if (nacional.length < 6) return []
+  // "+55 (11) 9876": o comeco formatado e igual para fixo e celular
+  const formatado = `+55 (${nacional.slice(0, 2)}) ${nacional.slice(2, 6)}`
+  const campos = 'nome, parentesco, relacao, telefone, whatsapp, cpf, rg, rg_orgao, criancas(nome)'
+  const [a, b] = await Promise.all([
+    supabase
+      .from('responsaveis')
+      .select(campos)
+      .like('telefone', `${formatado}%`)
+      .order('criado_em', { ascending: false })
+      .limit(40),
+    supabase
+      .from('responsaveis')
+      .select(campos)
+      .or(`telefone.like.${nacional}*,telefone.like.55${nacional}*,telefone.like.+55${nacional}*`)
+      .order('criado_em', { ascending: false })
+      .limit(40),
+  ])
+  const pessoas = new Map<string, ResponsavelAchado>()
+  for (const r of [...(a.data ?? []), ...(b.data ?? [])]) {
+    const numero = digitosComPais(r.telefone as string).slice(2)
+    if (!numero.startsWith(nacional)) continue
+    const crianca = (r.criancas as unknown as { nome: string } | null)?.nome ?? ''
+    const ja = pessoas.get(numero)
+    if (ja) {
+      if (crianca && !ja.criancas.includes(crianca)) ja.criancas.push(crianca)
+      continue
+    }
+    pessoas.set(numero, {
+      telefone: mascaraTelefone(numero),
+      nome: r.nome as string,
+      parentesco: (r.parentesco as string | null) ?? RELACAO_TELA[r.relacao as string] ?? '',
+      whatsapp: r.whatsapp as boolean,
+      cpf: (r.cpf as string | null) ?? '',
+      rg: (r.rg as string | null) ?? '',
+      rgOrgao: (r.rg_orgao as string | null) ?? '',
+      criancas: crianca ? [crianca] : [],
+    })
+  }
+  return [...pessoas.values()].slice(0, 5)
 }
 
 /** Manda um arquivo do aparelho para o bucket privado `fichas`. */

@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { Keyboard, StyleSheet, Text, View } from 'react-native'
 
 import { Chip } from '@/components/ui'
 import { Bloco, Botao, Entrada, Rotulo, TelaForm } from '@/components/ui/form'
@@ -17,7 +17,7 @@ import {
 import { rascunhoFicha } from '@/data/rascunhos'
 import { buscarCep, buscarCepDaRua } from '@/lib/cep'
 import { voltar } from '@/lib/navegacao'
-import { digitarTelefone, mascaraTelefone } from '@/lib/telefone'
+import { digitarTelefone, mascaraTelefone, telefoneCompleto } from '@/lib/telefone'
 import { color, space, type } from '@/theme/tokens'
 
 /**
@@ -94,18 +94,19 @@ export default function ParteDaFicha() {
                       ? mascaraCep(m[c.chave])
                       : m[c.chave]
               }
-              onChangeText={(t) =>
-                mudar(
-                  c.chave,
+              onChangeText={(t) => {
+                const novo =
                   c.tipo === 'telefone'
                     ? digitarTelefone(mascaraTelefone(m[c.chave]), t)
                     : c.tipo === 'cpf'
                       ? mascaraCpf(t)
                       : c.tipo === 'cep'
                         ? mascaraCep(t)
-                        : t,
-                )
-              }
+                        : t
+                // campo de tamanho certo ficou completo: fecha o teclado
+                if (completo(c, novo) && !completo(c, m[c.chave])) Keyboard.dismiss()
+                mudar(c.chave, novo)
+              }}
               placeholder={
                 c.placeholder ?? (c.tipo === 'telefone' ? '+55 (11) 98765-4321' : undefined)
               }
@@ -127,6 +128,15 @@ export default function ParteDaFicha() {
       ))}
     </TelaForm>
   )
+}
+
+/** O campo de tamanho fixo (CPF, CEP, celular) esta inteiro? */
+function completo(c: Campo, valor: string) {
+  const d = valor.replace(/\D/g, '')
+  if (c.tipo === 'cpf') return d.length === 11
+  if (c.tipo === 'cep') return d.length === 8
+  if (c.tipo === 'telefone') return telefoneCompleto(valor)
+  return false
 }
 
 /**

@@ -42,7 +42,9 @@ export default function PerfilParticipante() {
   const p = lista[0]
   // excluir a ficha e so de quem administra a Secretaria (o banco tambem
   // recusa os outros)
-  const { administraSecretaria } = usePerfil()
+  // excluir a ficha: so quem tem acesso administrativo (ADM, acesso total)
+  const { perfil } = usePerfil()
+  const administrador = perfil === 'adm'
   const [excluindo, setExcluindo] = useState(false)
   const [erroExcluir, setErroExcluir] = useState<string | null>(null)
   // a ficha de matricula inteira e os responsaveis com telefone
@@ -275,7 +277,7 @@ export default function PerfilParticipante() {
           <Saida key={`${p.id}-${p.ativa}`} p={p} aoMudar={recarregar} />
         </Animated.View>
 
-        {administraSecretaria ? (
+        {administrador ? (
           <Animated.View entering={entrada(5)} style={st.excluir}>
             {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
             <Botao
@@ -289,6 +291,7 @@ export default function PerfilParticipante() {
                     'Some a ficha inteira: responsáveis, documentos, fotos, presenças nas chamadas, livros emprestados e convocações. Os números da Secretaria deixam de contar esta criança. Não dá para desfazer.',
                   confirmar: 'Excluir ficha',
                   perigo: true,
+                  digitar: 'EXCLUIR',
                 })
                 if (!certeza) return
                 setErroExcluir(null)
