@@ -30,7 +30,10 @@ import {
   type CampoDeArquivo,
 } from '../_inscricao/servidor'
 
-const POR_APARELHO_POR_DIA = 20
+// alto de proposito: pelo repasse do site do formulario, varias familias
+// podem chegar com o mesmo ip (e num dia de inscricao, todas na mesma rede).
+// Quem segura abuso e o teto do dia; erro de preenchimento nao gasta.
+const POR_APARELHO_POR_DIA = 60
 const POR_DIA = 300
 
 /** Um endereco de upload por arquivo, na pasta da inscricao. */
