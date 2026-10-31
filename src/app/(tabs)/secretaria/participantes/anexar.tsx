@@ -1,5 +1,4 @@
 import * as DocumentPicker from 'expo-document-picker'
-import * as ImagePicker from 'expo-image-picker'
 import { Image } from 'expo-image'
 import { useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
@@ -11,6 +10,7 @@ import { DOCUMENTOS } from '@/data/fichas'
 import { rascunhoFicha, type Anexo } from '@/data/rascunhos'
 import { color, radius, space, type } from '@/theme/tokens'
 import { arquivoGuardavel } from '@/lib/arquivo-guardavel'
+import { escolherDaGaleria, tirarFoto } from '@/lib/imagem'
 import { voltar } from '@/lib/navegacao'
 
 /** Tela 17g. Foto do papel serve: a familia raramente tem digitalizado. */
@@ -23,26 +23,17 @@ export default function AnexarDocumento() {
 
   const [anexo, setAnexo] = useState<Anexo | null>(ficha.anexos[indice] ?? null)
 
+  // tirarFoto / escolherDaGaleria (lib/imagem.ts): na web abrem a camera e a
+  // galeria de verdade (o seletor do Expo abria os arquivos no Android) e a
+  // foto ja vem reduzida e guardavel
   const daCamera = async () => {
-    const permissao = await ImagePicker.requestCameraPermissionsAsync()
-    if (!permissao.granted) return
-    const r = await ImagePicker.launchCameraAsync({ quality: 0.7 })
-    if (!r.canceled && r.assets[0])
-      setAnexo({
-        nome: 'foto-do-documento.jpg',
-        uri: await arquivoGuardavel(r.assets[0].uri),
-        tipo: 'image/jpeg',
-      })
+    const foto = await tirarFoto()
+    if (foto) setAnexo({ nome: 'foto-do-documento.jpg', uri: foto.uri, tipo: foto.tipo })
   }
 
   const daGaleria = async () => {
-    const r = await ImagePicker.launchImageLibraryAsync({ quality: 0.7 })
-    if (!r.canceled && r.assets[0])
-      setAnexo({
-        nome: r.assets[0].fileName ?? 'foto.jpg',
-        uri: await arquivoGuardavel(r.assets[0].uri),
-        tipo: r.assets[0].mimeType ?? 'image/jpeg',
-      })
+    const foto = await escolherDaGaleria()
+    if (foto) setAnexo({ nome: foto.nome, uri: await arquivoGuardavel(foto.uri), tipo: foto.tipo })
   }
 
   const doArquivo = async () => {

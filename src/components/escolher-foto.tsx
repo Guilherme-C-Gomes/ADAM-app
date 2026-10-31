@@ -1,10 +1,10 @@
 import { Image } from 'expo-image'
 import type { Href } from 'expo-router'
-import * as ImagePicker from 'expo-image-picker'
 import { StyleSheet, Text, View } from 'react-native'
 
 import { Aviso, Bloco, Botao, Grupo, Linha, TelaForm } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
+import { escolherDaGaleria, tirarFoto } from '@/lib/imagem'
 import { color, radius, space, type } from '@/theme/tokens'
 
 /**
@@ -42,16 +42,16 @@ export function EscolherFoto({
   onRemover: () => void
   rodape?: React.ReactNode
 }) {
+  // tirarFoto / escolherDaGaleria (lib/imagem.ts): na web abrem a galeria
+  // e a camera de verdade (o seletor do Expo abria os arquivos no Android)
   const daCamera = async () => {
-    const permissao = await ImagePicker.requestCameraPermissionsAsync()
-    if (!permissao.granted) return
-    const r = await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: true })
-    if (!r.canceled && r.assets[0]) onEscolher(r.assets[0].uri)
+    const foto = await tirarFoto({ editar: true })
+    if (foto) onEscolher(foto.uri)
   }
 
   const daGaleria = async () => {
-    const r = await ImagePicker.launchImageLibraryAsync({ quality: 0.7, allowsEditing: true })
-    if (!r.canceled && r.assets[0]) onEscolher(r.assets[0].uri)
+    const foto = await escolherDaGaleria({ editar: true })
+    if (foto) onEscolher(foto.uri)
   }
 
   return (
