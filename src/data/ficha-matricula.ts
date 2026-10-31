@@ -235,33 +235,6 @@ export const PARTES = {
       { chave: 'observacoes', rotulo: 'Observações da ficha', tipo: 'multilinha' },
     ],
   },
-  declaracao: {
-    titulo: 'Declaração do responsável',
-    legenda: 'Quem assina, documentos e uso de imagem',
-    campos: [
-      { chave: 'declaranteNome', rotulo: 'Nome de quem assina' },
-      {
-        chave: 'declaranteVinculo',
-        rotulo: 'É',
-        opcoes: [
-          ['mae', 'Mãe'],
-          ['pai', 'Pai'],
-          ['responsavel_legal', 'Responsável legal'],
-        ],
-      },
-      { chave: 'declaranteRg', rotulo: 'RG' },
-      { chave: 'declaranteRgOrgao', rotulo: 'Órgão expedidor do RG', placeholder: 'Ex.: SSP/SP' },
-      { chave: 'declaranteCpf', rotulo: 'CPF', tipo: 'cpf', placeholder: '000.000.000-00' },
-      {
-        chave: 'autorizaImagem',
-        rotulo: 'Uso de imagem (fotos e vídeos)',
-        opcoes: [
-          ['sim', 'Autoriza'],
-          ['nao', 'Não autoriza'],
-        ],
-      },
-    ],
-  },
 } satisfies Record<string, { titulo: string; legenda: string; campos: Campo[] }>
 
 export type Parte = keyof typeof PARTES

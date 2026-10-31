@@ -21,8 +21,8 @@ import { digitarTelefone, mascaraTelefone } from '@/lib/telefone'
 import { color, space, type } from '@/theme/tokens'
 
 /**
- * Uma parte da ficha de matricula (endereco, escola, familia, saude ou
- * declaracao), no cadastro da crianca. Os campos saem de PARTES
+ * Uma parte da ficha de matricula (endereco, escola, familia ou saude),
+ * no cadastro da crianca. Os campos saem de PARTES
  * (data/ficha-matricula.ts) e mexem no rascunho: tudo sobe junto no
  * "Salvar ficha".
  */
