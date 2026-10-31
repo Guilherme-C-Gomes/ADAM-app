@@ -1,6 +1,8 @@
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect'
 import { StyleSheet, type ColorValue } from 'react-native'
 
+import { escuro } from '@/theme/tokens'
+
 /** O aparelho tem o Liquid Glass (iOS 26)? Na web e em iOS antigo, nao. */
 export const TEM_VIDRO = isLiquidGlassAvailable()
 
@@ -18,7 +20,7 @@ export function Vidro({ tom, raio }: { tom?: ColorValue; raio: number }) {
       pointerEvents="none"
       style={[st.vidro, { borderRadius: raio }]}
       glassEffectStyle="regular"
-      colorScheme="dark"
+      colorScheme={escuro ? 'dark' : 'light'}
       tintColor={tom}
     />
   )

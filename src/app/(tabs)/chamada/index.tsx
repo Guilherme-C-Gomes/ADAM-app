@@ -604,5 +604,5 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rodinhaTexto: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.text },
+  rodinhaTexto: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 })

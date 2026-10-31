@@ -379,7 +379,7 @@ const st = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.35)',
   },
-  fichaNumero: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.text },
+  fichaNumero: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.onPrimary },
   contagem: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
   placar: { flexDirection: 'row', alignItems: 'flex-end', gap: space.md },
   placarLado: { flex: 1 },
@@ -414,5 +414,5 @@ const st = StyleSheet.create({
     borderCurve: 'continuous',
     backgroundColor: onDark.fill,
   },
-  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 })

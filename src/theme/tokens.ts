@@ -1,14 +1,21 @@
 import { Easing } from 'react-native-reanimated'
 
+import { temaGuardado } from '@/theme/tema-guardado'
+
 /**
  * Tokens de design do ADAM.
  *
  * Espelham as variaveis da colecao "ADAM v2" no Figma
  * (arquivo rzbKju0UfsUJW1Hgy2bHui). Ao mudar um valor la, mude aqui.
- * Tema escuro, tipografia Inter, base de espacamento 4.
+ * Tema escuro (e o claro, a escolha de cada aparelho), tipografia Inter,
+ * base de espacamento 4.
+ *
+ * As cores sao lidas uma vez, quando o app abre (os StyleSheets guardam o
+ * valor). Trocar de tema guarda a escolha e recarrega o app — ver
+ * theme/tema-guardado.ts.
  */
 
-export const color = {
+const ESCURO = {
   // superficies, do fundo para a frente
   bg: '#0A0A12',
   surface: '#15151F',
@@ -31,12 +38,51 @@ export const color = {
   primaryDk: '#3A0A52',
   /** fundo do botao secundario e de faixas: o roxo da marca a 40% */
   primarySoft: 'rgba(158, 6, 209, 0.4)',
+  /** letra e icone em cima do roxo cheio (botao, chip ativo, selo) */
+  onPrimary: '#FFFFFF',
+  /** letra do botao secundario */
+  onSoft: '#FFFFFF',
 
   // estado
   success: '#3DD68C',
   warn: '#F5A524',
   danger: '#FF7AB5',
-} as const
+}
+
+/**
+ * Modo claro: o mesmo roxo da marca nas areas cheias; texto roxo no roxo
+ * cheio (6,2:1 sobre o branco). Estados escurecidos para ler no claro.
+ */
+const CLARO: typeof ESCURO = {
+  bg: '#F6F5FA',
+  surface: '#FFFFFF',
+  surface2: '#EFEDF5',
+  border: '#DCD8E6',
+  divider: '#E7E3EF',
+  skeleton: '#E9E6F0',
+
+  text: '#16131D',
+  muted: '#5F5A70',
+  faint: '#6E6981',
+
+  primary: '#9E06D1',
+  primaryLt: '#9E06D1',
+  primaryCh: '#9E06D1',
+  primaryDk: '#F0DDF8',
+  primarySoft: 'rgba(158, 6, 209, 0.14)',
+  onPrimary: '#FFFFFF',
+  onSoft: '#7A04A3',
+
+  success: '#13854F',
+  warn: '#A86400',
+  danger: '#C2185B',
+}
+
+/** Tema escolhido no aparelho (botao do sol/lua no topo, ao lado da foto). */
+export const tema = temaGuardado()
+export const escuro = tema === 'escuro'
+
+export const color = escuro ? ESCURO : CLARO
 
 /**
  * Contraste: primary rende 3.19:1 sobre bg — aprovado para area cheia

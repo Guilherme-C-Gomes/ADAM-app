@@ -14,7 +14,7 @@ import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
 
 import { Confirmacao } from '@/components/ui/confirmacao'
 import { Recado } from '@/components/ui/recado'
-import { color } from '@/theme/tokens'
+import { color, escuro } from '@/theme/tokens'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -55,7 +55,7 @@ export default function RootLayout() {
   return (
     <Palco>
       {titulo}
-      <StatusBar style="light" />
+      <StatusBar style={escuro ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           headerShown: false,

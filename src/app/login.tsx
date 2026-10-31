@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   buttonLabel: {
     ...type.body,
     fontFamily: 'Inter_600SemiBold',
-    color: color.text,
+    color: color.onPrimary,
   },
   link: {
     ...type.body,

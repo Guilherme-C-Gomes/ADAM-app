@@ -10,7 +10,8 @@ import { Icone } from '@/components/ui/icone'
 import { usePilulaDeslizante } from '@/components/ui/movimento'
 import { semFundo, TEM_VIDRO, Vidro } from '@/components/ui/vidro'
 import { voltar } from '@/lib/navegacao'
-import { color, onDark, radius, space, target, type } from '@/theme/tokens'
+import { trocarTema } from '@/theme/tema-guardado'
+import { color, escuro, onDark, radius, space, target, tema, type } from '@/theme/tokens'
 
 /**
  * Cabecalho de tela de setor: marca, perfil, titulo e subtitulo.
@@ -38,14 +39,25 @@ export function HeroSetor({ titulo, subtitulo }: { titulo: string; subtitulo: st
 
         {/* a foto de quem esta logado (ou as iniciais) abre a propria conta:
             senha, foto, nome e e-mail. O ADM chega aos Ajustes por la. */}
-        <Pressable
-          onPress={() => router.push('/ajustes/conta')}
-          hitSlop={space.sm}
-          style={({ pressed }) => [s.foto, pressed && s.pressed]}
-          accessibilityRole="button"
-          accessibilityLabel={`${pessoa.nome || rotulo} · abrir minha conta`}>
-          <Avatar iniciais={pessoa.iniciais || '?'} size={36} foto={pessoa.foto} />
-        </Pressable>
+        <View style={s.direita}>
+          {/* escuro <-> claro: guarda a escolha e recarrega o app ja no tema */}
+          <Pressable
+            onPress={() => trocarTema(tema)}
+            hitSlop={space.sm}
+            style={({ pressed }) => [s.tema, pressed && s.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel={escuro ? 'Mudar para o modo claro' : 'Mudar para o modo escuro'}>
+            <Icone nome={escuro ? 'sol' : 'lua'} cor={color.text} tamanho={18} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/ajustes/conta')}
+            hitSlop={space.sm}
+            style={({ pressed }) => [s.foto, pressed && s.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel={`${pessoa.nome || rotulo} · abrir minha conta`}>
+            <Avatar iniciais={pessoa.iniciais || '?'} size={36} foto={pessoa.foto} />
+          </Pressable>
+        </View>
       </View>
 
       <Text style={s.titulo}>{titulo}</Text>
@@ -234,12 +246,23 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   pillFoto: { width: 18, height: 18 },
+  direita: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  tema: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color.surface2,
+    borderWidth: 1,
+    borderColor: color.border,
+  },
   foto: {
     borderRadius: 20,
     borderWidth: 2,
     borderColor: color.surface2,
   },
-  pillInicial: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.text },
+  pillInicial: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.onPrimary },
   pillRotulo: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
   titulo: { ...type.h1, fontFamily: 'Inter_700Bold', color: color.text },
   subtitulo: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
@@ -283,5 +306,5 @@ const s = StyleSheet.create({
   },
   segmentoAtivo: { backgroundColor: onDark.fill },
   segmentoRotulo: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
-  segmentoRotuloAtivo: { fontFamily: 'Inter_600SemiBold', color: color.text },
+  segmentoRotuloAtivo: { fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 })

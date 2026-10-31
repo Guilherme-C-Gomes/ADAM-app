@@ -249,7 +249,7 @@ const st = StyleSheet.create({
   },
   letra: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.muted },
   letraPequena: { fontSize: 10, lineHeight: 12 },
-  letraAtiva: { color: color.text },
+  letraAtiva: { color: color.onPrimary },
 
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   chip: {
@@ -270,7 +270,7 @@ const st = StyleSheet.create({
   chipAtivo: { backgroundColor: color.primary, borderColor: color.primary },
   chipAmbar: { backgroundColor: 'rgba(245, 165, 36, 0.12)', borderColor: color.warn },
   chipRotulo: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.muted },
-  chipRotuloAtivo: { color: color.text },
+  chipRotuloAtivo: { color: color.onPrimary },
   chipRotuloAmbar: { color: color.warn },
   desabilitado: { opacity: 0.4 },
 

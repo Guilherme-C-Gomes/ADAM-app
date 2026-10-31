@@ -260,7 +260,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pillInicial: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.text },
+  pillInicial: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.onPrimary },
   pillRotulo: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },
   saudacao: { ...type.h1, fontFamily: 'Inter_600SemiBold', color: color.text },
   data: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },

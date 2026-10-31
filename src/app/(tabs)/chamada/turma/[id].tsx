@@ -501,7 +501,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  porTexto: { fontSize: 9, fontFamily: 'Inter_600SemiBold', color: color.text },
+  porTexto: { fontSize: 9, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
   vazio: {
     ...type.small,
     fontFamily: 'Inter_400Regular',

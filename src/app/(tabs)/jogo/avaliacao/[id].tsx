@@ -301,7 +301,7 @@ const st = StyleSheet.create({
   },
   alvoAtivo: { backgroundColor: onDark.fill, borderColor: onDark.fill },
   alvoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.muted },
-  alvoRotuloAtivo: { color: color.text },
+  alvoRotuloAtivo: { color: color.onPrimary },
   pontas: { flexDirection: 'row', justifyContent: 'space-between' },
   ponta: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.faint },
 
@@ -327,7 +327,7 @@ const st = StyleSheet.create({
     borderCurve: 'continuous',
     backgroundColor: onDark.fill,
   },
-  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
   link: {
     ...type.small,
     fontFamily: 'Inter_400Regular',

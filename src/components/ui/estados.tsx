@@ -24,9 +24,7 @@ export function EstadoVazio({
   dica?: string
 }) {
   return (
-    <Animated.View
-      entering={FadeInDown.duration(motion.medium)}
-      style={s.vazio}>
+    <Animated.View entering={FadeInDown.duration(motion.medium)} style={s.vazio}>
       <View style={s.ilustracao}>
         <AdamSymbol size={72} />
       </View>
@@ -201,7 +199,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  botaoCheioRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  botaoCheioRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
   // Feedback de toque do design: escala 0.97 junto da opacidade.
   pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
 })

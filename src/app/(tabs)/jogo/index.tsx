@@ -607,7 +607,7 @@ const st = StyleSheet.create({
     borderCurve: 'continuous',
     backgroundColor: color.primary,
   },
-  seloCategoriaRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.text },
+  seloCategoriaRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 
   cardPartida: {
     flexDirection: 'row',
@@ -634,5 +634,5 @@ const st = StyleSheet.create({
     borderWidth: 1,
     borderColor: color.primary,
   },
-  botaoSecundarioRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  botaoSecundarioRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.onSoft },
 })

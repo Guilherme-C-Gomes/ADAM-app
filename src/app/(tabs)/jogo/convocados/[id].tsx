@@ -215,7 +215,7 @@ const st = StyleSheet.create({
     borderCurve: 'continuous',
     backgroundColor: color.primary,
   },
-  seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.text },
+  seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 
   aviso: { paddingLeft: space.lg, overflow: 'hidden' },
   acentoAviso: {
@@ -236,5 +236,5 @@ const st = StyleSheet.create({
     borderCurve: 'continuous',
     backgroundColor: onDark.fill,
   },
-  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 })

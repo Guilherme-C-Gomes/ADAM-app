@@ -34,11 +34,18 @@ export type NomeIcone =
   | 'documento'
   | 'camera'
   | 'galeria'
+  | 'sol'
+  | 'lua'
 
 type Props = { nome: NomeIcone; cor: string; tamanho?: number; traco?: number }
 
 export const Icone = memo(function Icone({ nome, cor, tamanho = 18, traco = 1.8 }: Props) {
-  const t = { stroke: cor, strokeWidth: traco, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
+  const t = {
+    stroke: cor,
+    strokeWidth: traco,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  } as const
 
   return (
     <Svg width={tamanho} height={tamanho} viewBox="0 0 18 18" fill="none">
@@ -152,5 +159,18 @@ function desenho(nome: NomeIcone, cor: string, t: Traco) {
           <Path d="M2 13.5l5-4 4 3.5 2.5-2.5 2.5 3" {...t} />
         </>
       )
+    // modo claro: o sol (no escuro, e o botao que leva para o claro)
+    case 'sol':
+      return (
+        <>
+          <Circle cx={9} cy={9} r={3.4} {...t} />
+          <Path
+            d="M9 1.5v1.6M9 14.9v1.6M1.5 9h1.6M14.9 9h1.6M3.7 3.7l1.1 1.1M13.2 13.2l1.1 1.1M3.7 14.3l1.1-1.1M13.2 4.8l1.1-1.1"
+            {...t}
+          />
+        </>
+      )
+    case 'lua':
+      return <Path d="M15.5 10.8A6.8 6.8 0 0 1 7.2 2.5a6.8 6.8 0 1 0 8.3 8.3z" {...t} />
   }
 }

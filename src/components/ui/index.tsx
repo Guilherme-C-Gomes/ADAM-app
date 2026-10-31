@@ -253,7 +253,7 @@ const s = StyleSheet.create({
   },
   chipAtivo: { backgroundColor: onDark.fill },
   chipRotulo: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
-  chipRotuloAtivo: { fontFamily: 'Inter_600SemiBold', color: color.text },
+  chipRotuloAtivo: { fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
   // Feedback de toque do design: escala 0.97 junto da opacidade.
   pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
 
@@ -293,5 +293,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarIniciais: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.text },
+  avatarIniciais: { ...type.small, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 })

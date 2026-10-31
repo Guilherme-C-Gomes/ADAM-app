@@ -242,7 +242,7 @@ export function Grupo({ children, style }: { children: React.ReactNode; style?: 
 export type Tom = 'roxo' | 'verde' | 'ambar' | 'vermelho' | 'neutro'
 
 const TONS: Record<Tom, { fundo: string; texto: string }> = {
-  roxo: { fundo: color.primary, texto: color.text },
+  roxo: { fundo: color.primary, texto: color.onPrimary },
   verde: { fundo: 'rgba(61, 214, 140, 0.14)', texto: color.success },
   ambar: { fundo: 'rgba(245, 165, 36, 0.14)', texto: color.warn },
   vermelho: { fundo: 'rgba(255, 122, 181, 0.14)', texto: color.danger },
@@ -403,7 +403,7 @@ export function Marca({ ativa, tipo = 'check' }: { ativa: boolean; tipo?: 'check
   }
   return (
     <Animated.View style={[s.check, ativa && s.checkAtivo, pop]}>
-      {ativa ? <Icone nome="check" cor={color.bg} tamanho={14} /> : null}
+      {ativa ? <Icone nome="check" cor={color.onPrimary} tamanho={14} /> : null}
     </Animated.View>
   )
 }
@@ -820,7 +820,9 @@ function DiaDoMes({
           />
         ) : null}
         {ponta ? <FundoDia ativo /> : null}
-        <Text style={[s.diaTexto, destaque && s.diaTextoAtivo]}>{dia}</Text>
+        <Text style={[s.diaTexto, destaque && s.diaTextoAtivo, ponta && s.diaTextoNoRoxo]}>
+          {dia}
+        </Text>
       </View>
       {tom && comIniciais && typeof marca === 'object' ? (
         <Animated.View style={[s.diaIniciais, brilho]} pointerEvents="none">
@@ -975,8 +977,8 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 122, 181, 0.5)',
   },
-  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
-  textoSecundario: { color: color.text },
+  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
+  textoSecundario: { color: color.onSoft },
   // com vidro: a borda colorida fica, o fundo translucido sai (o vidro faz)
   vidroNoFundo: { backgroundColor: 'transparent' },
   textoPerigo: { color: color.danger },
@@ -1212,6 +1214,7 @@ const s = StyleSheet.create({
   },
   diaTexto: { ...type.small, fontFamily: 'Inter_400Regular', color: color.text },
   diaTextoAtivo: { fontFamily: 'Inter_700Bold' },
+  diaTextoNoRoxo: { color: color.onPrimary },
   // anel discreto do dia de hoje
   diaHoje: { borderWidth: 1.5, borderColor: color.primary },
   diaMarca: { position: 'absolute', bottom: 1, width: 5, height: 5, borderRadius: 3 },

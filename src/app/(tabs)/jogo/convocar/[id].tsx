@@ -223,7 +223,7 @@ function MarcaConvocar({ marcado }: { marcado: boolean }) {
     <Animated.View style={[st.marca, marcado && st.marcaAtiva, pop]}>
       <Icone
         nome={marcado ? 'check' : 'mais'}
-        cor={marcado ? color.bg : color.muted}
+        cor={marcado ? color.onPrimary : color.muted}
         tamanho={14}
       />
     </Animated.View>
@@ -267,7 +267,7 @@ const st = StyleSheet.create({
     borderCurve: 'continuous',
     backgroundColor: color.primary,
   },
-  seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.text },
+  seloRotulo: { ...type.caption, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 
   botao: {
     minHeight: target.minimo + 8,
@@ -279,5 +279,5 @@ const st = StyleSheet.create({
   },
   botaoDesabilitado: { opacity: 0.4 },
   botaoLinha: { flexDirection: 'row', alignItems: 'center' },
-  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 })

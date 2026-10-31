@@ -16,7 +16,7 @@ import { IconeChamada, IconeEstudo, IconeJogo, IconeSecretaria } from '@/compone
 import { molaPop } from '@/components/ui/movimento'
 import { usePendentes } from '@/data/inscricoes'
 import { criarRascunho } from '@/hooks/use-rascunho'
-import { color, motion, space } from '@/theme/tokens'
+import { color, escuro, motion, space } from '@/theme/tokens'
 
 /** Lado de cada botao da barra (quadrado, cantos arredondados). */
 const LADO = 54
@@ -232,7 +232,7 @@ function ItemBarra({
             pointerEvents="none"
             style={s.vidro}
             glassEffectStyle="regular"
-            colorScheme="dark"
+            colorScheme={escuro ? 'dark' : 'light'}
           />
         ) : (
           <Animated.View style={[s.vidro, s.vidroFosco, fundo]} />
@@ -240,7 +240,9 @@ function ItemBarra({
         {/* o ativo: roxo da logo, solido, acendendo por cima do vidro */}
         {VIDRO ? <Animated.View pointerEvents="none" style={[s.vidro, s.roxo, aceso]} /> : null}
         <Animated.View style={pulo}>
-          <Icone cor={ativo ? color.text : 'rgba(255, 255, 255, 0.72)'} />
+          <Icone
+            cor={ativo ? color.onPrimary : escuro ? 'rgba(255, 255, 255, 0.72)' : color.muted}
+          />
         </Animated.View>
         {selo ? (
           <View style={s.selo}>
@@ -252,8 +254,8 @@ function ItemBarra({
   )
 }
 
-const VIDRO_FOSCO = 'rgba(30, 30, 43, 0.55)'
-const BORDA_DO_VIDRO = 'rgba(255, 255, 255, 0.14)'
+const VIDRO_FOSCO = escuro ? 'rgba(30, 30, 43, 0.55)' : 'rgba(255, 255, 255, 0.6)'
+const BORDA_DO_VIDRO = escuro ? 'rgba(255, 255, 255, 0.14)' : 'rgba(22, 19, 29, 0.1)'
 
 const s = StyleSheet.create({
   selo: {
@@ -270,7 +272,7 @@ const s = StyleSheet.create({
     borderWidth: 2,
     borderColor: color.bg,
   },
-  seloTexto: { fontSize: 10, lineHeight: 12, fontFamily: 'Inter_700Bold', color: color.text },
+  seloTexto: { fontSize: 10, lineHeight: 12, fontFamily: 'Inter_700Bold', color: color.onPrimary },
   wrapper: {
     position: 'absolute',
     left: 0,

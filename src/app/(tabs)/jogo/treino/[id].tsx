@@ -258,7 +258,7 @@ function MarcaFeita({ feito }: { feito: boolean }) {
 
   return (
     <Animated.View style={[st.marca, feito && st.marcaFeita, pop]}>
-      {feito ? <Icone nome="check" cor={color.bg} tamanho={14} /> : null}
+      {feito ? <Icone nome="check" cor={color.onPrimary} tamanho={14} /> : null}
     </Animated.View>
   )
 }
@@ -313,5 +313,5 @@ const st = StyleSheet.create({
     borderCurve: 'continuous',
     backgroundColor: onDark.fill,
   },
-  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
+  botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.onPrimary },
 })

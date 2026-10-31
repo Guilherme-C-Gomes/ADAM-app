@@ -99,5 +99,5 @@ const s = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.35)',
   },
-  fichaNumero: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.text },
+  fichaNumero: { ...type.caption, fontFamily: 'Inter_700Bold', color: color.onPrimary },
 })
