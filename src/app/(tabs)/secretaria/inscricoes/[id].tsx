@@ -337,7 +337,7 @@ export default function InscricaoDetalhe() {
         <Grupo>
           <Linha
             titulo={d.declarante.nome}
-            legenda={`${VINCULO[d.declarante.vinculo]} · CPF ${cpf(d.declarante.cpf)} · RG ${d.declarante.rg}`}
+            legenda={`${VINCULO[d.declarante.vinculo]} · CPF ${cpf(d.declarante.cpf)} · RG ${d.declarante.rg}${d.declarante.rgOrgao ? ` (${d.declarante.rgOrgao})` : ''}`}
             semSeta
           />
           <LinhaValor

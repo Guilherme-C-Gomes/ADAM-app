@@ -51,10 +51,10 @@ const TABELAS = [
   'emprestimos', 'aulas', 'exercicios', 'treinos', 'treino_comissao', 'treino_exercicios',
   'treino_avaliacoes', 'escala', 'jogos', 'jogo_convocados', 'jogo_comissao', 'chamadas',
   'chamada_participantes', 'chamada_marcas', 'chamada_avulsos', 'chamada_correcoes',
-  'inscricoes',
+  'inscricoes', 'fichas_matricula',
 ]
 /** Tabelas novas: copia feita antes delas existirem nao tem, e tudo bem. */
-const NOVAS = new Set(['inscricoes'])
+const NOVAS = new Set(['inscricoes', 'fichas_matricula'])
 
 /** coluna -> tabela para onde ela aponta (para achar ligacoes quebradas). */
 function alvoDa(coluna) {

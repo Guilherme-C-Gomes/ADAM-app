@@ -63,6 +63,7 @@ const TABELAS: { nome: string; chave: string[] }[] = [
   { nome: 'chamada_avulsos', chave: ['id'] },
   { nome: 'chamada_correcoes', chave: ['id'] },
   { nome: 'inscricoes', chave: ['id'] },
+  { nome: 'fichas_matricula', chave: ['crianca_id'] },
 ]
 
 const BUCKETS = ['fichas', 'capas', 'materiais', 'perfis', 'inscricoes']

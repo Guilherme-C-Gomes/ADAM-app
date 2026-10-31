@@ -4,6 +4,7 @@ import { turmaDaIdade, type TurmaEstudo } from '@/data/estudo'
 import { iniciaisDe } from '@/data/jogo'
 import { FICHA_VAZIA, rascunhoFicha, type Anexo } from '@/data/rascunhos'
 import { esquecerNoCelular } from '@/data/chamada'
+import { gravarMatricula, lerMatricula } from '@/data/ficha-matricula'
 import { deISO, paraISO as dataParaISO } from '@/data/metricas'
 import { sessao } from '@/data/perfis'
 import { porLotes, todasAsLinhas } from '@/lib/consulta'
@@ -361,7 +362,7 @@ const POSICAO_TELA: Record<string, NonNullable<typeof FICHA_VAZIA.funcao>> = {
  * rascunho: abrir com listas vazias faria o "Salvar" apagar o que existe.
  */
 export async function abrirFicha(id: string) {
-  const [crianca, responsaveis, documentos] = await Promise.all([
+  const [crianca, responsaveis, documentos, matricula] = await Promise.all([
     supabase
       .from('criancas')
       .select('id, nome, nascimento, unidade_id, posicao, foto_path, observacao')
@@ -373,6 +374,7 @@ export async function abrirFicha(id: string) {
       .eq('crianca_id', id)
       .order('criado_em'),
     supabase.from('documentos').select('tipo').eq('crianca_id', id),
+    lerMatricula(id),
   ])
   if (crianca.error || !crianca.data) throw new Error('Não foi possível abrir a ficha.')
   if (responsaveis.error || !responsaveis.data) {
@@ -400,6 +402,7 @@ export async function abrirFicha(id: string) {
       principal: r.principal,
     })),
     documentos: DOCUMENTOS.flatMap((d, i) => (tipos.has(d.tipo) ? [i] : [])),
+    matricula: matricula.dados,
   })
 }
 
@@ -563,6 +566,14 @@ export async function salvarFicha() {
       .eq('crianca_id', id)
       .in('tipo', retirados)
     if (error) throw falhou('a lista de documentos')
+  }
+
+  // o resto da ficha de matricula (endereco, escola, familia, saude...)
+  try {
+    await gravarMatricula(id as string, f.matricula)
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : ''
+    throw msg.startsWith('Falta') ? new Error(msg) : falhou('a ficha de matrícula')
   }
 
   // veio de uma inscricao pelo link (data/inscricoes.ts): ela vira

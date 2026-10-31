@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/form'
 import { mostrarRecado } from '@/components/ui/recado'
 import { useUnidades } from '@/data/chamada'
+import { ORDEM_DAS_PARTES, PARTES, preenchidos } from '@/data/ficha-matricula'
 import { turmaDaIdade } from '@/data/estudo'
 import {
   abrirFicha,
@@ -276,6 +277,32 @@ export default function FichaDaCrianca() {
       </Bloco>
 
       <Bloco ordem={5}>
+        <Rotulo>Ficha de matrícula</Rotulo>
+        <Grupo>
+          {ORDEM_DAS_PARTES.map((parte) => {
+            const { feitos, total } = preenchidos(parte, ficha.matricula)
+            return (
+              <Linha
+                key={parte}
+                titulo={PARTES[parte].titulo}
+                legenda={PARTES[parte].legenda}
+                selo={{
+                  rotulo: `${feitos} de ${total}`,
+                  tom: feitos === total ? 'verde' : feitos ? 'roxo' : 'neutro',
+                }}
+                onPress={() =>
+                  router.push({
+                    pathname: '/secretaria/participantes/ficha/[parte]',
+                    params: { parte },
+                  })
+                }
+              />
+            )
+          })}
+        </Grupo>
+      </Bloco>
+
+      <Bloco ordem={6}>
         <Entrada
           rotulo="Observações da equipe"
           value={ficha.observacao}
@@ -286,7 +313,7 @@ export default function FichaDaCrianca() {
       </Bloco>
 
       {ficha.id && editaFicha ? (
-        <Bloco ordem={6}>
+        <Bloco ordem={7}>
           <Situacao id={ficha.id} nome={ficha.nome} />
         </Bloco>
       ) : null}

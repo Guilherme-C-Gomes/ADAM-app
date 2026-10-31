@@ -1,12 +1,13 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+import { FichaMatriculaVista } from '@/components/ficha-matricula'
 import { Card, Contador } from '@/components/ui'
 import { pedirConfirmacao } from '@/components/ui/confirmacao'
-import { Aviso, Botao, Entrada, Link } from '@/components/ui/form'
+import { Aviso, Botao, Entrada, Grupo, Linha, Link, Rotulo } from '@/components/ui/form'
 import { entrada } from '@/components/ui/movimento'
 import { mostrarRecado } from '@/components/ui/recado'
 import { Esqueleto, SkeletonCard } from '@/components/ui/skeleton'
@@ -24,6 +25,8 @@ import {
   useParticipantes,
   type Participante,
 } from '@/data/fichas'
+import { numeroDaMatricula, useMatricula } from '@/data/ficha-matricula'
+import { lerContatos, type Contato } from '@/data/estudo'
 import { usePerfil } from '@/data/perfis'
 import { color, onDark, radius, space, target, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
@@ -42,12 +45,35 @@ export default function PerfilParticipante() {
   const { administraSecretaria } = usePerfil()
   const [excluindo, setExcluindo] = useState(false)
   const [erroExcluir, setErroExcluir] = useState<string | null>(null)
+  // a ficha de matricula inteira e os responsaveis com telefone
+  const matricula = useMatricula(id)
+  const recarregarMatricula = matricula.recarregar
+  const [contatos, setContatos] = useState<Contato[] | null>(null)
+  const [vezContatos, setVezContatos] = useState(0)
+
+  useEffect(() => {
+    let ativo = true
+    if (!id) return
+    lerContatos(id, true).then(
+      (lista) => {
+        if (ativo) setContatos(lista)
+      },
+      () => {
+        if (ativo) setContatos(null)
+      },
+    )
+    return () => {
+      ativo = false
+    }
+  }, [id, vezContatos])
 
   // voltar da edicao traz a ficha salva
   useFocusEffect(
     useCallback(() => {
       recarregar()
-    }, [recarregar]),
+      recarregarMatricula()
+      setVezContatos((v) => v + 1)
+    }, [recarregar, recarregarMatricula]),
   )
 
   if (carregando && !p) {
@@ -191,19 +217,54 @@ export default function PerfilParticipante() {
           </Card>
         </Animated.View>
 
-        <Animated.View entering={entrada(2)}>
+        <Animated.View entering={entrada(2)} style={st.matricula}>
+          <View style={st.linhaTopo}>
+            <Text style={st.cardTitulo}>Ficha de matrícula</Text>
+            {matricula.numero ? (
+              <Text style={st.numero}>nº {numeroDaMatricula(matricula.numero)}</Text>
+            ) : null}
+          </View>
+          {matricula.erro ? (
+            <Aviso
+              tom="ambar"
+              titulo={matricula.erro}
+              texto="Toque para tentar de novo"
+              onPress={recarregarMatricula}
+            />
+          ) : null}
+          <Rotulo>Responsáveis</Rotulo>
+          {contatos === null ? (
+            <Text style={st.legenda}>Não foi possível ler os responsáveis.</Text>
+          ) : contatos.length ? (
+            <Grupo>
+              {contatos.map((c, i) => (
+                <Linha
+                  key={`${c.nome}-${i}`}
+                  titulo={c.nome}
+                  legenda={`${c.relacao} · ${c.telefone}${c.whatsapp ? ' · WhatsApp' : ''}${c.principal ? ' · principal' : ''}`}
+                  semSeta
+                />
+              ))}
+            </Grupo>
+          ) : (
+            <Text style={st.legenda}>Nenhum responsável cadastrado.</Text>
+          )}
+          {matricula.dados ? <FichaMatriculaVista dados={matricula.dados} /> : null}
+        </Animated.View>
+
+        <Animated.View entering={entrada(3)}>
           <Card>
             <Text style={st.cardTitulo}>Observações da equipe</Text>
             <Text style={st.legenda}>{p.observacao || 'Nenhuma observação.'}</Text>
           </Card>
         </Animated.View>
 
-        <Animated.View entering={entrada(3)}>
+        <Animated.View entering={entrada(4)}>
           <Saida key={`${p.id}-${p.ativa}`} p={p} aoMudar={recarregar} />
         </Animated.View>
 
         {administraSecretaria ? (
-          <Animated.View entering={entrada(4)} style={st.excluir}>
+          <Animated.View entering={entrada(5)} style={st.excluir}>
             {erroExcluir ? <Aviso tom="ambar" titulo={erroExcluir} /> : null}
             <Botao
               rotulo={excluindo ? 'Excluindo…' : 'Excluir ficha'}
@@ -342,6 +403,8 @@ function Saida({ p, aoMudar }: { p: Participante; aoMudar: () => void }) {
 }
 
 const st = StyleSheet.create({
+  matricula: { gap: space.sm },
+  numero: { ...type.small, fontFamily: 'Inter_600SemiBold', color: onDark.text },
   screen: { flex: 1, backgroundColor: color.bg },
   conteudo: { padding: space.lg, gap: space.base, paddingBottom: ESPACO_FIM_DA_TELA },
   excluir: { gap: space.sm, marginTop: space.lg },

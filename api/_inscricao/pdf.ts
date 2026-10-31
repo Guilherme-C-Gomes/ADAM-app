@@ -258,6 +258,7 @@ export async function montarPdf(
     `ADAM – Associação Desportiva Apoio ao Menor · Av. Industrial, Praça Olímpia, Cerejeiras, Atibaia · Ficha ${codigo}`,
   )
   const { crianca: c, familia: f, saude: s, declarante: d } = ficha
+  const rg = d.rgOrgao ? `${d.rg} (${d.rgOrgao})` : d.rg
 
   e.texto('ADAM – ASSOCIAÇÃO DESPORTIVA APOIO AO MENOR', { tamanho: 13, negrito: true, cor: ROXO })
   e.texto('Ficha de matrícula · inscrição online', { tamanho: 11, negrito: true, depois: 2 })
@@ -314,7 +315,7 @@ export async function montarPdf(
 
   e.titulo('Declaração do responsável pelo menor de idade')
   e.texto(
-    `Eu, ${d.nome}, portador(a) do RG ${d.rg} e inscrito(a) no CPF ${cpf(d.cpf)}, ${VINCULOS[d.vinculo].toLowerCase()} do menor (atleta) acima citado, venho solicitar a sua inscrição na Escolinha de Futebol ADAM e CONCORDO com os termos abaixo:`,
+    `Eu, ${d.nome}, portador(a) do RG ${rg} e inscrito(a) no CPF ${cpf(d.cpf)}, ${VINCULOS[d.vinculo].toLowerCase()} do menor (atleta) acima citado, venho solicitar a sua inscrição na Escolinha de Futebol ADAM e CONCORDO com os termos abaixo:`,
     { depois: 4 },
   )
   TERMOS.forEach((t, i) => e.texto(`${i + 1}. ${t}`, { recuo: 8, depois: 2 }))
@@ -334,7 +335,7 @@ export async function montarPdf(
 
   e.titulo('Declaração de responsabilidade')
   e.texto(
-    `Eu, ${d.nome}, inscrito(a) no CPF nº ${cpf(d.cpf)} e portador(a) do RG nº ${d.rg}, responsável pelo menor ${c.nome}, estou ciente da proposta, assumindo a veracidade das informações prestadas neste questionário. Também estou ciente de que é necessário consultar um médico antes de aumentar o nível atual de atividade física do meu filho, caso tenha respondido "sim" a uma ou mais perguntas do Questionário de Prontidão para Atividade Física (PAR-Q). Assumo plena responsabilidade por qualquer atividade física praticada sem o atendimento a essa recomendação.`,
+    `Eu, ${d.nome}, inscrito(a) no CPF nº ${cpf(d.cpf)} e portador(a) do RG nº ${rg}, responsável pelo menor ${c.nome}, estou ciente da proposta, assumindo a veracidade das informações prestadas neste questionário. Também estou ciente de que é necessário consultar um médico antes de aumentar o nível atual de atividade física do meu filho, caso tenha respondido "sim" a uma ou mais perguntas do Questionário de Prontidão para Atividade Física (PAR-Q). Assumo plena responsabilidade por qualquer atividade física praticada sem o atendimento a essa recomendação.`,
     { depois: 8 },
   )
 
@@ -350,7 +351,7 @@ export async function montarPdf(
     e.pular(36)
   }
   e.linhaDeAssinatura()
-  e.texto(`${d.nome} · ${VINCULOS[d.vinculo]} · CPF ${cpf(d.cpf)} · RG ${d.rg}`, { tamanho: 9 })
+  e.texto(`${d.nome} · ${VINCULOS[d.vinculo]} · CPF ${cpf(d.cpf)} · RG ${rg}`, { tamanho: 9 })
   if (assinatura?.tipo === 'tela') {
     const quando = new Date(new Date(assinatura.quando).getTime() - 3 * 3600_000)
       .toISOString()

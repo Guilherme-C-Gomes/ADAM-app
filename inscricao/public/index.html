@@ -262,10 +262,13 @@
         <label class="campo">Seu RG
           <input name="declarante.rg" maxlength="20" required />
         </label>
-        <label class="campo">Seu CPF
-          <input name="declarante.cpf" inputmode="numeric" data-mascara="cpf" placeholder="000.000.000-00" required />
+        <label class="campo">Órgão expedidor
+          <input name="declarante.rgOrgao" maxlength="20" placeholder="SSP/SP" autocapitalize="characters" />
         </label>
       </div>
+      <label class="campo">Seu CPF
+        <input name="declarante.cpf" inputmode="numeric" data-mascara="cpf" placeholder="000.000.000-00" required />
+      </label>
       <fieldset class="campo">
         <legend>Você é</legend>
         <div class="opcoes linha">

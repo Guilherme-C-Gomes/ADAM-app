@@ -1,5 +1,6 @@
 import { criarRascunho } from '@/hooks/use-rascunho'
 
+import { MATRICULA_VAZIA } from '@/data/ficha-matricula'
 import type { Periodo } from '@/data/metricas'
 
 /*
@@ -66,6 +67,8 @@ export const FICHA_VAZIA = {
   anexos: {} as Record<number, Anexo>,
   /** Qual contato a tela 17e esta editando. */
   editando: 0,
+  /** O resto da ficha de matricula de papel (data/ficha-matricula.ts). */
+  matricula: { ...MATRICULA_VAZIA },
   /** Veio de uma inscricao pelo link: salvar a ficha da baixa nela. */
   inscricaoId: undefined as string | undefined,
 }

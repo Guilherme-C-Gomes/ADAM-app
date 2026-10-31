@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { DOCUMENTOS, paraBR } from '@/data/fichas'
+import { deInscricao } from '@/data/ficha-matricula'
 import { sessao } from '@/data/perfis'
 import { FICHA_VAZIA, rascunhoFicha, type Anexo, type Contato } from '@/data/rascunhos'
 import { criarRascunho } from '@/hooks/use-rascunho'
@@ -67,6 +68,7 @@ export type FichaInscricao = {
   declarante: {
     nome: string
     rg: string
+    rgOrgao?: string
     cpf: string
     vinculo: 'pai' | 'mae' | 'responsavel_legal'
     autorizaImagem: boolean
@@ -323,6 +325,7 @@ export async function prepararCadastro(i: Inscricao) {
     contatos,
     documentos: documentos.sort(),
     anexos,
+    matricula: deInscricao(d as unknown as Parameters<typeof deInscricao>[0]),
   })
 }
 

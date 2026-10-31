@@ -66,6 +66,8 @@ export type Ficha = {
   declarante: {
     nome: string
     rg: string
+    /** orgao expedidor do RG (SSP/SP...) */
+    rgOrgao: string
     /** so os numeros */
     cpf: string
     vinculo: 'pai' | 'mae' | 'responsavel_legal'
@@ -257,6 +259,7 @@ export function conferirFicha(entrada: unknown): Conferida {
   const declarante: Ficha['declarante'] = {
     nome: txt(d.nome, 120),
     rg: txt(d.rg, 20),
+    rgOrgao: txt(d.rgOrgao, 20),
     cpf: digitos(d.cpf, 11),
     vinculo: umDe(d.vinculo, Object.keys(VINCULOS) as (keyof typeof VINCULOS)[]) || 'mae',
     autorizaImagem: d.autorizaImagem === true,
