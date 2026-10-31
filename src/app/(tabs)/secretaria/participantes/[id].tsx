@@ -248,7 +248,13 @@ export default function PerfilParticipante() {
                   ]
                     .filter(Boolean)
                     .join('\n')}
-                  semSeta
+                  // abre o cadastro completo do responsavel (ligar, WhatsApp)
+                  onPress={() =>
+                    router.push({
+                      pathname: '/secretaria/participantes/responsavel',
+                      params: { id: p.id, n: String(i) },
+                    })
+                  }
                 />
               ))}
             </Grupo>
