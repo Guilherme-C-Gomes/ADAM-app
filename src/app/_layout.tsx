@@ -9,6 +9,7 @@ import Head from 'expo-router/head'
 import * as SplashScreen from 'expo-splash-screen'
 import * as SystemUI from 'expo-system-ui'
 import { StatusBar } from 'expo-status-bar'
+import { ReducedMotionConfig, ReduceMotion } from 'react-native-reanimated'
 import { useEffect } from 'react'
 import { Appearance, Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
 
@@ -64,6 +65,10 @@ export default function RootLayout() {
 
   return (
     <Palco>
+      {/* na web com toque (celular), as entradas animadas desligam: no
+          Safari do iPhone, ao rolar e puxar a lista, os blocos que estavam
+          animando ficavam deslocados, uns por cima dos outros */}
+      {WEB_COM_TOQUE ? <ReducedMotionConfig mode={ReduceMotion.Always} /> : null}
       {titulo}
       <StatusBar style={escuro ? 'light' : 'dark'} />
       <Stack
@@ -80,6 +85,10 @@ export default function RootLayout() {
     </Palco>
   )
 }
+
+/** Web aberta no celular (tela de toque): sem animacao de entrada. */
+const WEB_COM_TOQUE =
+  Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
 
 /** A partir desta largura (PC, tablet deitado) o app vira uma coluna central. */
 const LARGURA_DE_PC = 820

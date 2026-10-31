@@ -11,6 +11,11 @@ import type { PropsWithChildren } from 'react'
  * Chrome oferece "Instalar app" pelo manifest.
  */
 const CSS_CAMPOS = [
+  // puxar a lista para baixo (ou passar do fim): o Safari do iPhone fazia o
+  // "elastico" e os blocos animados ficavam fora do lugar, uns por cima dos
+  // outros. Sem elastico na pagina nem nas listas.
+  'html,body{overscroll-behavior:none;}',
+  'div{overscroll-behavior-y:none;}',
   'input,textarea,select{outline:none!important;-webkit-tap-highlight-color:transparent;}',
   'input:focus,textarea:focus,input:focus-visible,textarea:focus-visible{outline:none!important;box-shadow:none!important;}',
 ].join('')
