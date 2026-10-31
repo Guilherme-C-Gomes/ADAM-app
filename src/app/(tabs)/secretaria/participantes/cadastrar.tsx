@@ -41,7 +41,7 @@ import { iniciaisDe } from '@/data/jogo'
 import { usePerfil } from '@/data/perfis'
 import { rascunhoFicha, temFichaNaoSalva } from '@/data/rascunhos'
 import { color, radius, space, type } from '@/theme/tokens'
-import { voltar } from '@/lib/navegacao'
+import { abrirFichaSalva, voltar } from '@/lib/navegacao'
 
 /**
  * Telas 17 (cadastrar) e 17b (editar ficha): o mesmo formulario, gravando
@@ -169,11 +169,14 @@ export default function FichaDaCrianca() {
     try {
       if (unidadeId && ficha.unidadeId !== unidadeId) rascunhoFicha.definir({ unidadeId })
       const daInscricao = Boolean(ficha.inscricaoId)
-      await salvarFicha()
+      const nova = !ficha.id
+      const salva = await salvarFicha()
       novaFicha()
       // o numero de inscricoes novas (barra de menu) ja cai na hora
       if (daInscricao) contarPendentes()
-      voltar()
+      mostrarRecado(nova ? 'Criança cadastrada' : 'Ficha salva')
+      // fica na crianca: abre a ficha dela (nao volta ao comeco do setor)
+      abrirFichaSalva(salva)
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar a ficha.')
     } finally {

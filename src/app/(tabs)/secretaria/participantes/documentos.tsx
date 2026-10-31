@@ -9,7 +9,7 @@ import { mostrarRecado } from '@/components/ui/recado'
 import { useUnidades } from '@/data/chamada'
 import { DOCUMENTOS, novaFicha, salvarFicha } from '@/data/fichas'
 import { rascunhoFicha } from '@/data/rascunhos'
-import { voltar } from '@/lib/navegacao'
+import { abrirFichaSalva } from '@/lib/navegacao'
 import { color, radius, space, type } from '@/theme/tokens'
 
 /**
@@ -35,12 +35,13 @@ export default function Documentos() {
       // a unidade padrao e a primeira, como na ficha
       const unidadeId = ficha.unidadeId ?? unidades.dados[0]?.id ?? null
       if (!ficha.unidadeId && unidadeId) rascunhoFicha.definir({ unidadeId })
-      await salvarFicha()
+      const salva = await salvarFicha()
       novaFicha()
       mostrarRecado(ficha.id ? 'Ficha salva' : 'Criança cadastrada')
-      // fecha os documentos e a ficha: volta para onde a ficha foi aberta
-      if (router.canDismiss()) router.dismiss(2)
-      else voltar('/secretaria/participantes')
+      // fecha os documentos (e o formulario por baixo) e abre a ficha da
+      // crianca salva
+      if (router.canDismiss()) router.dismiss(1)
+      abrirFichaSalva(salva)
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar a ficha.')
       setSalvando(false)

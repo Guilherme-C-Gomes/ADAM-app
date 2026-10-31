@@ -15,6 +15,16 @@ import { Platform } from 'react-native'
  * a Configuracao da ADAM, que volta para Minha conta — e o ADM ficava indo e
  * voltando entre as duas. Se o destino for a propria tela, tambem vai ao inicio.
  */
+/**
+ * Depois de salvar uma ficha: abre a ficha da crianca salva. Se ela ja esta
+ * aberta por baixo (veio de "Editar ficha"), volta ate ela; senao, a tela
+ * atual vira a ficha — inclusive depois de a pagina recarregar (web), quando
+ * nao sobra tela para voltar e o "voltar" ia parar no comeco do setor.
+ */
+export function abrirFichaSalva(id: string) {
+  router.dismissTo({ pathname: '/secretaria/participantes/[id]', params: { id } })
+}
+
 export function voltar(destino?: Href) {
   if (router.canGoBack()) {
     router.back()
