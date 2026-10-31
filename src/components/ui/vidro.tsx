@@ -24,13 +24,6 @@ export function Vidro({ tom, raio }: { tom?: ColorValue; raio: number }) {
   )
 }
 
-/** Tons do vidro: o roxo da marca e as variantes dos botoes. */
-export const TONS_DO_VIDRO = {
-  roxo: '#9E06D1',
-  roxoClaro: 'rgba(158, 6, 209, 0.35)',
-  perigo: 'rgba(255, 122, 181, 0.35)',
-} as const
-
 /** Para o pai: sem fundo nem borda proprios, o vidro faz as vezes. */
 export const semFundo = { backgroundColor: 'transparent', borderColor: 'transparent' } as const
 

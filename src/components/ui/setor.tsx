@@ -8,7 +8,7 @@ import { usePerfil } from '@/data/perfis'
 import type { NomeIcone } from '@/components/ui/icone'
 import { Icone } from '@/components/ui/icone'
 import { usePilulaDeslizante } from '@/components/ui/movimento'
-import { semFundo, TEM_VIDRO, TONS_DO_VIDRO, Vidro } from '@/components/ui/vidro'
+import { semFundo, TEM_VIDRO, Vidro } from '@/components/ui/vidro'
 import { voltar } from '@/lib/navegacao'
 import { color, onDark, radius, space, target, type } from '@/theme/tokens'
 
@@ -164,16 +164,14 @@ export function Segmentado<T extends string>({
             pointerEvents="none"
             style={[
               s.segmentoPilula,
-              TEM_VIDRO && semFundo,
               {
                 top: pilula.medida.y,
                 width: pilula.medida.largura,
                 height: pilula.medida.altura,
               },
               pilula.estilo,
-            ]}>
-            <Vidro raio={radius.chip} tom={TONS_DO_VIDRO.roxo} />
-          </Animated.View>
+            ]}
+          />
         ) : null}
         {opcoes.map((o) => {
           const ativo = o === valor

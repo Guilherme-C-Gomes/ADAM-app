@@ -208,6 +208,7 @@ function ItemBarra({
   }, [ativo, escala, cheio])
 
   const pulo = useAnimatedStyle(() => ({ transform: [{ scale: escala.get() }] }))
+  const aceso = useAnimatedStyle(() => ({ opacity: cheio.get() }))
   const fundo = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(cheio.get(), [0, 1], [VIDRO_FOSCO, color.primary]),
     borderColor: interpolateColor(cheio.get(), [0, 1], [BORDA_DO_VIDRO, color.primary]),
@@ -232,11 +233,12 @@ function ItemBarra({
             style={s.vidro}
             glassEffectStyle="regular"
             colorScheme="dark"
-            tintColor={ativo ? color.primary : undefined}
           />
         ) : (
           <Animated.View style={[s.vidro, s.vidroFosco, fundo]} />
         )}
+        {/* o ativo: roxo da logo, solido, acendendo por cima do vidro */}
+        {VIDRO ? <Animated.View pointerEvents="none" style={[s.vidro, s.roxo, aceso]} /> : null}
         <Animated.View style={pulo}>
           <Icone cor={ativo ? color.text : 'rgba(255, 255, 255, 0.72)'} />
         </Animated.View>
@@ -303,6 +305,7 @@ const s = StyleSheet.create({
     borderCurve: 'continuous',
     overflow: 'hidden',
   },
+  roxo: { backgroundColor: color.primary },
   vidroFosco: {
     borderWidth: 1,
     // web: desfoca o que passa por baixo (no app, o fundo translucido basta)

@@ -10,7 +10,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import * as SystemUI from 'expo-system-ui'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
-import { Platform } from 'react-native'
+import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
 
 import { Confirmacao } from '@/components/ui/confirmacao'
 import { Recado } from '@/components/ui/recado'
@@ -53,7 +53,7 @@ export default function RootLayout() {
   if (!fontsLoaded && Platform.OS !== 'web') return titulo
 
   return (
-    <>
+    <Palco>
       {titulo}
       <StatusBar style="light" />
       <Stack
@@ -67,6 +67,39 @@ export default function RootLayout() {
       {/* pop-ups por cima de qualquer tela: o recado e o "tem certeza?" */}
       <Recado />
       <Confirmacao />
-    </>
+    </Palco>
   )
 }
+
+/** A partir desta largura (PC, tablet deitado) o app vira uma coluna central. */
+const LARGURA_DE_PC = 820
+const COLUNA = 720
+
+/**
+ * Na web aberta no PC, o app (desenhado para celular) nao estica os cards
+ * de ponta a ponta: fica numa coluna central, com o fundo do app dos lados
+ * e uma borda fina marcando a coluna. Pop-ups e a barra de menu ficam
+ * dentro dela. No celular e no app nativo, nada muda.
+ */
+function Palco({ children }: { children: React.ReactNode }) {
+  const { width } = useWindowDimensions()
+  if (Platform.OS !== 'web' || width < LARGURA_DE_PC) return <>{children}</>
+  return (
+    <View style={st.palco}>
+      <View style={st.coluna}>{children}</View>
+    </View>
+  )
+}
+
+const st = StyleSheet.create({
+  palco: { flex: 1, alignItems: 'center', backgroundColor: color.bg },
+  coluna: {
+    flex: 1,
+    width: '100%',
+    maxWidth: COLUNA,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: color.divider,
+    overflow: 'hidden',
+  },
+})

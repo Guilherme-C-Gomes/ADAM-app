@@ -30,7 +30,7 @@ import { useEspacoDaBarra } from '@/components/ui/tab-bar'
 import { MESES } from '@/data/calendario'
 import type { NomeIcone } from '@/components/ui/icone'
 import { Icone } from '@/components/ui/icone'
-import { semFundo, TEM_VIDRO, TONS_DO_VIDRO, Vidro } from '@/components/ui/vidro'
+import { semFundo, TEM_VIDRO, Vidro } from '@/components/ui/vidro'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 import { COR_FOCO, useFoco } from '@/hooks/use-foco'
 import { voltar } from '@/lib/navegacao'
@@ -124,22 +124,14 @@ export function Botao({
         s.botao,
         variante === 'secundario' && s.botaoSecundario,
         variante === 'perigo' && s.botaoPerigo,
-        // Liquid Glass: o vidro tingido faz o fundo (fora dele, o de sempre)
-        TEM_VIDRO && semFundo,
+        // O principal e o roxo da logo, solido (o vidro tingido brilhava
+        // demais). Secundario e perigo: vidro neutro por baixo da borda.
+        TEM_VIDRO && variante !== 'primario' && s.vidroNoFundo,
         desabilitado && s.desabilitado,
       ]}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!desabilitado }}>
-      <Vidro
-        raio={radius.botao}
-        tom={
-          variante === 'secundario'
-            ? TONS_DO_VIDRO.roxoClaro
-            : variante === 'perigo'
-              ? TONS_DO_VIDRO.perigo
-              : TONS_DO_VIDRO.roxo
-        }
-      />
+      {variante !== 'primario' ? <Vidro raio={radius.botao} /> : null}
       <Text
         style={[
           s.botaoRotulo,
@@ -985,6 +977,8 @@ const s = StyleSheet.create({
   },
   botaoRotulo: { ...type.body, fontFamily: 'Inter_600SemiBold', color: color.text },
   textoSecundario: { color: color.text },
+  // com vidro: a borda colorida fica, o fundo translucido sai (o vidro faz)
+  vidroNoFundo: { backgroundColor: 'transparent' },
   textoPerigo: { color: color.danger },
   textoAviso: { color: color.warn },
   desabilitado: { opacity: 0.4 },
