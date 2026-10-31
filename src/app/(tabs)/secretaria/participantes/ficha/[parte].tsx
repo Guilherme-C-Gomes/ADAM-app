@@ -170,7 +170,8 @@ function useBuscaDeCep(ligada: boolean) {
   }, [ligada, cep])
 
   useEffect(() => {
-    if (!ligada || cep.length === 8 || m.rua.trim().length < 3) return
+    // so com o CEP em branco: CEP pela metade e a pessoa digitando
+    if (!ligada || cep.length > 0 || m.rua.trim().length < 3) return
     let vivo = true
     // espera a pessoa parar de digitar
     const espera = setTimeout(() => {

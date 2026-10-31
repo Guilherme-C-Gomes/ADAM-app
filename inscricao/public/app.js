@@ -29,6 +29,8 @@ const $$ = (s, el = document) => Array.from(el.querySelectorAll(s))
 const novo = () => ({
   passo: 'inicio',
   iniciadoEm: 0,
+  /** o numero do envio (do /api/preparar), para tentar de novo sem gastar outro */
+  preparoId: null,
   resp2: false,
   baixadaCom: null,
   assinatura: { tipo: '', imagem: '' },
@@ -52,6 +54,7 @@ let estado = carregar()
 const arquivos = {} // campo -> { blob, nome }
 
 function guardar() {
+  if (enviada) return
   try {
     localStorage.setItem(CHAVE, JSON.stringify(estado))
   } catch {}
@@ -130,7 +133,7 @@ function preencherCampos() {
   $$('main [name]').forEach((el) => {
     if (el.type === 'file' || el.name === 'site') return
     const v = ler(el.name)
-    if (el.type === 'checkbox') el.checked = v !== false && v !== undefined ? Boolean(v) : el.defaultChecked
+    if (el.type === 'checkbox') el.checked = v === undefined ? el.defaultChecked : Boolean(v)
     else if (el.type === 'radio') el.checked = String(v) === el.value
     else if (v != null) el.value = v
   })
@@ -253,8 +256,9 @@ function mostrar(passo, empilhar = true) {
   window.scrollTo(0, 0)
   if (empilhar) history.pushState({ passo }, '')
 }
+let enviada = false
 window.addEventListener('popstate', (e) => {
-  if (estado.passo === 'pronto') return
+  if (enviada || estado.passo === 'pronto') return
   mostrar(e.state?.passo || 'inicio', false)
 })
 
@@ -262,6 +266,14 @@ function marcar(nome) {
   const el = $(`[name="${nome}"]`)
   if (el) el.classList.add('invalido')
   return el
+}
+
+/** Idade hoje para um "AAAA-MM-DD" (sem fuso: conta so ano, mes e dia). */
+function idadeEm(iso) {
+  const [a, m, d] = String(iso).split('-').map(Number)
+  const h = new Date()
+  const [ha, hm, hd] = [h.getFullYear(), h.getMonth() + 1, h.getDate()]
+  return ha - a - (hm < m || (hm === m && hd < d) ? 1 : 0)
 }
 
 /** Confere o passo; devolve a primeira frase do que falta, ou ''. */
@@ -278,6 +290,10 @@ function conferir(passo) {
   if (passo === 'crianca') {
     exige(palavras(d.crianca.nome) >= 2, 'crianca.nome', 'Escreva o nome completo da criança.')
     exige(d.crianca.nascimento, 'crianca.nascimento', 'Falta a data de nascimento.')
+    if (d.crianca.nascimento) {
+      const idade = idadeEm(d.crianca.nascimento)
+      exige(idade >= 3 && idade <= 18, 'crianca.nascimento', 'Confira a data de nascimento: a ADAM atende crianças de 3 a 18 anos.')
+    }
     exige(String(d.crianca.cidade || '').trim(), 'crianca.cidade', 'Falta a cidade.')
     exige(String(d.crianca.rua || '').trim(), 'crianca.rua', 'Falta a rua.')
     exige(String(d.crianca.numero || '').trim(), 'crianca.numero', 'Falta o número da casa (ou S/N).')
@@ -339,7 +355,9 @@ $('#avancar').addEventListener('click', async () => {
   }
   mostrar(PASSOS[PASSOS.indexOf(passo) + 1])
 })
-$('#voltar').addEventListener('click', () => history.back())
+$('#voltar').addEventListener('click', () =>
+  mostrar(PASSOS[Math.max(0, PASSOS.indexOf(estado.passo) - 1)]),
+)
 
 $('#quero-resp2').addEventListener('click', () => {
   estado.resp2 = true
@@ -432,6 +450,7 @@ $('#ficha-govbr').addEventListener('change', async (e) => {
 })
 
 let quadroPronto = false
+let quadroLimpo = () => {}
 function prepararQuadro() {
   const canvas = $('#quadro')
   if (!canvas || canvas.offsetWidth === 0) return
@@ -455,6 +474,10 @@ function prepararQuadro() {
   if (quadroPronto) return
   quadroPronto = true
   let desenhando = false
+  let desenhou = Boolean(estado.assinatura.imagem)
+  quadroLimpo = () => {
+    desenhou = false
+  }
   let ultimo = null
   const ponto = (ev) => {
     const r = canvas.getBoundingClientRect()
@@ -475,11 +498,14 @@ function prepararQuadro() {
     c.lineTo(p.x, p.y)
     c.stroke()
     ultimo = p
+    desenhou = true
     ev.preventDefault()
   })
   const fim = () => {
     if (!desenhando) return
     desenhando = false
+    // um toque sem riscar nao e assinatura
+    if (!desenhou) return
     estado.assinatura.imagem = canvas.toDataURL('image/png')
     guardar()
     mensagem('')
@@ -491,6 +517,7 @@ $('#limpar-quadro').addEventListener('click', () => {
   const canvas = $('#quadro')
   canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
   estado.assinatura.imagem = ''
+  quadroLimpo()
   guardar()
 })
 window.addEventListener('resize', () => {
@@ -609,10 +636,14 @@ async function enviar() {
       ([campo]) => campo !== 'ficha_govbr' || estado.assinatura.tipo === 'govbr',
     )
     const preparo = await postar('/api/preparar', {
+      id: estado.preparoId || null,
+      ficha: fichaParaEnvio(),
       arquivos: lista.map(([campo, a]) => ({ campo, tipo: a.blob.type || 'application/pdf', tamanho: a.blob.size })),
     })
+    estado.preparoId = preparo.id
+    guardar()
     let n = 0
-    for (const [campo, a] of lista) {
+    for (const [campo, a] of lista.filter(([campo]) => preparo.envios[campo])) {
       n++
       mensagem(`Enviando arquivos (${n} de ${lista.length})…`)
       const corpo = new FormData()
@@ -632,6 +663,7 @@ async function enviar() {
       site: $('#site').value,
     })
     $('#codigo').textContent = final.codigo
+    enviada = true
     mostrar('pronto', false)
     // enviada: nada da ficha (CPF, saude...) fica guardado neste celular
     estado = novo()

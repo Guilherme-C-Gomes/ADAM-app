@@ -15,6 +15,9 @@ const CSS_CAMPOS = [
   // "elastico" e os blocos animados ficavam fora do lugar, uns por cima dos
   // outros. Sem elastico na pagina nem nas listas.
   'html,body{overscroll-behavior:none;}',
+  // PC (a partir de 820px): o app numa coluna central de 720px, com borda
+  // fina dos lados (src/app/_layout.tsx, Palco)
+  '@media (min-width:820px){[data-palco="coluna"]{max-width:720px!important;margin-left:auto!important;margin-right:auto!important;border-left:1px solid rgba(128,128,160,.22);border-right:1px solid rgba(128,128,160,.22);overflow:hidden;}}',
   'div{overscroll-behavior-y:none;}',
   'input,textarea,select{outline:none!important;-webkit-tap-highlight-color:transparent;}',
   'input:focus,textarea:focus,input:focus-visible,textarea:focus-visible{outline:none!important;box-shadow:none!important;}',

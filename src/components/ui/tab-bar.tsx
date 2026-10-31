@@ -272,7 +272,7 @@ const s = StyleSheet.create({
     borderWidth: 2,
     borderColor: color.bg,
   },
-  seloTexto: { fontSize: 10, lineHeight: 12, fontFamily: 'Inter_700Bold', color: color.onPrimary },
+  seloTexto: { fontSize: 10, lineHeight: 12, fontFamily: 'Inter_700Bold', color: '#FFFFFF' },
   wrapper: {
     position: 'absolute',
     left: 0,

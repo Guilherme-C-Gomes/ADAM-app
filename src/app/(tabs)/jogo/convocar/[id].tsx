@@ -223,7 +223,7 @@ function MarcaConvocar({ marcado }: { marcado: boolean }) {
     <Animated.View style={[st.marca, marcado && st.marcaAtiva, pop]}>
       <Icone
         nome={marcado ? 'check' : 'mais'}
-        cor={marcado ? color.onPrimary : color.muted}
+        cor={marcado ? color.bg : color.muted}
         tamanho={14}
       />
     </Animated.View>

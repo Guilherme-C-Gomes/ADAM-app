@@ -11,7 +11,7 @@ import * as SystemUI from 'expo-system-ui'
 import { StatusBar } from 'expo-status-bar'
 import { ReducedMotionConfig, ReduceMotion } from 'react-native-reanimated'
 import { useEffect } from 'react'
-import { Appearance, Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { Appearance, Platform, StyleSheet, View } from 'react-native'
 
 import { Confirmacao } from '@/components/ui/confirmacao'
 import { Recado } from '@/components/ui/recado'
@@ -86,10 +86,6 @@ export default function RootLayout() {
   )
 }
 
-/** A partir desta largura (PC, tablet deitado) o app vira uma coluna central. */
-const LARGURA_DE_PC = 820
-const COLUNA = 720
-
 /**
  * Na web aberta no PC, o app (desenhado para celular) nao estica os cards
  * de ponta a ponta: fica numa coluna central, com o fundo do app dos lados
@@ -97,24 +93,16 @@ const COLUNA = 720
  * dentro dela. No celular e no app nativo, nada muda.
  */
 function Palco({ children }: { children: React.ReactNode }) {
-  const { width } = useWindowDimensions()
-  if (Platform.OS !== 'web' || width < LARGURA_DE_PC) return <>{children}</>
+  // Sempre a mesma arvore (trocar de arvore pela largura remontava o app e
+  // dava erro de montagem na web). Quem decide a coluna e o CSS do +html.tsx,
+  // pelo atributo data-palco, a partir de 820px de largura.
   return (
-    <View style={st.palco}>
-      <View style={st.coluna}>{children}</View>
+    <View style={st.palco} {...({ dataSet: { palco: 'coluna' } } as object)}>
+      {children}
     </View>
   )
 }
 
 const st = StyleSheet.create({
-  palco: { flex: 1, alignItems: 'center', backgroundColor: color.bg },
-  coluna: {
-    flex: 1,
-    width: '100%',
-    maxWidth: COLUNA,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: color.divider,
-    overflow: 'hidden',
-  },
+  palco: { flex: 1, width: '100%', backgroundColor: color.bg },
 })

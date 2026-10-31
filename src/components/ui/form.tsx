@@ -403,7 +403,7 @@ export function Marca({ ativa, tipo = 'check' }: { ativa: boolean; tipo?: 'check
   }
   return (
     <Animated.View style={[s.check, ativa && s.checkAtivo, pop]}>
-      {ativa ? <Icone nome="check" cor={color.onPrimary} tamanho={14} /> : null}
+      {ativa ? <Icone nome="check" cor={color.bg} tamanho={14} /> : null}
     </Animated.View>
   )
 }

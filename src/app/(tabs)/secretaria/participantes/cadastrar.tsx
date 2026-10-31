@@ -21,6 +21,7 @@ import {
 import { mostrarRecado } from '@/components/ui/recado'
 import { useUnidades } from '@/data/chamada'
 import { ORDEM_DAS_PARTES, PARTES, preenchidos } from '@/data/ficha-matricula'
+import { contarPendentes, lerInscricao, prepararCadastro } from '@/data/inscricoes'
 import { turmaDaIdade } from '@/data/estudo'
 import {
   abrirFicha,
@@ -74,12 +75,27 @@ export default function FichaDaCrianca() {
   useEffect(() => {
     let ativo = true
     if (!id) {
-      if (!inscricao || rascunhoFicha.ler().inscricaoId !== inscricao) novaFicha()
-      return
+      if (!inscricao || rascunhoFicha.ler().inscricaoId !== inscricao) {
+        novaFicha()
+        // a pagina recarregou (web) no meio de um cadastro pela inscricao:
+        // o rascunho se perdeu, entao monta de novo a partir dela
+        if (inscricao) {
+          lerInscricao(inscricao).then((i) => {
+            if (ativo && i && i.status === 'pendente') prepararCadastro(i).catch(() => {})
+          })
+        }
+      }
+      return () => {
+        ativo = false
+      }
     }
     abrirFicha(id).then(
-      () => {
-        if (ativo) setAbrindo(false)
+      (dados) => {
+        // so se a pessoa ainda esta nesta ficha (internet lenta: ja pode ter
+        // ido para outra, e esta nao pode cair por cima)
+        if (!ativo) return
+        rascunhoFicha.definir(dados)
+        setAbrindo(false)
       },
       (e: unknown) => {
         if (ativo) {
@@ -100,7 +116,11 @@ export default function FichaDaCrianca() {
   }
 
   // a unidade padrao e a primeira, enquanto ninguem escolheu
-  const unidadeId = ficha.unidadeId ?? unidades.dados[0]?.id ?? null
+  // a unidade padrao e a primeira (tambem se a escolhida nao existe mais)
+  const unidadeId =
+    ficha.unidadeId && (unidades.carregando || unidades.dados.some((u) => u.id === ficha.unidadeId))
+      ? ficha.unidadeId
+      : (unidades.dados[0]?.id ?? null)
   const nascimentoISO = paraISO(ficha.nascimento)
   const idade = nascimentoISO ? idadeDe(nascimentoISO) : null
   const turma = idade === null || idade < 0 ? null : turmaDaIdade(idade)
@@ -112,9 +132,12 @@ export default function FichaDaCrianca() {
     setErro(null)
     setSalvando(true)
     try {
-      if (!ficha.unidadeId && unidadeId) rascunhoFicha.definir({ unidadeId })
+      if (unidadeId && ficha.unidadeId !== unidadeId) rascunhoFicha.definir({ unidadeId })
+      const daInscricao = Boolean(ficha.inscricaoId)
       await salvarFicha()
       novaFicha()
+      // o numero de inscricoes novas (barra de menu) ja cai na hora
+      if (daInscricao) contarPendentes()
       voltar()
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar a ficha.')

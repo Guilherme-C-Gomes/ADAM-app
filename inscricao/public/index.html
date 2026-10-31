@@ -50,7 +50,7 @@
         <input name="crianca.nome" autocomplete="off" autocapitalize="words" maxlength="120" required />
       </label>
       <label class="campo">Data de nascimento
-        <input name="crianca.nascimento" type="date" required />
+        <input name="crianca.nascimento" type="date" min="2007-01-01" max="2024-12-31" required />
       </label>
       <label class="campo">CEP <span class="fraco">(preenche a rua, o bairro e a cidade)</span>
         <input name="crianca.cep" inputmode="numeric" data-mascara="cep" placeholder="12940-000" />

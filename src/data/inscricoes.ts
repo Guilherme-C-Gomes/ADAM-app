@@ -156,6 +156,8 @@ export function useInscricoes(status: StatusInscricao) {
     lista: [] as Inscricao[],
     carregando: true,
     erro: null as string | null,
+    /** de qual aba e a lista guardada */
+    status: null as StatusInscricao | null,
   })
   const [vez, setVez] = useState(0)
   const recarregar = useCallback(() => setVez((v) => v + 1), [])
@@ -170,12 +172,13 @@ export function useInscricoes(status: StatusInscricao) {
       .limit(200)
       .then(({ data, error }) => {
         if (!ativo) return
-        if (error) setEstado({ lista: [], carregando: false, erro: mensagemDe(error) })
+        if (error) setEstado({ lista: [], carregando: false, erro: mensagemDe(error), status })
         else {
           setEstado({
             lista: (data as unknown as Linha[]).map(daLinha),
             carregando: false,
             erro: null,
+            status,
           })
         }
       })
@@ -184,7 +187,14 @@ export function useInscricoes(status: StatusInscricao) {
     }
   }, [status, vez])
 
-  return { ...estado, recarregar }
+  // a lista guardada e de outra aba: ainda carregando esta
+  const outraAba = estado.status !== status
+  return {
+    lista: outraAba ? [] : estado.lista,
+    carregando: outraAba || estado.carregando,
+    erro: outraAba ? null : estado.erro,
+    recarregar,
+  }
 }
 
 /**
@@ -213,6 +223,16 @@ export function usePendentes() {
     contarPendentes()
   }, [])
   return { total, recarregar }
+}
+
+/** Uma inscricao (null se nao existe ou nao deu para ler). */
+export async function lerInscricao(id: string) {
+  const { data, error } = await supabase
+    .from('inscricoes')
+    .select(CAMPOS)
+    .eq('id', id)
+    .maybeSingle()
+  return error || !data ? null : daLinha(data as unknown as Linha)
 }
 
 export function useInscricao(id: string | undefined) {
@@ -328,6 +348,8 @@ export async function prepararCadastro(i: Inscricao) {
 
   rascunhoFicha.definir({
     ...FICHA_VAZIA,
+    // ja virou crianca num salvamento que parou no meio: segue nela
+    id: i.criancaId ?? undefined,
     inscricaoId: i.id,
     nome: d.crianca.nome,
     nascimento: paraBR(d.crianca.nascimento),

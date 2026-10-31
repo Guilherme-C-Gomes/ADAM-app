@@ -16,6 +16,7 @@ import {
 import { mostrarRecado } from '@/components/ui/recado'
 import { idadeDe, paraBR } from '@/data/fichas'
 import {
+  contarPendentes,
   excluirInscricao,
   NOMES_DOS_ARQUIVOS,
   prepararCadastro,
@@ -122,6 +123,7 @@ export default function InscricaoDetalhe() {
     setOcupado('recusar')
     try {
       await recusarInscricao(i.id)
+      contarPendentes()
       mostrarRecado('Inscrição recusada')
       voltar('/secretaria/inscricoes')
     } catch (e) {

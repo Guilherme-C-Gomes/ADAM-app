@@ -209,6 +209,14 @@ begin
     insert into public.documentos (crianca_id, tipo, entregue_em)
     values (v_crianca, 'RLS TESTE certidao', public.hoje());
 
+    -- inscricao pelo link (pendente) e a tentativa dela; a ficha de
+    -- matricula da crianca Um ja nasce sozinha (gatilho criar_ficha_matricula)
+    insert into public.inscricao_tentativas (id, ip_hash)
+    values ('00000000-0000-4000-8000-000000000042', 'rls teste');
+    insert into public.inscricoes (id, crianca_nome, nascimento, dados, hash, assinatura_tipo, ficha_path)
+    values ('00000000-0000-4000-8000-000000000042', 'RLS TESTE Inscrita', date '2016-01-01',
+            '{}', 'rlsteste', 'tela', 'rls/teste.pdf');
+
     insert into public.livros (titulo, tipo) values ('RLS TESTE Livro', 'RLS TESTE')
     returning id into v_livro;
     -- emprestimo ABERTO so da crianca Um
@@ -281,6 +289,33 @@ begin
         null, null, null, null),
       ('07 documentos: ler', c_sensivel, 'ler',
         format('select d.tipo from public.documentos d where d.crianca_id = %L', v_crianca),
+        null, null, null, null),
+      ('07b responsaveis: ler CPF e RG', c_sensivel, 'ler',
+        format('select r.cpf, r.rg from public.responsaveis r where r.crianca_id = %L', v_crianca),
+        null, null, null, null),
+
+      -- ficha de matricula (endereco, escola, familia, saude): dado sensivel
+      ('07c fichas_matricula: ler', c_sensivel, 'ler',
+        format('select m.numero from public.fichas_matricula m where m.crianca_id = %L', v_crianca),
+        null, null, null, null),
+      ('07d fichas_matricula: editar', c_sensivel, 'escrever',
+        format('update public.fichas_matricula set dados = %L::jsonb where crianca_id = %L',
+               '{"rua": "RLS TESTE"}', v_crianca),
+        null, null, null, null),
+
+      -- inscricoes pelo link: so ADM e Secretaria leem e decidem; excluir,
+      -- so quem administra a Secretaria; as tentativas, ninguem pelo app
+      ('07e inscricoes: ler', c_sensivel, 'ler',
+        'select 1 from public.inscricoes i where i.id = ''00000000-0000-4000-8000-000000000042''',
+        null, null, null, null),
+      ('07f inscricoes: recusar', c_sensivel, 'escrever',
+        'update public.inscricoes set status = ''recusada'' where id = ''00000000-0000-4000-8000-000000000042''',
+        null, null, null, null),
+      ('07g inscricoes: excluir', array['adm'], 'escrever',
+        'delete from public.inscricoes where id = ''00000000-0000-4000-8000-000000000042''',
+        null, null, null, null),
+      ('07h inscricao_tentativas: ler', c_ninguem, 'ler',
+        'select 1 from public.inscricao_tentativas t where t.id = ''00000000-0000-4000-8000-000000000042''',
         null, null, null, null),
 
       -- o telefone principal: o professor so de quem esta com livro

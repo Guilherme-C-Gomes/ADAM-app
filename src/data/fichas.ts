@@ -385,7 +385,9 @@ export async function abrirFicha(id: string) {
   }
   const c = crianca.data
   const tipos = new Set(documentos.data.map((d) => d.tipo))
-  rascunhoFicha.definir({
+  // devolve em vez de por no rascunho: com internet lenta, a pessoa pode ja
+  // ter saido para outra ficha, e quem abriu decide se ainda vale
+  return {
     ...FICHA_VAZIA,
     id: c.id,
     nome: c.nome,
@@ -406,7 +408,7 @@ export async function abrirFicha(id: string) {
     })),
     documentos: DOCUMENTOS.flatMap((d, i) => (tipos.has(d.tipo) ? [i] : [])),
     matricula: matricula.dados,
-  })
+  }
 }
 
 export function novaFicha() {
@@ -416,6 +418,9 @@ export function novaFicha() {
 /** Manda um arquivo do aparelho para o bucket privado `fichas`. */
 async function enviarArquivo(caminho: string, uri: string, tipo?: string) {
   const resposta = await fetch(uri)
+  // endereco vencido (o da inscricao vale 6 horas) devolve erro: nao pode
+  // virar a foto ou o documento da crianca
+  if (!resposta.ok) throw new Error('download')
   const dados = await resposta.arrayBuffer()
   const { error } = await supabase.storage
     .from('fichas')
@@ -450,6 +455,23 @@ export async function salvarFicha() {
     observacao: f.observacao.trim() || null,
   }
 
+  // veio de uma inscricao: ela ainda precisa estar esperando. Se outra
+  // pessoa ja cadastrou, nao cria uma segunda crianca.
+  if (f.inscricaoId && !f.id) {
+    const { data: insc } = await supabase
+      .from('inscricoes')
+      .select('status, crianca_id')
+      .eq('id', f.inscricaoId)
+      .maybeSingle()
+    if (insc && insc.status !== 'pendente') {
+      throw new Error(
+        insc.status === 'aprovada'
+          ? 'Esta inscrição já foi cadastrada por outra pessoa. Abra a ficha da criança pela lista.'
+          : 'Esta inscrição foi recusada. Nada foi salvo.',
+      )
+    }
+  }
+
   let id = f.id
   if (id) {
     const { error } = await supabase.from('criancas').update(dados).eq('id', id)
@@ -459,6 +481,11 @@ export async function salvarFicha() {
     if (error || !data) throw new Error('Não foi possível criar a ficha.')
     id = data.id
     rascunhoFicha.definir({ id })
+    // a inscricao ja fica ligada a crianca: se algo abaixo falhar, tentar de
+    // novo pela inscricao reabre ESTA crianca em vez de criar outra
+    if (f.inscricaoId) {
+      await supabase.from('inscricoes').update({ crianca_id: id }).eq('id', f.inscricaoId)
+    }
   }
 
   // Daqui para baixo a crianca ja esta no banco (e o id no rascunho): se
@@ -594,6 +621,7 @@ export async function salvarFicha() {
         decidido_por: sessao.ler().usuarioId,
       })
       .eq('id', f.inscricaoId)
+      .in('status', ['pendente', 'aprovada'])
     if (error) throw falhou('a baixa da inscrição pelo link')
   }
 

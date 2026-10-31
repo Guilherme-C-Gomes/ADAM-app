@@ -258,7 +258,7 @@ function MarcaFeita({ feito }: { feito: boolean }) {
 
   return (
     <Animated.View style={[st.marca, feito && st.marcaFeita, pop]}>
-      {feito ? <Icone nome="check" cor={color.onPrimary} tamanho={14} /> : null}
+      {feito ? <Icone nome="check" cor={color.bg} tamanho={14} /> : null}
     </Animated.View>
   )
 }

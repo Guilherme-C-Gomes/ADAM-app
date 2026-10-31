@@ -101,7 +101,9 @@ export const MATRICULA_VAZIA: FichaMatricula = {
 /** O que vier do banco (ou de uma ficha antiga) cai no formato de hoje. */
 export function completar(dados: unknown): FichaMatricula {
   const d = (dados && typeof dados === 'object' ? dados : {}) as Record<string, unknown>
-  const ficha = { ...MATRICULA_VAZIA }
+  // o que nao veio fica em branco (a cidade tambem: "Atibaia" e so o
+  // comeco de uma ficha nova, nao um dado de quem ja estava cadastrado)
+  const ficha = { ...MATRICULA_VAZIA, cidade: '' }
   for (const chave of Object.keys(MATRICULA_VAZIA) as Chave[]) {
     if (typeof d[chave] === 'string') ficha[chave] = d[chave] as string
   }
