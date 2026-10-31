@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  Platform,
   Pressable,
   StyleSheet,
   type LayoutChangeEvent,
@@ -79,7 +80,15 @@ function atrasoDaCascata(i: number, base: number) {
  * Entrada em cascata subindo 8px: `entering={entrada(i)}`.
  * O item `i` espera `i * 25ms` (no maximo 300ms).
  */
+/**
+ * Na versao web as entradas em cascata nao rodam: o Reanimated na web
+ * deixava os blocos que estavam entrando empilhados no mesmo lugar (no PC e
+ * no Safari do iPhone). La os blocos aparecem direto.
+ */
+const SEM_ENTRADA = Platform.OS === 'web'
+
 export function entrada(i = 0, { base = 0, distancia = 8, duracao = 420 }: OpcoesEntrada = {}) {
+  if (SEM_ENTRADA) return undefined
   return FadeInDown.withInitialValues({ opacity: 0, transform: [{ translateY: distancia }] })
     .duration(duracao)
     .delay(atrasoDaCascata(i, base))
@@ -92,6 +101,7 @@ export function entradaLateral(
   i = 0,
   { base = 0, distancia = 8, duracao = 420 }: OpcoesEntrada = {},
 ) {
+  if (SEM_ENTRADA) return undefined
   return FadeInLeft.withInitialValues({ opacity: 0, transform: [{ translateX: -distancia }] })
     .duration(duracao)
     .delay(atrasoDaCascata(i, base))

@@ -65,10 +65,10 @@ export default function RootLayout() {
 
   return (
     <Palco>
-      {/* na web com toque (celular), as entradas animadas desligam: no
-          Safari do iPhone, ao rolar e puxar a lista, os blocos que estavam
-          animando ficavam deslocados, uns por cima dos outros */}
-      {WEB_COM_TOQUE ? <ReducedMotionConfig mode={ReduceMotion.Always} /> : null}
+      {/* na web, as animacoes de entrada e saida desligam: o Reanimated na
+          web deixava blocos empilhados uns por cima dos outros (no PC e no
+          Safari do iPhone). No app nativo elas seguem. */}
+      {Platform.OS === 'web' ? <ReducedMotionConfig mode={ReduceMotion.Always} /> : null}
       {titulo}
       <StatusBar style={escuro ? 'light' : 'dark'} />
       <Stack
@@ -85,10 +85,6 @@ export default function RootLayout() {
     </Palco>
   )
 }
-
-/** Web aberta no celular (tela de toque): sem animacao de entrada. */
-const WEB_COM_TOQUE =
-  Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
 
 /** A partir desta largura (PC, tablet deitado) o app vira uma coluna central. */
 const LARGURA_DE_PC = 820
