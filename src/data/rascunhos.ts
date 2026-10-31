@@ -29,6 +29,10 @@ export type Contato = {
   parentesco: string
   telefone: string
   whatsapp: boolean
+  /** documentos de quem assina a ficha (opcionais): CPF so numeros */
+  cpf?: string
+  rg?: string
+  rgOrgao?: string
   /**
    * O numero principal da ficha — quase sempre o da mae. E dele que sai a
    * convocacao e a cobranca de livro, e e o unico que o professor ve. Um

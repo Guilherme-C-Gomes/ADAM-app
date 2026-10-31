@@ -25,7 +25,7 @@ import {
   useParticipantes,
   type Participante,
 } from '@/data/fichas'
-import { numeroDaMatricula, useMatricula } from '@/data/ficha-matricula'
+import { mascaraCpf, numeroDaMatricula, useMatricula } from '@/data/ficha-matricula'
 import { lerContatos, type Contato } from '@/data/estudo'
 import { usePerfil } from '@/data/perfis'
 import { color, onDark, radius, space, target, type, ESPACO_FIM_DA_TELA } from '@/theme/tokens'
@@ -241,7 +241,13 @@ export default function PerfilParticipante() {
                 <Linha
                   key={`${c.nome}-${i}`}
                   titulo={c.nome}
-                  legenda={`${c.relacao} · ${c.telefone}${c.whatsapp ? ' · WhatsApp' : ''}${c.principal ? ' · principal' : ''}`}
+                  legenda={[
+                    `${c.relacao} · ${c.telefone}${c.whatsapp ? ' · WhatsApp' : ''}${c.principal ? ' · principal' : ''}`,
+                    c.cpf ? `CPF ${mascaraCpf(c.cpf)}` : '',
+                    c.rg ? `RG ${c.rg}${c.rg_orgao ? ` (${c.rg_orgao})` : ''}` : '',
+                  ]
+                    .filter(Boolean)
+                    .join('\n')}
                   semSeta
                 />
               ))}

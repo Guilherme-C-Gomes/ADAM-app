@@ -2,7 +2,17 @@ import { useState } from 'react'
 import { Keyboard, StyleSheet, View } from 'react-native'
 
 import { Chip } from '@/components/ui'
-import { Bloco, Botao, Entrada, Grupo, Interruptor, Linha, TelaForm } from '@/components/ui/form'
+import {
+  Bloco,
+  Botao,
+  Entrada,
+  Grupo,
+  Interruptor,
+  Linha,
+  Rotulo,
+  TelaForm,
+} from '@/components/ui/form'
+import { mascaraCpf } from '@/data/ficha-matricula'
 import { rascunhoFicha, type Contato } from '@/data/rascunhos'
 import { space } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
@@ -24,6 +34,9 @@ export default function ContatoDaFicha() {
   const [parentesco, setParentesco] = useState(atual?.parentesco ?? '')
   const [telefone, setTelefone] = useState(mascaraTelefone(atual?.telefone ?? ''))
   const [whatsapp, setWhatsapp] = useState(atual?.whatsapp ?? true)
+  const [cpf, setCpf] = useState(mascaraCpf(atual?.cpf ?? ''))
+  const [rg, setRg] = useState(atual?.rg ?? '')
+  const [rgOrgao, setRgOrgao] = useState(atual?.rgOrgao ?? '')
   // O primeiro contato nasce principal; so pode haver um por ficha.
   const [principal, setPrincipal] = useState(atual?.principal ?? indice === 0)
 
@@ -34,6 +47,9 @@ export default function ContatoDaFicha() {
       telefone: telefone.trim(),
       whatsapp,
       principal,
+      cpf: cpf.replace(/\D/g, ''),
+      rg: rg.trim(),
+      rgOrgao: rgOrgao.trim(),
     }
     // Marcar este como principal desmarca o outro: um numero principal so.
     const contatos = ficha.contatos.map((c) => (principal ? { ...c, principal: false } : c))
@@ -54,7 +70,13 @@ export default function ContatoDaFicha() {
       rodape={
         <Botao
           rotulo="Salvar contato"
-          desabilitado={!nome.trim() || !parentesco.trim() || !telefoneValido(telefone)}
+          desabilitado={
+            !nome.trim() ||
+            !parentesco.trim() ||
+            !telefoneValido(telefone) ||
+            // CPF e opcional; se escreveu, tem que estar inteiro
+            (cpf.replace(/\D/g, '').length > 0 && cpf.replace(/\D/g, '').length !== 11)
+          }
           onPress={salvar}
         />
       }>
@@ -105,6 +127,32 @@ export default function ContatoDaFicha() {
       </Bloco>
 
       <Bloco ordem={3}>
+        <Rotulo>Documentos de quem assina a ficha</Rotulo>
+        <View style={st.dupla}>
+          <View style={st.metade}>
+            <Entrada rotulo="RG" value={rg} onChangeText={setRg} maxLength={20} />
+          </View>
+          <View style={st.metade}>
+            <Entrada
+              rotulo="Órgão expedidor"
+              value={rgOrgao}
+              onChangeText={setRgOrgao}
+              placeholder="SSP/SP"
+              autoCapitalize="characters"
+              maxLength={20}
+            />
+          </View>
+        </View>
+        <Entrada
+          rotulo="CPF"
+          value={cpf}
+          onChangeText={(t) => setCpf(mascaraCpf(t))}
+          placeholder="000.000.000-00"
+          keyboardType="number-pad"
+        />
+      </Bloco>
+
+      <Bloco ordem={4}>
         <Grupo>
           <Interruptor
             titulo="É WhatsApp"
@@ -122,7 +170,7 @@ export default function ContatoDaFicha() {
       </Bloco>
 
       {atual ? (
-        <Bloco ordem={4}>
+        <Bloco ordem={5}>
           <Grupo>
             <Linha
               titulo="Remover este contato"
@@ -138,5 +186,7 @@ export default function ContatoDaFicha() {
 }
 
 const st = StyleSheet.create({
+  dupla: { flexDirection: 'row', gap: space.md },
+  metade: { flex: 1 },
   chips: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
 })

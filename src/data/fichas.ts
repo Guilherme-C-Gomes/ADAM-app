@@ -370,7 +370,7 @@ export async function abrirFicha(id: string) {
       .single(),
     supabase
       .from('responsaveis')
-      .select('nome, relacao, parentesco, telefone, whatsapp, principal')
+      .select('nome, relacao, parentesco, telefone, whatsapp, principal, cpf, rg, rg_orgao')
       .eq('crianca_id', id)
       .order('criado_em'),
     supabase.from('documentos').select('tipo').eq('crianca_id', id),
@@ -397,6 +397,9 @@ export async function abrirFicha(id: string) {
     contatos: responsaveis.data.map((r) => ({
       nome: r.nome,
       parentesco: r.parentesco ?? RELACAO_TELA[r.relacao] ?? '',
+      cpf: r.cpf ?? '',
+      rg: r.rg ?? '',
+      rgOrgao: r.rg_orgao ?? '',
       telefone: r.telefone,
       whatsapp: r.whatsapp,
       principal: r.principal,
@@ -492,6 +495,9 @@ export async function salvarFicha() {
     relacao: relacaoDo(c.parentesco),
     parentesco: c.parentesco.trim() || null,
     telefone: c.telefone.trim(),
+    cpf: (c.cpf ?? '').replace(/\D/g, '') || null,
+    rg: (c.rg ?? '').trim() || null,
+    rg_orgao: (c.rgOrgao ?? '').trim() || null,
     whatsapp: c.whatsapp,
     principal: false,
   }))

@@ -308,12 +308,22 @@ export async function prepararCadastro(i: Inscricao) {
     .filter(Boolean)
     .join('\n')
 
+  // quem assinou a ficha (declarante) e um dos responsaveis: o de mesmo
+  // nome; sem nome igual, o responsavel 1
+  const simples = (t: string) => t.trim().toLowerCase().replace(/\s+/g, ' ')
+  const doDeclarante = Math.max(
+    0,
+    d.responsaveis.findIndex((r) => simples(r.nome) === simples(d.declarante.nome)),
+  )
   const contatos: Contato[] = d.responsaveis.map((r, n) => ({
     nome: r.nome,
     parentesco: r.parentesco,
     telefone: mascaraTelefone(r.telefone),
     whatsapp: r.whatsapp,
     principal: n === 0,
+    ...(n === doDeclarante
+      ? { cpf: d.declarante.cpf, rg: d.declarante.rg, rgOrgao: d.declarante.rgOrgao ?? '' }
+      : {}),
   }))
 
   rascunhoFicha.definir({

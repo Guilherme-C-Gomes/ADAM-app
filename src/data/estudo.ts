@@ -409,6 +409,10 @@ export type Contato = {
   telefone: string
   whatsapp: boolean
   principal: boolean
+  /** so para quem ve tudo (ADM e Secretaria) */
+  cpf?: string | null
+  rg?: string | null
+  rg_orgao?: string | null
 }
 
 const RELACAO: Record<string, string> = { mae: 'mãe', pai: 'pai', avo: 'avó', outro: 'responsável' }
@@ -425,7 +429,7 @@ export async function lerContatos(criancaId: string, veTudo: boolean): Promise<C
   if (veTudo) {
     const { data, error } = await supabase
       .from('responsaveis')
-      .select('nome, relacao, parentesco, telefone, whatsapp, principal')
+      .select('nome, relacao, parentesco, telefone, whatsapp, principal, cpf, rg, rg_orgao')
       .eq('crianca_id', criancaId)
       .order('principal', { ascending: false })
     if (error) throw error
