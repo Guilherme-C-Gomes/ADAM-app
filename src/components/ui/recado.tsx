@@ -5,7 +5,7 @@ import Animated from 'react-native-reanimated'
 import { Icone } from '@/components/ui/icone'
 import { cartaoEntra, cartaoSai, fundoEntra, fundoSai, seloEntra } from '@/components/ui/movimento'
 import { criarRascunho } from '@/hooks/use-rascunho'
-import { color, radius, space, type } from '@/theme/tokens'
+import { color, escuro, radius, space, type } from '@/theme/tokens'
 
 /**
  * Pop-up de confirmacao ("Usuario adicionado com sucesso"). Mora no layout
@@ -87,7 +87,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.xl,
-    backgroundColor: 'rgba(10, 10, 18, 0.55)',
+    backgroundColor: escuro ? 'rgba(10, 10, 18, 0.55)' : 'rgba(22, 19, 29, 0.3)',
     zIndex: 1000,
     elevation: 1000,
   },

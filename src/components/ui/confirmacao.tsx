@@ -5,7 +5,7 @@ import { Botao } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
 import { cartaoEntra, cartaoSai, fundoEntra, fundoSai } from '@/components/ui/movimento'
 import { criarRascunho } from '@/hooks/use-rascunho'
-import { color, radius, space, type } from '@/theme/tokens'
+import { color, escuro, radius, space, type } from '@/theme/tokens'
 
 /**
  * "Tem certeza?" antes do que nao tem volta (excluir usuario, excluir
@@ -101,7 +101,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.xl,
-    backgroundColor: 'rgba(10, 10, 18, 0.7)',
+    backgroundColor: escuro ? 'rgba(10, 10, 18, 0.7)' : 'rgba(22, 19, 29, 0.38)',
     zIndex: 1001,
     elevation: 1001,
   },

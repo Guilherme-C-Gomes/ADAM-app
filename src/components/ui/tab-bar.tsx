@@ -316,7 +316,7 @@ const s = StyleSheet.create({
   // a sombra separa o vidro do conteudo (no Liquid Glass ela ja vem junto)
   sombra: {
     shadowColor: '#000',
-    shadowOpacity: 0.35,
+    shadowOpacity: escuro ? 0.35 : 0.12,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,

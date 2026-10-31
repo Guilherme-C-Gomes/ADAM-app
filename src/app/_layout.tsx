@@ -10,7 +10,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import * as SystemUI from 'expo-system-ui'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
-import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { Appearance, Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
 
 import { Confirmacao } from '@/components/ui/confirmacao'
 import { Recado } from '@/components/ui/recado'
@@ -21,6 +21,16 @@ SplashScreen.preventAutoHideAsync()
 // O fundo da janela, que aparece por tras das telas no gesto de voltar
 // (deslizar da borda): sem isto ele e branco e "pisca" na lateral.
 SystemUI.setBackgroundColorAsync(color.bg).catch(() => {})
+
+// O app.json prende o iOS no escuro (userInterfaceStyle). No modo claro,
+// teclado, seletores de data e interruptores do sistema seguem o claro.
+// (So no app: na web o Appearance nao tem setColorScheme, e la quem cuida
+// e o fundo da pagina, abaixo e no +html.tsx.)
+if (Platform.OS !== 'web') {
+  Appearance.setColorScheme(escuro ? 'dark' : 'light')
+} else if (typeof document !== 'undefined') {
+  document.body.style.backgroundColor = color.bg
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({

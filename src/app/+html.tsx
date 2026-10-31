@@ -15,6 +15,18 @@ const CSS_CAMPOS = [
   'input:focus,textarea:focus,input:focus-visible,textarea:focus-visible{outline:none!important;box-shadow:none!important;}',
 ].join('')
 
+const TEMA_ANTES_DE_DESENHAR = `try {
+  if (localStorage.getItem('adam-tema') === 'claro') {
+    document.documentElement.style.backgroundColor = '#F6F5FA'
+    document.documentElement.style.colorScheme = 'light'
+    var meta = document.querySelector('meta[name=theme-color]')
+    if (meta) meta.setAttribute('content', '#F6F5FA')
+    var esquema = document.querySelector('meta[name=color-scheme]')
+    if (esquema) esquema.setAttribute('content', 'light')
+    document.write('<style>html,body{background-color:#F6F5FA !important;}</style>')
+  }
+} catch (e) {}`
+
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="pt-BR">
@@ -42,6 +54,10 @@ export default function Root({ children }: PropsWithChildren) {
         <ScrollViewStyleReset />
         {/* sem isto, abrir o app mostra um clarao branco antes do fundo escuro */}
         <style dangerouslySetInnerHTML={{ __html: 'html,body{background-color:#0A0A12;}' }} />
+        {/* modo claro (escolha guardada no aparelho, theme/tema-guardado.ts):
+            troca o fundo, a cor da barra do navegador e o esquema antes de
+            desenhar, para nao piscar escuro ao abrir */}
+        <script dangerouslySetInnerHTML={{ __html: TEMA_ANTES_DE_DESENHAR }} />
         {/* campo de texto: o navegador (o Safari do iPhone mais que todos)
             desenha uma caixa azul retangular por dentro da moldura arredondada.
             Ela sai daqui, em todo estado de foco; quem mostra o foco e a
