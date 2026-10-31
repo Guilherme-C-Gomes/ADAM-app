@@ -30,6 +30,7 @@ import { useEspacoDaBarra } from '@/components/ui/tab-bar'
 import { MESES } from '@/data/calendario'
 import type { NomeIcone } from '@/components/ui/icone'
 import { Icone } from '@/components/ui/icone'
+import { semFundo, TEM_VIDRO, TONS_DO_VIDRO, Vidro } from '@/components/ui/vidro'
 import { color, motion, onDark, radius, space, target, type } from '@/theme/tokens'
 import { COR_FOCO, useFoco } from '@/hooks/use-foco'
 import { voltar } from '@/lib/navegacao'
@@ -123,10 +124,22 @@ export function Botao({
         s.botao,
         variante === 'secundario' && s.botaoSecundario,
         variante === 'perigo' && s.botaoPerigo,
+        // Liquid Glass: o vidro tingido faz o fundo (fora dele, o de sempre)
+        TEM_VIDRO && semFundo,
         desabilitado && s.desabilitado,
       ]}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!desabilitado }}>
+      <Vidro
+        raio={radius.botao}
+        tom={
+          variante === 'secundario'
+            ? TONS_DO_VIDRO.roxoClaro
+            : variante === 'perigo'
+              ? TONS_DO_VIDRO.perigo
+              : TONS_DO_VIDRO.roxo
+        }
+      />
       <Text
         style={[
           s.botaoRotulo,
@@ -545,7 +558,8 @@ export function SeletorPeriodo({
   onPress?: () => void
 }) {
   return (
-    <View style={s.periodo}>
+    <View style={[s.periodo, TEM_VIDRO && semFundo]}>
+      <Vidro raio={radius.campo} />
       <Pressable
         onPress={onPress}
         disabled={!onPress}

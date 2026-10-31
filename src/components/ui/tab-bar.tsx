@@ -226,12 +226,13 @@ function ItemBarra({
       }>
       <View style={[s.item, !VIDRO && s.sombra]}>
         {VIDRO ? (
+          // sem receber toque: quem recebe e o botao (Pressable) em volta
           <GlassView
+            pointerEvents="none"
             style={s.vidro}
             glassEffectStyle="regular"
             colorScheme="dark"
             tintColor={ativo ? color.primary : undefined}
-            isInteractive
           />
         ) : (
           <Animated.View style={[s.vidro, s.vidroFosco, fundo]} />

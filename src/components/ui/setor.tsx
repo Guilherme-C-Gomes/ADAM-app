@@ -8,6 +8,7 @@ import { usePerfil } from '@/data/perfis'
 import type { NomeIcone } from '@/components/ui/icone'
 import { Icone } from '@/components/ui/icone'
 import { usePilulaDeslizante } from '@/components/ui/movimento'
+import { semFundo, TEM_VIDRO, TONS_DO_VIDRO, Vidro } from '@/components/ui/vidro'
 import { voltar } from '@/lib/navegacao'
 import { color, onDark, radius, space, target, type } from '@/theme/tokens'
 
@@ -153,7 +154,8 @@ export function Segmentado<T extends string>({
 }) {
   const pilula = usePilulaDeslizante(valor)
   return (
-    <View style={s.segmentado}>
+    <View style={[s.segmentado, TEM_VIDRO && semFundo]}>
+      <Vidro raio={radius.chip + space.xs} />
       {/* trilho sem padding nem borda: a medida de cada aba vale para a
           pilula absoluta */}
       <View style={s.segmentoTrilho}>
@@ -162,14 +164,16 @@ export function Segmentado<T extends string>({
             pointerEvents="none"
             style={[
               s.segmentoPilula,
+              TEM_VIDRO && semFundo,
               {
                 top: pilula.medida.y,
                 width: pilula.medida.largura,
                 height: pilula.medida.altura,
               },
               pilula.estilo,
-            ]}
-          />
+            ]}>
+            <Vidro raio={radius.chip} tom={TONS_DO_VIDRO.roxo} />
+          </Animated.View>
         ) : null}
         {opcoes.map((o) => {
           const ativo = o === valor
