@@ -551,7 +551,14 @@ $teste$;
 
 
 -- ----------------------------------------------------------------- o que aparece
+-- Primeira linha: o resumo. Logo abaixo, o que FALHOU (se houver), depois o
+-- que foi pulado e por fim o que deu ok — um print do topo ja basta.
 select perfil, item, esperado, obtido, resultado, obs
 from pg_temp.rls_resultado
-order by perfil collate "C", item collate "C"
+order by
+  case when perfil = '(resumo)' then 0
+       when resultado = 'FALHOU' then 1
+       when resultado = 'pulado' then 2
+       else 3 end,
+  perfil collate "C", item collate "C"
 limit 1000;
