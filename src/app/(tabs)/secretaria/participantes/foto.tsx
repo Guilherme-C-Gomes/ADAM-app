@@ -1,7 +1,7 @@
-
 import { BotaoFoto, EscolherFoto } from '@/components/escolher-foto'
 import { useFotoFicha } from '@/data/fichas'
 import { rascunhoFicha } from '@/data/rascunhos'
+import { arquivoGuardavel } from '@/lib/arquivo-guardavel'
 import { voltar } from '@/lib/navegacao'
 
 /** Tela 17c. */
@@ -24,7 +24,7 @@ export default function FotoDaCrianca() {
       uri={ficha.fotoUri ?? guardada ?? undefined}
       vazio={iniciais}
       nota="A foto fica na ficha e só a coordenação vê. Sai do app com autorização de imagem assinada."
-      onEscolher={(uri) => rascunhoFicha.definir({ fotoUri: uri })}
+      onEscolher={async (uri) => rascunhoFicha.definir({ fotoUri: await arquivoGuardavel(uri) })}
       onRemover={() => rascunhoFicha.definir({ fotoUri: undefined, fotoPath: undefined })}
       rodape={<BotaoFoto rotulo="Salvar foto" onPress={() => voltar()} />}
     />

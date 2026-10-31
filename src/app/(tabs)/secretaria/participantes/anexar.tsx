@@ -10,6 +10,7 @@ import { Icone } from '@/components/ui/icone'
 import { DOCUMENTOS } from '@/data/fichas'
 import { rascunhoFicha, type Anexo } from '@/data/rascunhos'
 import { color, radius, space, type } from '@/theme/tokens'
+import { arquivoGuardavel } from '@/lib/arquivo-guardavel'
 import { voltar } from '@/lib/navegacao'
 
 /** Tela 17g. Foto do papel serve: a familia raramente tem digitalizado. */
@@ -27,7 +28,11 @@ export default function AnexarDocumento() {
     if (!permissao.granted) return
     const r = await ImagePicker.launchCameraAsync({ quality: 0.7 })
     if (!r.canceled && r.assets[0])
-      setAnexo({ nome: 'foto-do-documento.jpg', uri: r.assets[0].uri, tipo: 'image/jpeg' })
+      setAnexo({
+        nome: 'foto-do-documento.jpg',
+        uri: await arquivoGuardavel(r.assets[0].uri),
+        tipo: 'image/jpeg',
+      })
   }
 
   const daGaleria = async () => {
@@ -35,7 +40,7 @@ export default function AnexarDocumento() {
     if (!r.canceled && r.assets[0])
       setAnexo({
         nome: r.assets[0].fileName ?? 'foto.jpg',
-        uri: r.assets[0].uri,
+        uri: await arquivoGuardavel(r.assets[0].uri),
         tipo: r.assets[0].mimeType ?? 'image/jpeg',
       })
   }
@@ -43,7 +48,13 @@ export default function AnexarDocumento() {
   const doArquivo = async () => {
     const r = await DocumentPicker.getDocumentAsync({ type: ['application/pdf', 'image/*'] })
     const arquivo = r.assets?.[0]
-    if (arquivo) setAnexo({ nome: arquivo.name, uri: arquivo.uri, tipo: arquivo.mimeType })
+    if (arquivo) {
+      setAnexo({
+        nome: arquivo.name,
+        uri: await arquivoGuardavel(arquivo.uri),
+        tipo: arquivo.mimeType,
+      })
+    }
   }
 
   // O arquivo so sobe para o banco no "Salvar ficha"; aqui ele entra no

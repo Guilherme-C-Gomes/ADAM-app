@@ -77,4 +77,42 @@ export const FICHA_VAZIA = {
   inscricaoId: undefined as string | undefined,
 }
 
-export const rascunhoFicha = criarRascunho({ ...FICHA_VAZIA })
+/**
+ * Guardada no aparelho a cada mudanca (versao web): o celular recarrega a
+ * pagina ao sair para a camera ou os arquivos, e a ficha nao pode sumir.
+ * Vale 12 horas; sai ao salvar (novaFicha) e ao sair da conta.
+ */
+export const rascunhoFicha = criarRascunho(
+  { ...FICHA_VAZIA },
+  {
+    chave: 'adam-rascunho-ficha',
+    validade: 12 * 3600_000,
+    // arquivo grande nao cabe: guarda a ficha sem ele (o resto nao se perde)
+    aliviar: (f) => ({
+      ...f,
+      fotoUri: f.fotoUri?.startsWith('data:') ? undefined : f.fotoUri,
+      anexos: Object.fromEntries(
+        Object.entries(f.anexos).map(([i, a]) => [
+          i,
+          a.uri?.startsWith('data:') ? { ...a, uri: undefined } : a,
+        ]),
+      ),
+    }),
+  },
+)
+
+/** Ficha nova em andamento (nao salva) que vale continuar. */
+export function temFichaNaoSalva() {
+  const f = rascunhoFicha.ler()
+  return (
+    !f.id &&
+    Boolean(
+      f.nome.trim() ||
+      f.nascimento.trim() ||
+      f.contatos.length ||
+      f.documentos.length ||
+      f.fotoUri ||
+      Object.values(f.matricula).some((v) => v.trim() && v !== 'Atibaia'),
+    )
+  )
+}

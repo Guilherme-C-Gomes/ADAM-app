@@ -39,7 +39,7 @@ import {
 } from '@/data/fichas'
 import { iniciaisDe } from '@/data/jogo'
 import { usePerfil } from '@/data/perfis'
-import { rascunhoFicha } from '@/data/rascunhos'
+import { rascunhoFicha, temFichaNaoSalva } from '@/data/rascunhos'
 import { color, radius, space, type } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
 
@@ -51,6 +51,21 @@ import { voltar } from '@/lib/navegacao'
  * R1: a turma nao se escolhe, sai da idade — por isso aparece como
  * chip calculado, com a regra escrita do lado.
  */
+/** As duas fichas tem os mesmos dados? (ordem das chaves nao importa) */
+function mesmaFicha(a: object, b: object) {
+  const canonico = (v: unknown): string =>
+    Array.isArray(v)
+      ? `[${v.map(canonico).join(',')}]`
+      : v && typeof v === 'object'
+        ? `{${Object.keys(v)
+            .filter((k) => k !== 'editando' && (v as Record<string, unknown>)[k] !== undefined)
+            .sort()
+            .map((k) => `${k}:${canonico((v as Record<string, unknown>)[k])}`)
+            .join(',')}}`
+        : JSON.stringify(v ?? null)
+  return canonico(a) === canonico(b)
+}
+
 export default function FichaDaCrianca() {
   // `inscricao`: veio de uma inscricao pelo link, ja posta no rascunho por
   // prepararCadastro (data/inscricoes.ts) — nao comecar do zero
@@ -65,6 +80,14 @@ export default function FichaDaCrianca() {
   // rascunho pela metade apagaria responsaveis e documentos)
   const [erroAoAbrir, setErroAoAbrir] = useState<string | null>(null)
   const [tentativa, setTentativa] = useState(0)
+  // a ficha guardada no aparelho (a pagina recarregou ao sair para a camera
+  // ou os arquivos): ficha nova em andamento continua de onde parou...
+  const [continuandoNova, setContinuandoNova] = useState(
+    () => !id && !inscricao && temFichaNaoSalva(),
+  )
+  // ...e numa ficha ja cadastrada, as alteracoes nao salvas voltam (com a
+  // versao do banco guardada, para descartar se a pessoa quiser)
+  const [versaoSalva, setVersaoSalva] = useState<ReturnType<typeof rascunhoFicha.ler> | null>(null)
   // desativar e reativar: quem edita a ficha (RLS de update em `criancas`:
   // ADM e Secretaria)
   const { perfil, administraSecretaria } = usePerfil()
@@ -75,6 +98,12 @@ export default function FichaDaCrianca() {
   useEffect(() => {
     let ativo = true
     if (!id) {
+      // ficha nova nao salva guardada no aparelho: continua nela
+      if (!inscricao && temFichaNaoSalva()) {
+        return () => {
+          ativo = false
+        }
+      }
       if (!inscricao || rascunhoFicha.ler().inscricaoId !== inscricao) {
         novaFicha()
         // a pagina recarregou (web) no meio de um cadastro pela inscricao:
@@ -94,7 +123,13 @@ export default function FichaDaCrianca() {
         // so se a pessoa ainda esta nesta ficha (internet lenta: ja pode ter
         // ido para outra, e esta nao pode cair por cima)
         if (!ativo) return
-        rascunhoFicha.definir(dados)
+        const guardada = rascunhoFicha.ler()
+        if (guardada.id === id && !mesmaFicha(guardada, dados)) {
+          // alteracoes desta ficha que nao foram salvas: ficam na tela
+          setVersaoSalva(dados)
+        } else {
+          rascunhoFicha.definir(dados)
+        }
         setAbrindo(false)
       },
       (e: unknown) => {
@@ -186,6 +221,32 @@ export default function FichaDaCrianca() {
           onPress={salvar}
         />
       }>
+      {continuandoNova ? (
+        <Bloco>
+          <Aviso
+            tom="roxo"
+            titulo="Continuando a ficha que não foi salva"
+            texto="Toque para apagar e começar do zero"
+            onPress={() => {
+              novaFicha()
+              setContinuandoNova(false)
+            }}
+          />
+        </Bloco>
+      ) : null}
+      {versaoSalva ? (
+        <Bloco>
+          <Aviso
+            tom="roxo"
+            titulo="Alterações desta ficha que não foram salvas"
+            texto="Toque para descartar e voltar à versão salva"
+            onPress={() => {
+              rascunhoFicha.definir(versaoSalva)
+              setVersaoSalva(null)
+            }}
+          />
+        </Bloco>
+      ) : null}
       {erro ? (
         <Bloco>
           <Aviso tom="ambar" titulo={erro} />

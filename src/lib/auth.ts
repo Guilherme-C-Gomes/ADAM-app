@@ -9,6 +9,7 @@ import {
   type LinhaUsuario,
 } from '@/lib/perfil-guardado'
 import { supabase, supabaseConfigurado } from '@/lib/supabase'
+import { rascunhoFicha } from '@/data/rascunhos'
 
 /**
  * Entrar, voltar e sair.
@@ -234,6 +235,8 @@ export function conferirPerfil() {
  */
 async function sairDoAparelho() {
   await esquecerPerfil()
+  // a ficha em andamento guardada no aparelho (dado sensivel) sai junto
+  rascunhoFicha.esquecer()
   const { error } = await supabase.auth.signOut({ scope: 'local' }).catch((e) => ({ error: e }))
   // sem rede e com o token vencido, o Supabase devolve o erro e NAO apaga a
   // sessao guardada: apaga aqui, para "Sair" valer de verdade
