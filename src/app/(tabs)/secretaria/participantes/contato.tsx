@@ -33,18 +33,15 @@ const ATALHOS = ['Mãe', 'Pai', 'Avó', 'Avô', 'Tia', 'Tio']
  */
 const ORGAO_PADRAO = 'SSP/SP'
 
-/** RG de Sao Paulo: 8 numeros + o digito (numero ou X) -> 12.345.678-9 */
+/** RG de Sao Paulo: 9 numeros -> 12.345.678-9 */
 function mascaraRgSP(texto: string) {
-  const v = texto
-    .toUpperCase()
-    .replace(/[^0-9X]/g, '')
-    .slice(0, 9)
+  const v = texto.replace(/\D/g, '').slice(0, 9)
   return v
     .replace(/^(\w{2})(\w)/, '$1.$2')
     .replace(/^(\w{2})\.(\w{3})(\w)/, '$1.$2.$3')
     .replace(/\.(\w{3})(\w)$/, '.$1-$2')
 }
-const rgSPCompleto = (rg: string) => rg.replace(/[^0-9X]/gi, '').length === 9
+const rgSPCompleto = (rg: string) => rg.replace(/\D/g, '').length === 9
 const ORGAOS = [
   'SSP/SP',
   'SSP/MG',
@@ -249,7 +246,8 @@ export default function ContatoDaFicha() {
             } else setRg(t)
           }}
           placeholder={!orgaoLivre && rgOrgao === ORGAO_PADRAO ? '12.345.678-9' : undefined}
-          autoCapitalize="characters"
+          // RG e so numero: abre o teclado de numeros
+          keyboardType="number-pad"
           maxLength={20}
         />
         <CampoSeletor
