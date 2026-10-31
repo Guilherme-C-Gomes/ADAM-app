@@ -5,6 +5,7 @@ import { Chip } from '@/components/ui'
 import {
   Bloco,
   Botao,
+  CampoSeletor,
   Entrada,
   Grupo,
   Interruptor,
@@ -25,6 +26,25 @@ import { digitarTelefone, mascaraTelefone, telefoneCompleto, telefoneValido } fr
  */
 const ATALHOS = ['Mãe', 'Pai', 'Avó', 'Avô', 'Tia', 'Tio']
 
+/**
+ * Orgao expedidor do RG: ja vem SSP/SP (quase todo mundo e de Sao Paulo);
+ * tocando no campo abre a lista, e "Outro" deixa escrever.
+ */
+const ORGAO_PADRAO = 'SSP/SP'
+const ORGAOS = [
+  'SSP/SP',
+  'SSP/MG',
+  'SSP/RJ',
+  'SSP/PR',
+  'SSP/BA',
+  'SSP/PE',
+  'SSP/CE',
+  'SSP/GO',
+  'SSP/DF',
+  'DETRAN',
+  'PC',
+]
+
 export default function ContatoDaFicha() {
   const ficha = rascunhoFicha.useValor()
   const indice = ficha.editando
@@ -36,7 +56,10 @@ export default function ContatoDaFicha() {
   const [whatsapp, setWhatsapp] = useState(atual?.whatsapp ?? true)
   const [cpf, setCpf] = useState(mascaraCpf(atual?.cpf ?? ''))
   const [rg, setRg] = useState(atual?.rg ?? '')
-  const [rgOrgao, setRgOrgao] = useState(atual?.rgOrgao ?? '')
+  const [rgOrgao, setRgOrgao] = useState(atual?.rgOrgao || ORGAO_PADRAO)
+  // a lista de orgaos aberta, e o campo livre ("Outro")
+  const [escolhendoOrgao, setEscolhendoOrgao] = useState(false)
+  const [orgaoLivre, setOrgaoLivre] = useState(!ORGAOS.includes(rgOrgao))
   // O primeiro contato nasce principal; so pode haver um por ficha.
   const [principal, setPrincipal] = useState(atual?.principal ?? indice === 0)
 
@@ -49,7 +72,8 @@ export default function ContatoDaFicha() {
       principal,
       cpf: cpf.replace(/\D/g, ''),
       rg: rg.trim(),
-      rgOrgao: rgOrgao.trim(),
+      // sem RG, o orgao nao fica (o SSP/SP padrao nao vira dado sozinho)
+      rgOrgao: rg.trim() ? rgOrgao.trim() || ORGAO_PADRAO : '',
     }
     // Marcar este como principal desmarca o outro: um numero principal so.
     const contatos = ficha.contatos.map((c) => (principal ? { ...c, principal: false } : c))
@@ -128,21 +152,47 @@ export default function ContatoDaFicha() {
 
       <Bloco ordem={3}>
         <Rotulo>Documentos de quem assina a ficha</Rotulo>
-        <View style={st.dupla}>
-          <View style={st.metade}>
-            <Entrada rotulo="RG" value={rg} onChangeText={setRg} maxLength={20} />
-          </View>
-          <View style={st.metade}>
-            <Entrada
-              rotulo="Órgão expedidor"
-              value={rgOrgao}
-              onChangeText={setRgOrgao}
-              placeholder="SSP/SP"
-              autoCapitalize="characters"
-              maxLength={20}
+        <Entrada rotulo="RG" value={rg} onChangeText={setRg} maxLength={20} />
+        <CampoSeletor
+          rotulo="Órgão expedidor"
+          valor={rgOrgao || ORGAO_PADRAO}
+          onPress={() => setEscolhendoOrgao((v) => !v)}
+        />
+        {escolhendoOrgao ? (
+          <View style={st.chips}>
+            {ORGAOS.map((o) => (
+              <Chip
+                key={o}
+                rotulo={o}
+                ativo={!orgaoLivre && rgOrgao === o}
+                onPress={() => {
+                  setRgOrgao(o)
+                  setOrgaoLivre(false)
+                  setEscolhendoOrgao(false)
+                }}
+              />
+            ))}
+            <Chip
+              rotulo="Outro"
+              ativo={orgaoLivre}
+              onPress={() => {
+                setOrgaoLivre(true)
+                setRgOrgao('')
+                setEscolhendoOrgao(false)
+              }}
             />
           </View>
-        </View>
+        ) : null}
+        {orgaoLivre ? (
+          <Entrada
+            rotulo="Qual órgão expedidor?"
+            value={rgOrgao}
+            onChangeText={setRgOrgao}
+            placeholder="Ex.: SSP/SC"
+            autoCapitalize="characters"
+            maxLength={20}
+          />
+        ) : null}
         <Entrada
           rotulo="CPF"
           value={cpf}
@@ -186,7 +236,5 @@ export default function ContatoDaFicha() {
 }
 
 const st = StyleSheet.create({
-  dupla: { flexDirection: 'row', gap: space.md },
-  metade: { flex: 1 },
   chips: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
 })

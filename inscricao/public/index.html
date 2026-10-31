@@ -270,9 +270,12 @@
           <input name="declarante.rg" maxlength="20" required />
         </label>
         <label class="campo">Órgão expedidor
-          <input name="declarante.rgOrgao" maxlength="20" placeholder="SSP/SP" autocapitalize="characters" />
+          <select name="declarante.rgOrgao"><option>SSP/SP</option><option>SSP/MG</option><option>SSP/RJ</option><option>SSP/PR</option><option>SSP/BA</option><option>SSP/PE</option><option>SSP/CE</option><option>SSP/GO</option><option>SSP/DF</option><option>DETRAN</option><option>PC</option><option value="outro">Outro</option></select>
         </label>
       </div>
+      <label class="campo" data-se="declarante.rgOrgao=outro">Qual órgão expedidor?
+        <input name="declarante.rgOrgaoOutro" maxlength="20" placeholder="Ex.: SSP/SC" autocapitalize="characters" />
+      </label>
       <label class="campo">Seu CPF
         <input name="declarante.cpf" inputmode="numeric" data-mascara="cpf" placeholder="000.000.000-00" required />
       </label>

@@ -39,7 +39,8 @@ const novo = () => ({
     familia: {},
     responsaveis: [{ whatsapp: true }, { whatsapp: true }],
     saude: {},
-    declarante: {},
+    // orgao expedidor ja vem SSP/SP; "outro" abre o campo para escrever
+    declarante: { rgOrgao: 'SSP/SP' },
   },
 })
 
@@ -388,6 +389,9 @@ function fichaParaEnvio() {
   delete d.crianca.diaSabado
   delete d.crianca.endereco
   delete d.familia.telResidencial
+  const orgao = d.declarante.rgOrgao || 'SSP/SP'
+  d.declarante.rgOrgao = orgao === 'outro' ? String(d.declarante.rgOrgaoOutro || '').trim() : orgao
+  delete d.declarante.rgOrgaoOutro
   return d
 }
 
