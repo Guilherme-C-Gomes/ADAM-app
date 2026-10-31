@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+import { BaseDeCriancas } from '@/components/base-criancas'
 import { Barra, Card, Contador, Overline } from '@/components/ui'
 import { Aviso, Grupo, Linha, SeletorPeriodo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
@@ -23,7 +24,7 @@ import { color, onDark, radius, space, type, ESPACO_FIM_DA_TELA } from '@/theme/
  * relatorio ao mesmo tempo (R12). Tudo e contado no banco — ver
  * data/metricas.ts para o que cada numero quer dizer.
  */
-const ABAS = ['Números', 'Cadastros'] as const
+const ABAS = ['Números', 'Base', 'Cadastro'] as const
 
 export default function Secretaria() {
   const [aba, setAba] = useState<(typeof ABAS)[number]>('Números')
@@ -64,14 +65,19 @@ export default function Secretaria() {
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
         <Segmentado opcoes={ABAS} valor={aba} onChange={setAba} />
 
-        <SeletorPeriodo
-          rotulo={rotulo}
-          onAnterior={anterior}
-          onProximo={proximo}
-          onPress={() => router.push('/secretaria/filtros')}
-        />
+        {/* a Base tem a busca e as unidades dela: o periodo nao vale la */}
+        {aba !== 'Base' ? (
+          <SeletorPeriodo
+            rotulo={rotulo}
+            onAnterior={anterior}
+            onProximo={proximo}
+            onPress={() => router.push('/secretaria/filtros')}
+          />
+        ) : null}
 
-        {carregando ? (
+        {aba === 'Base' ? (
+          <BaseDeCriancas />
+        ) : carregando ? (
           <Esqueleto>
             <SkeletonFaixa />
             <SkeletonCard altura={150} />
@@ -180,14 +186,6 @@ export default function Secretaria() {
 
             <Animated.View entering={entrada(1)}>
               <Grupo>
-                <Linha
-                  titulo="Crianças cadastradas"
-                  legenda={`${daUnidade.length} ${daUnidade.length === 1 ? 'ficha' : 'fichas'} · abre os dados de cada uma`}
-                  selo={
-                    pendentes ? { rotulo: `${pendentes} com pendência`, tom: 'ambar' } : undefined
-                  }
-                  onPress={() => router.push('/secretaria/criancas')}
-                />
                 <Linha
                   titulo="Inscrições pelo link"
                   legenda="Fichas que as famílias mandaram pelo celular"

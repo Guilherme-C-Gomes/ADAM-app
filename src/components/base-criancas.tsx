@@ -1,22 +1,22 @@
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 
 import { Avatar, Chip } from '@/components/ui'
-import { Aviso, Bloco, Botao, Busca, Grupo, Linha, TelaForm } from '@/components/ui/form'
+import { Aviso, Bloco, Busca, Grupo, Linha } from '@/components/ui/form'
 import { entrada } from '@/components/ui/movimento'
 import { useUnidades } from '@/data/chamada'
 import { DOCUMENTOS_EXIGIDOS, paraBR, useParticipantes } from '@/data/fichas'
-import { color, space } from '@/theme/tokens'
+import { color, space, type } from '@/theme/tokens'
 
 /**
- * Tela 12f. A lista de fichas pelo lado do cadastro: o que falta de
- * documento ou de responsavel aparece em ambar, nunca escondido — e o
- * toque abre a ficha. "Saíram" mostra quem deixou a ADAM (a ficha fica, e da
- * para reativar se a criança voltar).
+ * A base de criancas cadastradas: busca por nome, unidade e "Saíram". O que
+ * falta de documento ou de responsavel aparece em ambar, nunca escondido — e
+ * o toque abre a ficha. "Saíram" mostra quem deixou a ADAM (a ficha fica, e
+ * da para reativar se a criança voltar).
  */
-export default function CriancasCadastradas() {
+export function BaseDeCriancas() {
   const [saidas, setSaidas] = useState(false)
   const { lista: fichas, carregando, erro, recarregar } = useParticipantes(undefined, saidas)
   const unidades = useUnidades()
@@ -36,21 +36,14 @@ export default function CriancasCadastradas() {
     .filter((p) => (termo ? p.nome.toLowerCase().includes(termo) : true))
 
   return (
-    <TelaForm
-      titulo="Crianças cadastradas"
-      subtitulo={
-        carregando
+    <>
+      <Text style={st.conta}>
+        {carregando
           ? 'Carregando as fichas…'
           : saidas
             ? `${fichas.length} ${fichas.length === 1 ? 'criança saiu' : 'crianças saíram'} · a ficha continua`
-            : `${fichas.length} ${fichas.length === 1 ? 'ficha' : 'fichas'} · toque para abrir`
-      }
-      rodape={
-        <Botao
-          rotulo="Cadastrar criança"
-          onPress={() => router.push('/secretaria/participantes/cadastrar')}
-        />
-      }>
+            : `${fichas.length} ${fichas.length === 1 ? 'criança cadastrada' : 'crianças cadastradas'} · toque para abrir`}
+      </Text>
       <Busca valor={busca} onChange={setBusca} placeholder="Buscar por nome" />
 
       <Bloco>
@@ -120,10 +113,11 @@ export default function CriancasCadastradas() {
           />
         )}
       </Bloco>
-    </TelaForm>
+    </>
   )
 }
 
 const st = StyleSheet.create({
   chips: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
+  conta: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
 })
