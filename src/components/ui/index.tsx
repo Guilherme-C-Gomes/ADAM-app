@@ -281,7 +281,7 @@ const s = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     borderCurve: 'continuous',
-    backgroundColor: color.surface2,
+    backgroundColor: color.border,
     overflow: 'hidden',
   },
   // Largura do trilho; quanto aparece e decidido pelo translateX.

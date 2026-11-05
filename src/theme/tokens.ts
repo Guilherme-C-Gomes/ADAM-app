@@ -15,37 +15,42 @@ import { temaGuardado } from '@/theme/tema-guardado'
  * theme/tema-guardado.ts.
  */
 
+/**
+ * Paleta (05/11/2026): #0E0B1D fundo, #2A1E4D e #5A3B8C roxos escuros,
+ * #8B7CC7 roxo, #C9C2E3 lilas, #3A3A52 cinza. A logo continua com o roxo
+ * dela; no app o roxo segue so nos detalhes (letra, icone, borda fina) e os
+ * destaques cheios sao o cinza #3A3A52.
+ */
 const ESCURO = {
-  // superficies, do fundo para a frente
-  bg: '#0A0A12',
-  surface: '#15151F',
-  surface2: '#1E1E2B',
-  border: '#2E2E42',
-  divider: '#23233A',
-  skeleton: '#20202E',
+  // superficies, do fundo para a frente (o #0E0B1D clareado aos poucos)
+  bg: '#0E0B1D',
+  surface: '#17122B',
+  surface2: '#211A3B',
+  border: '#3A3A52',
+  divider: '#2A1E4D',
+  skeleton: '#211A3B',
 
   // texto, do mais forte para o mais fraco
   text: '#FFFFFF',
-  muted: '#9A9AAD',
-  faint: '#8A8AA0',
+  muted: '#A9A3C4',
+  faint: '#8E87AD',
 
-  // marca: #9E06D1 e o roxo exato da marca (logo e kit), em tudo que e cor
-  // cheia. primaryLt/primaryCh sao o mesmo roxo clareado so o bastante para
-  // texto pequeno ler no escuro (4,5:1 no bg, surface e surface2).
-  primary: '#9E06D1',
-  primaryLt: '#BF5BE1',
-  primaryCh: '#BF5BE1',
-  primaryDk: '#3A0A52',
-  /** fundo do botao secundario e de faixas: o roxo da marca a 40% */
-  primarySoft: 'rgba(158, 6, 209, 0.4)',
+  // marca: #8B7CC7 nas cores cheias pequenas (barra, interruptor, bolinha)
+  // e no texto roxo (5,4:1 no bg; 4,6:1 no surface2). primaryLt e o lilas
+  // (links e o "atual" dos graficos); primaryDk o roxo escuro da paleta.
+  primary: '#8B7CC7',
+  primaryLt: '#C9C2E3',
+  primaryCh: '#8B7CC7',
+  primaryDk: '#5A3B8C',
+  /** fundo de faixas (dias marcados no calendario): o roxo a 40% */
+  primarySoft: 'rgba(90, 59, 140, 0.4)',
   /**
    * Fundo dos destaques (botao principal, item ativo, chip e selo ativos,
-   * avatar): cinza um tom acima das superficies. O roxo fica so nos
-   * detalhes — letra, icone, borda fina.
+   * avatar): o cinza da paleta. O roxo fica so nos detalhes.
    */
-  cheio: '#2A2A3A',
-  /** letra e icone em cima do `cheio`: o roxo da marca clareado (4,65:1) */
-  onPrimary: '#C870E8',
+  cheio: '#3A3A52',
+  /** letra e icone em cima do `cheio`: o lilas (6,5:1) */
+  onPrimary: '#C9C2E3',
   /** letra do botao secundario */
   onSoft: '#FFFFFF',
 
@@ -56,30 +61,30 @@ const ESCURO = {
 }
 
 /**
- * Modo claro: o mesmo roxo da marca nas areas cheias; texto roxo no roxo
- * cheio (6,2:1 sobre o branco). Estados escurecidos para ler no claro.
+ * Modo claro: a mesma paleta ao contrario — fundo lilas bem claro, texto no
+ * #0E0B1D e o roxo #5A3B8C nos detalhes (8,6:1 no branco).
  */
 const CLARO: typeof ESCURO = {
-  bg: '#F6F5FA',
+  bg: '#F4F2FA',
   surface: '#FFFFFF',
-  surface2: '#EFEDF5',
-  border: '#DCD8E6',
-  divider: '#E7E3EF',
-  skeleton: '#E9E6F0',
+  surface2: '#ECE9F5',
+  border: '#C9C2E3',
+  divider: '#E2DDF0',
+  skeleton: '#E6E2F1',
 
-  text: '#16131D',
-  muted: '#5F5A70',
-  faint: '#6E6981',
+  text: '#0E0B1D',
+  muted: '#4F4A66',
+  faint: '#625C7C',
 
-  primary: '#9E06D1',
-  primaryLt: '#9E06D1',
-  primaryCh: '#9E06D1',
-  primaryDk: '#F0DDF8',
-  primarySoft: 'rgba(158, 6, 209, 0.14)',
-  cheio: '#E3E0EB',
-  /** o roxo exato da logo: 4,74:1 sobre o `cheio` claro */
-  onPrimary: '#9E06D1',
-  onSoft: '#16131D',
+  primary: '#5A3B8C',
+  primaryLt: '#5A3B8C',
+  primaryCh: '#5A3B8C',
+  primaryDk: '#8B7CC7',
+  primarySoft: 'rgba(90, 59, 140, 0.14)',
+  cheio: '#DDD8EE',
+  /** o roxo da paleta: 6,2:1 sobre o `cheio` claro */
+  onPrimary: '#5A3B8C',
+  onSoft: '#0E0B1D',
 
   success: '#13854F',
   warn: '#A86400',
@@ -93,9 +98,8 @@ export const escuro = tema === 'escuro'
 export const color = escuro ? ESCURO : CLARO
 
 /**
- * Contraste: primary rende 3.19:1 sobre bg — aprovado para area cheia
- * (botao, icone), reprovado para texto; texto branco sobre ele rende 6.18:1.
- * Texto e dado em roxo usam primaryLt, que passa 4.5:1 (criterio AA).
+ * Contraste: primary/primaryCh passam 4.5:1 sobre bg, surface e surface2
+ * (texto pequeno, criterio AA); o lilas primaryLt passa com folga.
  */
 export const onDark = {
   /** o fundo dos destaques: cinza (o roxo e so detalhe) */

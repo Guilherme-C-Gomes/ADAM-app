@@ -1,16 +1,16 @@
 /* Inscricao ADAM · mesmas cores do app (src/theme/tokens.ts), tema escuro. */
 :root {
-  --bg: #0a0a12;
-  --surface: #15151f;
-  --surface2: #1e1e2b;
-  --border: #2e2e42;
+  --bg: #0e0b1d;
+  --surface: #17122b;
+  --surface2: #211a3b;
+  --border: #3a3a52;
   --text: #ffffff;
-  --muted: #9a9aad;
-  --faint: #8a8aa0;
-  --primary: #9e06d1;
-  --primary-lt: #bf5be1;
-  --primary-soft: rgba(158, 6, 209, 0.4);
-  --primary-dk: #3a0a52;
+  --muted: #a9a3c4;
+  --faint: #8e87ad;
+  --primary: #5a3b8c;
+  --primary-lt: #8b7cc7;
+  --primary-soft: rgba(90, 59, 140, 0.4);
+  --primary-dk: #2a1e4d;
   --success: #3dd68c;
   --warn: #f5a524;
   --raio: 16px;
@@ -92,7 +92,7 @@ input:not([type='radio']):not([type='checkbox']):not([type='file']), select, tex
 }
 select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 20px) 55%, calc(100% - 15px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
 input[type='date'] { min-height: 48px; }
-input:focus, select:focus, textarea:focus { border-color: var(--primary-lt); box-shadow: 0 0 0 3px rgba(158, 6, 209, 0.35); }
+input:focus, select:focus, textarea:focus { border-color: var(--primary-lt); box-shadow: 0 0 0 3px rgba(139, 124, 199, 0.35); }
 .invalido { border-color: var(--warn) !important; }
 textarea { resize: vertical; }
 .dupla { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }

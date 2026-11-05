@@ -144,13 +144,13 @@ export default function Secretaria() {
                       <Barra pct={(m.chamadas.pequenos / m.chamadas.total) * 100} />
                     ) : null}
                     <View style={st.legendaLinha}>
-                      <View style={[st.ponto, { backgroundColor: color.primaryLt }]} />
+                      <View style={[st.ponto, { backgroundColor: color.primary }]} />
                       <Text style={st.legenda}>Pequenos</Text>
                       <NumeroAnimado valor={m.chamadas.pequenos} style={st.legendaValor} />
                       <View
                         style={[
                           st.ponto,
-                          { backgroundColor: color.primary, marginLeft: space.base },
+                          { backgroundColor: color.border, marginLeft: space.base },
                         ]}
                       />
                       <Text style={st.legenda}>Maiores</Text>

@@ -254,8 +254,8 @@ function ItemBarra({
   )
 }
 
-const VIDRO_FOSCO = escuro ? 'rgba(30, 30, 43, 0.55)' : 'rgba(255, 255, 255, 0.6)'
-const BORDA_DO_VIDRO = escuro ? 'rgba(255, 255, 255, 0.14)' : 'rgba(22, 19, 29, 0.1)'
+const VIDRO_FOSCO = escuro ? 'rgba(33, 26, 59, 0.55)' : 'rgba(255, 255, 255, 0.6)'
+const BORDA_DO_VIDRO = escuro ? 'rgba(255, 255, 255, 0.14)' : 'rgba(14, 11, 29, 0.1)'
 
 const s = StyleSheet.create({
   selo: {
@@ -272,7 +272,13 @@ const s = StyleSheet.create({
     borderWidth: 2,
     borderColor: color.bg,
   },
-  seloTexto: { fontSize: 10, lineHeight: 12, fontFamily: 'Inter_700Bold', color: '#FFFFFF' },
+  // escuro: letra no fundo (o roxo claro nao segura o branco); claro: branco
+  seloTexto: {
+    fontSize: 10,
+    lineHeight: 12,
+    fontFamily: 'Inter_700Bold',
+    color: escuro ? color.bg : '#FFFFFF',
+  },
   wrapper: {
     position: 'absolute',
     left: 0,

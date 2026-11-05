@@ -87,7 +87,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.xl,
-    backgroundColor: escuro ? 'rgba(10, 10, 18, 0.55)' : 'rgba(22, 19, 29, 0.3)',
+    backgroundColor: escuro ? 'rgba(14, 11, 29, 0.55)' : 'rgba(14, 11, 29, 0.3)',
     zIndex: 1000,
     elevation: 1000,
   },

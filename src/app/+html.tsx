@@ -25,13 +25,13 @@ const CSS_CAMPOS = [
 
 const TEMA_ANTES_DE_DESENHAR = `try {
   if (localStorage.getItem('adam-tema') === 'claro') {
-    document.documentElement.style.backgroundColor = '#F6F5FA'
+    document.documentElement.style.backgroundColor = '#F4F2FA'
     document.documentElement.style.colorScheme = 'light'
     var meta = document.querySelector('meta[name=theme-color]')
-    if (meta) meta.setAttribute('content', '#F6F5FA')
+    if (meta) meta.setAttribute('content', '#F4F2FA')
     var esquema = document.querySelector('meta[name=color-scheme]')
     if (esquema) esquema.setAttribute('content', 'light')
-    document.write('<style>html,body{background-color:#F6F5FA !important;}</style>')
+    document.write('<style>html,body{background-color:#F4F2FA !important;}</style>')
   }
 } catch (e) {}`
 
@@ -47,7 +47,7 @@ export default function Root({ children }: PropsWithChildren) {
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
         />
-        <meta name="theme-color" content="#0A0A12" />
+        <meta name="theme-color" content="#0E0B1D" />
         <meta name="color-scheme" content="dark" />
         <meta name="description" content="Painel da ADAM: chamada, jogo, secretaria e estudo." />
 
@@ -61,7 +61,7 @@ export default function Root({ children }: PropsWithChildren) {
 
         <ScrollViewStyleReset />
         {/* sem isto, abrir o app mostra um clarao branco antes do fundo escuro */}
-        <style dangerouslySetInnerHTML={{ __html: 'html,body{background-color:#0A0A12;}' }} />
+        <style dangerouslySetInnerHTML={{ __html: 'html,body{background-color:#0E0B1D;}' }} />
         {/* modo claro (escolha guardada no aparelho, theme/tema-guardado.ts):
             troca o fundo, a cor da barra do navegador e o esquema antes de
             desenhar, para nao piscar escuro ao abrir */}
