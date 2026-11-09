@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { turmaDaIdade, type TurmaEstudo } from '@/data/estudo'
 import { iniciaisDe } from '@/data/jogo'
-import { FICHA_VAZIA, rascunhoFicha, type Anexo } from '@/data/rascunhos'
+import { anexosDe, FICHA_VAZIA, rascunhoFicha, type Anexo } from '@/data/rascunhos'
 import { esquecerNoCelular } from '@/data/chamada'
 import { gravarMatricula, lerMatricula } from '@/data/ficha-matricula'
 import { deISO, paraISO as dataParaISO } from '@/data/metricas'
@@ -392,7 +392,7 @@ export async function abrirFicha(id: string) {
       .select('nome, relacao, parentesco, telefone, whatsapp, principal, cpf, rg, rg_orgao')
       .eq('crianca_id', id)
       .order('criado_em'),
-    supabase.from('documentos').select('tipo').eq('crianca_id', id),
+    supabase.from('documentos').select('tipo, arquivo_path').eq('crianca_id', id),
     lerMatricula(id),
   ])
   if (crianca.error || !crianca.data) throw new Error('Não foi possível abrir a ficha.')
@@ -404,6 +404,7 @@ export async function abrirFicha(id: string) {
   }
   const c = crianca.data
   const tipos = new Set(documentos.data.map((d) => d.tipo))
+  const anexos = await arquivosDosDocumentos(id, documentos.data)
   // devolve em vez de por no rascunho: com internet lenta, a pessoa pode ja
   // ter saido para outra ficha, e quem abriu decide se ainda vale
   return {
@@ -426,8 +427,53 @@ export async function abrirFicha(id: string) {
       principal: r.principal,
     })),
     documentos: DOCUMENTOS.flatMap((d, i) => (tipos.has(d.tipo) ? [i] : [])),
+    anexos,
     matricula: matricula.dados,
   }
+}
+
+const tipoPelaExtensao = (nome: string) =>
+  nome.endsWith('.pdf')
+    ? 'application/pdf'
+    : nome.endsWith('.png')
+      ? 'image/png'
+      : nome.endsWith('.webp')
+        ? 'image/webp'
+        : 'image/jpeg'
+
+/**
+ * Os arquivos que ja estao guardados de cada documento entregue (o RG pode
+ * ter frente e verso): `rg_certidao.jpg`, `rg_certidao-xxxx.jpg`... na pasta
+ * da crianca. Sem conseguir listar a pasta, fica ao menos o `arquivo_path`
+ * do banco — editar a ficha nao pode fazer sumir o que ja foi entregue.
+ */
+async function arquivosDosDocumentos(
+  id: string,
+  linhas: { tipo: string; arquivo_path: string | null }[],
+) {
+  const pasta = `criancas/${id}/documentos`
+  const { data, error } = await supabase.storage
+    .from('fichas')
+    .list(pasta, { limit: 100, sortBy: { column: 'created_at', order: 'asc' } })
+  const nomes = error || !data ? [] : data.filter((f) => f.id).map((f) => f.name)
+  const anexos: Record<number, Anexo[]> = {}
+  for (const linha of linhas) {
+    const indice = DOCUMENTOS.findIndex((d) => d.tipo === linha.tipo)
+    if (indice < 0) continue
+    const caminhos = nomes
+      .filter((n) => n.startsWith(`${linha.tipo}.`) || n.startsWith(`${linha.tipo}-`))
+      .map((n) => `${pasta}/${n}`)
+    if (linha.arquivo_path && !caminhos.includes(linha.arquivo_path)) {
+      caminhos.unshift(linha.arquivo_path)
+    }
+    if (caminhos.length) {
+      anexos[indice] = caminhos.map((path) => {
+        const nome = path.split('/').pop() ?? 'arquivo'
+        return { nome, path, tipo: tipoPelaExtensao(nome) }
+      })
+    }
+  }
+  return anexos
 }
 
 export function novaFicha() {
@@ -459,7 +505,7 @@ export async function responsaveisPeloComeco(telefone: string): Promise<Responsa
   if (nacional.length < 6) return []
   // "+55 (11) 9876": o comeco formatado e igual para fixo e celular
   const formatado = `+55 (${nacional.slice(0, 2)}) ${nacional.slice(2, 6)}`
-  const campos = 'nome, parentesco, relacao, telefone, whatsapp, cpf, rg, rg_orgao, criancas(nome)'
+  const campos = CAMPOS_DO_ACHADO
   const [a, b] = await Promise.all([
     supabase
       .from('responsaveis')
@@ -474,10 +520,43 @@ export async function responsaveisPeloComeco(telefone: string): Promise<Responsa
       .order('criado_em', { ascending: false })
       .limit(40),
   ])
+  return agruparResponsaveis([...(a.data ?? []), ...(b.data ?? [])], (numero) =>
+    numero.startsWith(nacional),
+  )
+}
+
+const CAMPOS_DO_ACHADO =
+  'nome, parentesco, relacao, telefone, whatsapp, cpf, rg, rg_orgao, criancas(nome)'
+
+/**
+ * Os responsaveis ja cadastrados com este nome (pedaco do nome, a partir de
+ * 3 letras): o pai ou a mae de irmaos, para nao digitar tudo de novo.
+ */
+export async function responsaveisPeloNome(nome: string): Promise<ResponsavelAchado[]> {
+  // o % e o _ do "like" valem como letra comum
+  const termo = nome
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/[%_,()]/g, '')
+  if (termo.length < 3) return []
+  const { data } = await supabase
+    .from('responsaveis')
+    .select(CAMPOS_DO_ACHADO)
+    .ilike('nome', `%${termo}%`)
+    .order('criado_em', { ascending: false })
+    .limit(40)
+  return agruparResponsaveis(data ?? [], () => true)
+}
+
+/** A mesma pessoa (mesmo celular) em fichas de irmaos vira uma so. */
+function agruparResponsaveis(
+  linhas: Record<string, unknown>[],
+  vale: (numero: string) => boolean,
+): ResponsavelAchado[] {
   const pessoas = new Map<string, ResponsavelAchado>()
-  for (const r of [...(a.data ?? []), ...(b.data ?? [])]) {
+  for (const r of linhas) {
     const numero = digitosComPais(r.telefone as string).slice(2)
-    if (!numero.startsWith(nacional)) continue
+    if (!numero || !vale(numero)) continue
     const crianca = (r.criancas as unknown as { nome: string } | null)?.nome ?? ''
     const ja = pessoas.get(numero)
     if (ja) {
@@ -649,30 +728,62 @@ export async function salvarFicha() {
   }
 
   // documentos: grava os entregues (e os arquivos) primeiro; so depois
-  // apaga os que deixaram de estar marcados
+  // apaga os que deixaram de estar marcados. Cada documento pode ter varios
+  // arquivos (RG: frente e verso); os ja guardados ficam como estao.
+  const pasta = `criancas/${id}/documentos`
+  const removidos = (f.arquivosRemovidos ?? []).filter((p) => p.startsWith(`${pasta}/`))
   const entregues = new Set(f.documentos)
   for (const [i, d] of DOCUMENTOS.entries()) {
     if (!entregues.has(i)) continue
-    const anexo = f.anexos[i]
-    let arquivo_path: string | undefined
-    if (anexo?.uri) {
-      arquivo_path = `criancas/${id}/documentos/${d.tipo}.${extensao(anexo)}`
+    const lista = anexosDe(f.anexos[i])
+    const guardados: Anexo[] = []
+    for (const [k, anexo] of lista.entries()) {
+      if (anexo.path) {
+        guardados.push(anexo)
+        continue
+      }
+      if (!anexo.uri) continue
+      const caminho = `${pasta}/${d.tipo}-${Date.now().toString(36)}${k}.${extensao(anexo)}`
       try {
-        await enviarArquivo(arquivo_path, anexo.uri, anexo.tipo)
+        await enviarArquivo(caminho, anexo.uri, anexo.tipo)
       } catch {
         throw falhou(`o arquivo de "${d.nome}"`)
       }
+      guardados.push({ nome: anexo.nome, tipo: anexo.tipo, path: caminho })
+      // ja subiu: salvar de novo (se algo abaixo falhar) nao sobe outra vez
+      rascunhoFicha.definir({
+        anexos: { ...rascunhoFicha.ler().anexos, [i]: [...guardados, ...lista.slice(k + 1)] },
+      })
     }
     const { error } = await supabase.from('documentos').upsert(
       {
         crianca_id: id,
         tipo: d.tipo,
         entregue_em: hojeISO(),
-        ...(arquivo_path ? { arquivo_path } : {}),
+        arquivo_path: guardados[0]?.path ?? null,
       },
-      { onConflict: 'crianca_id,tipo', ignoreDuplicates: !arquivo_path },
+      { onConflict: 'crianca_id,tipo', ignoreDuplicates: true },
     )
     if (error) throw falhou(`o documento "${d.nome}"`)
+    // o endereco do primeiro arquivo; so fica vazio se a pessoa tirou todos
+    const tirouDeste = removidos.some((p) => p.startsWith(`${pasta}/${d.tipo}`))
+    if (guardados.length || tirouDeste) {
+      const { error: erroArquivo } = await supabase
+        .from('documentos')
+        .update({ arquivo_path: guardados[0]?.path ?? null })
+        .eq('crianca_id', id)
+        .eq('tipo', d.tipo)
+      if (erroArquivo) throw falhou(`o documento "${d.nome}"`)
+    }
+  }
+  // os arquivos que a pessoa tirou: so depois de o resto estar gravado (se
+  // nao sairem do bucket agora, ficam sem uso, mas a ficha fica certa)
+  if (removidos.length) {
+    await supabase.storage
+      .from('fichas')
+      .remove(removidos)
+      .catch(() => null)
+    rascunhoFicha.definir({ arquivosRemovidos: [] })
   }
   const retirados = DOCUMENTOS.filter((_, i) => !entregues.has(i)).map((d) => d.tipo)
   if (retirados.length) {

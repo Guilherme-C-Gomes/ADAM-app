@@ -41,8 +41,19 @@ export type Contato = {
   principal: boolean
 }
 
-/** Um arquivo escolhido no aparelho e ainda nao enviado ao banco. */
-export type Anexo = { nome: string; uri?: string; tipo?: string }
+/**
+ * Um arquivo de documento da ficha. `uri`: escolhido agora no aparelho, sobe
+ * no "Salvar ficha". `path`: ja esta guardado no bucket `fichas` (veio do
+ * banco ao abrir a ficha, ou ja subiu num salvamento que parou no meio).
+ */
+export type Anexo = { nome: string; uri?: string; tipo?: string; path?: string }
+
+/**
+ * Os arquivos de um documento, sempre em lista (o RG tem frente e verso).
+ * Rascunho guardado antes de existir a lista tinha um arquivo so.
+ */
+export const anexosDe = (v: unknown): Anexo[] =>
+  Array.isArray(v) ? (v as Anexo[]) : v && typeof v === 'object' ? [v as Anexo] : []
 
 /**
  * Telas 17 a 17h · a ficha da crianca sendo montada. So vai para o banco
@@ -67,8 +78,10 @@ export const FICHA_VAZIA = {
   contatos: [] as Contato[],
   /** Indice dos documentos entregues em DOCUMENTOS_DA_FICHA. */
   documentos: [] as number[],
-  /** Arquivo anexado agora, por indice de documento. */
-  anexos: {} as Record<number, Anexo>,
+  /** Os arquivos de cada documento (os ja guardados e os novos), por indice. */
+  anexos: {} as Record<number, Anexo[]>,
+  /** Arquivos ja guardados que a pessoa tirou: saem do bucket no "Salvar". */
+  arquivosRemovidos: [] as string[],
   /** Qual contato a tela 17e esta editando. */
   editando: 0,
   /** O resto da ficha de matricula de papel (data/ficha-matricula.ts). */
@@ -92,9 +105,9 @@ export const rascunhoFicha = criarRascunho(
       ...f,
       fotoUri: f.fotoUri?.startsWith('data:') ? undefined : f.fotoUri,
       anexos: Object.fromEntries(
-        Object.entries(f.anexos).map(([i, a]) => [
+        Object.entries(f.anexos).map(([i, lista]) => [
           i,
-          a.uri?.startsWith('data:') ? { ...a, uri: undefined } : a,
+          anexosDe(lista).map((a) => (a.uri?.startsWith('data:') ? { ...a, uri: undefined } : a)),
         ]),
       ),
     }),

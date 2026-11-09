@@ -13,8 +13,8 @@ import {
   Rotulo,
   TelaForm,
 } from '@/components/ui/form'
-import { mascaraCpf } from '@/data/ficha-matricula'
-import { responsaveisPeloComeco, type ResponsavelAchado } from '@/data/fichas'
+import { completarComResponsaveis, mascaraCpf } from '@/data/ficha-matricula'
+import { responsaveisPeloComeco, responsaveisPeloNome, type ResponsavelAchado } from '@/data/fichas'
 import { rascunhoFicha, type Contato } from '@/data/rascunhos'
 import { onDark, space, type } from '@/theme/tokens'
 import { voltar } from '@/lib/navegacao'
@@ -77,6 +77,24 @@ export default function ContatoDaFicha() {
   const [achado, setAchado] = useState<ResponsavelAchado | null>(null)
   // so a resposta da ultima busca conta (a pessoa digita mais rapido que a rede)
   const ultimaBusca = useRef('')
+  // os achados pelo nome (antes do celular), e a espera da digitacao
+  const [peloNome, setPeloNome] = useState<ResponsavelAchado[]>([])
+  const esperaNome = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  /** Escrevendo o nome (ainda sem celular): procura quem ja esta cadastrado. */
+  const procurarNome = (texto: string) => {
+    if (esperaNome.current) clearTimeout(esperaNome.current)
+    if (achado || telefone.replace(/\D/g, '').length > 2 || texto.trim().length < 3) {
+      setPeloNome([])
+      return
+    }
+    esperaNome.current = setTimeout(() => {
+      ultimaBusca.current = `nome:${texto}`
+      responsaveisPeloNome(texto).then((lista) => {
+        if (ultimaBusca.current === `nome:${texto}`) setPeloNome(lista)
+      })
+    }, 500)
+  }
 
   /** Puxa os dados de um responsavel ja cadastrado. */
   const usar = (r: ResponsavelAchado, tudo: boolean) => {
@@ -93,6 +111,7 @@ export default function ContatoDaFicha() {
     setTelefone(r.telefone)
     setAchado(r)
     setSugestoes([])
+    setPeloNome([])
     Keyboard.dismiss()
   }
 
@@ -128,7 +147,10 @@ export default function ContatoDaFicha() {
     // Marcar este como principal desmarca o outro: um numero principal so.
     const contatos = ficha.contatos.map((c) => (principal ? { ...c, principal: false } : c))
     contatos[indice] = novo
-    rascunhoFicha.definir({ contatos: contatos.filter(Boolean) })
+    const lista = contatos.filter(Boolean)
+    // o nome da mae / do pai e a urgencia da ficha saem daqui, se em branco
+    const matricula = completarComResponsaveis(ficha.matricula, lista)
+    rascunhoFicha.definir({ contatos: lista, ...(matricula ? { matricula } : {}) })
     voltar()
   }
 
@@ -159,9 +181,35 @@ export default function ContatoDaFicha() {
         <Entrada
           rotulo="Nome"
           value={nome}
-          onChangeText={setNome}
+          onChangeText={(t) => {
+            setNome(t)
+            procurarNome(t)
+          }}
           placeholder="Nome do responsável"
         />
+        {peloNome.length > 0 ? (
+          <>
+            <Text style={st.achado}>Já cadastrado? Toque para usar:</Text>
+            <Grupo>
+              {peloNome.map((r) => (
+                <Linha
+                  key={r.telefone}
+                  titulo={r.nome}
+                  legenda={[
+                    r.telefone,
+                    r.criancas.length
+                      ? `${r.parentesco || 'Responsável'} de ${r.criancas.join(', ')}`
+                      : r.parentesco,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  selo={{ rotulo: 'Usar', tom: 'roxo' }}
+                  onPress={() => usar(r, true)}
+                />
+              ))}
+            </Grupo>
+          </>
+        ) : null}
       </Bloco>
 
       <Bloco ordem={1}>

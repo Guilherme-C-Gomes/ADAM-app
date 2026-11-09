@@ -100,6 +100,7 @@ export type Inscricao = {
 export const NOMES_DOS_ARQUIVOS: Record<string, string> = {
   foto: 'Foto da criança',
   rg_certidao: 'RG ou certidão de nascimento',
+  rg_verso: 'Verso do RG ou da certidão',
   comprovante_residencia: 'Comprovante de residência',
   atestado_medico: 'Atestado médico',
   matricula_escolar: 'Atestado de matrícula escolar',
@@ -300,19 +301,24 @@ export async function prepararCadastro(i: Inscricao) {
   const d = i.dados
   // 6 horas: da tempo de conferir com calma antes de salvar
   const url = (caminho: string) => urlDoArquivo(caminho, 6 * 3600)
-  const anexos: Record<number, Anexo> = {}
+  const anexos: Record<number, Anexo[]> = {}
   const documentos: number[] = []
   const anexar = async (tipo: string, caminho: string | undefined) => {
     const indice = DOCUMENTOS.findIndex((doc) => doc.tipo === tipo)
     if (indice < 0 || !caminho) return
-    documentos.push(indice)
-    anexos[indice] = {
-      nome: caminho.split('/').pop() ?? 'arquivo',
-      uri: await url(caminho),
-      tipo: tipoDo(caminho),
-    }
+    if (!documentos.includes(indice)) documentos.push(indice)
+    anexos[indice] = [
+      ...(anexos[indice] ?? []),
+      {
+        nome: caminho.split('/').pop() ?? 'arquivo',
+        uri: await url(caminho),
+        tipo: tipoDo(caminho),
+      },
+    ]
   }
+  // frente e verso entram no mesmo documento
   await anexar('rg_certidao', i.arquivos.rg_certidao)
+  await anexar('rg_certidao', i.arquivos.rg_verso)
   await anexar('comprovante_residencia', i.arquivos.comprovante_residencia)
   await anexar('isencao_responsabilidade', i.fichaPath)
   if (d.declarante.autorizaImagem) await anexar('direito_imagem', i.fichaPath)

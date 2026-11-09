@@ -86,7 +86,15 @@
         </div>
       </fieldset>
       <label class="campo">Série atual
-        <input name="crianca.serie" maxlength="40" placeholder="Ex.: 5º ano" />
+        <select name="crianca.serie">
+          <option value="">Selecionar</option>
+          <option>Educação infantil</option>
+          <option>1º ano</option><option>2º ano</option><option>3º ano</option>
+          <option>4º ano</option><option>5º ano</option><option>6º ano</option>
+          <option>7º ano</option><option>8º ano</option><option>9º ano</option>
+          <option>1º ano do médio</option><option>2º ano do médio</option><option>3º ano do médio</option>
+          <option>Não estuda</option>
+        </select>
       </label>
       <fieldset class="campo">
         <legend>Aulas por semana no projeto</legend>
@@ -197,7 +205,12 @@
         <option value="Madrasta"></option><option value="Padrasto"></option><option value="Irmã"></option><option value="Irmão"></option>
       </datalist>
       <div class="cartao">
-        <h2>Outros contatos</h2>
+        <h2>Em caso de urgência</h2>
+        <p class="fraco">Toque para usar o número de um responsável, ou escreva outra pessoa.</p>
+        <div class="opcoes linha" id="urgencia-atalhos">
+          <button type="button" class="botao secundario" data-urgencia="0">Usar o Responsável 1</button>
+          <button type="button" class="botao secundario" data-urgencia="1" hidden>Usar o Responsável 2</button>
+        </div>
         <label class="campo">Em caso de urgência, chamar
           <input name="familia.urgenciaNome" autocapitalize="words" maxlength="120" placeholder="Nome" required />
         </label>

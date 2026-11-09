@@ -10,14 +10,19 @@ import { useUnidades } from '@/data/chamada'
 import { DOCUMENTOS_EXIGIDOS, paraBR, useParticipantes } from '@/data/fichas'
 import { color, space, type } from '@/theme/tokens'
 
+/** O que falta na ficha, para filtrar a base. */
+export type Falta = 'responsavel' | 'documento'
+
 /**
- * A base de criancas cadastradas: busca por nome, unidade e "Saíram". O que
+ * A base de criancas cadastradas: busca por nome, unidade, o que falta
+ * (responsavel ou documento) e "Saíram". O que
  * falta de documento ou de responsavel aparece em ambar, nunca escondido — e
  * o toque abre a ficha. "Saíram" mostra quem deixou a ADAM (a ficha fica, e
  * da para reativar se a criança voltar).
  */
-export function BaseDeCriancas() {
+export function BaseDeCriancas({ falta: faltaInicial = null }: { falta?: Falta | null }) {
   const [saidas, setSaidas] = useState(false)
+  const [falta, setFalta] = useState<Falta | null>(faltaInicial)
   const { lista: fichas, carregando, erro, recarregar } = useParticipantes(undefined, saidas)
   const unidades = useUnidades()
   const [busca, setBusca] = useState('')
@@ -33,6 +38,13 @@ export function BaseDeCriancas() {
   const termo = busca.trim().toLowerCase()
   const lista = fichas
     .filter((p) => (unidade === 'Todos' ? true : p.unidade === unidade))
+    .filter((p) =>
+      falta === 'responsavel'
+        ? !p.temResponsavel
+        : falta === 'documento'
+          ? p.documentosEntregues < DOCUMENTOS_EXIGIDOS
+          : true,
+    )
     .filter((p) => (termo ? p.nome.toLowerCase().includes(termo) : true))
 
   return (
@@ -40,9 +52,11 @@ export function BaseDeCriancas() {
       <Text style={st.conta}>
         {carregando
           ? 'Carregando as fichas…'
-          : saidas
-            ? `${fichas.length} ${fichas.length === 1 ? 'criança saiu' : 'crianças saíram'} · a ficha continua`
-            : `${fichas.length} ${fichas.length === 1 ? 'criança cadastrada' : 'crianças cadastradas'} · toque para abrir`}
+          : falta
+            ? `${lista.length} de ${fichas.length} sem ${falta === 'responsavel' ? 'responsável' : 'todos os documentos'} · toque para completar`
+            : saidas
+              ? `${fichas.length} ${fichas.length === 1 ? 'criança saiu' : 'crianças saíram'} · a ficha continua`
+              : `${fichas.length} ${fichas.length === 1 ? 'criança cadastrada' : 'crianças cadastradas'} · toque para abrir`}
       </Text>
       <Busca valor={busca} onChange={setBusca} placeholder="Buscar por nome" />
 
@@ -52,6 +66,18 @@ export function BaseDeCriancas() {
             <Chip key={u} rotulo={u} ativo={unidade === u} onPress={() => setUnidade(u)} />
           ))}
           <Chip rotulo="Saíram" ativo={saidas} onPress={() => setSaidas((v) => !v)} />
+        </View>
+        <View style={st.chips}>
+          <Chip
+            rotulo="Falta responsável"
+            ativo={falta === 'responsavel'}
+            onPress={() => setFalta((v) => (v === 'responsavel' ? null : 'responsavel'))}
+          />
+          <Chip
+            rotulo="Falta documento"
+            ativo={falta === 'documento'}
+            onPress={() => setFalta((v) => (v === 'documento' ? null : 'documento'))}
+          />
         </View>
       </Bloco>
 
@@ -104,11 +130,15 @@ export function BaseDeCriancas() {
         ) : (
           <Aviso
             titulo={
-              fichas.length
-                ? 'Nenhuma ficha com esse nome'
-                : saidas
-                  ? 'Ninguém saiu da ADAM'
-                  : 'Nenhuma criança cadastrada'
+              falta && fichas.length
+                ? falta === 'responsavel'
+                  ? 'Todas as fichas têm responsável'
+                  : 'Todas as fichas têm os documentos'
+                : fichas.length
+                  ? 'Nenhuma ficha com esse nome'
+                  : saidas
+                    ? 'Ninguém saiu da ADAM'
+                    : 'Nenhuma criança cadastrada'
             }
           />
         )}

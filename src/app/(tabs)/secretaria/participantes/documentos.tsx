@@ -14,7 +14,7 @@ import {
   novaFicha,
   salvarFicha,
 } from '@/data/fichas'
-import { rascunhoFicha } from '@/data/rascunhos'
+import { anexosDe, rascunhoFicha } from '@/data/rascunhos'
 import { abrirFichaSalva } from '@/lib/navegacao'
 import { color, radius, space, type } from '@/theme/tokens'
 
@@ -91,16 +91,17 @@ export default function Documentos() {
         <Grupo>
           {DOCUMENTOS.map((d, i) => {
             const entregue = ficha.documentos.includes(i)
-            const anexo = ficha.anexos[i]
+            const arquivos = anexosDe(ficha.anexos[i])
+            const novos = arquivos.filter((a) => !a.path).length
             return (
               <Linha
                 key={d.nome}
                 titulo={d.nome}
                 legenda={
                   entregue
-                    ? anexo
-                      ? `${anexo.nome} · sobe ao salvar`
-                      : 'entregue'
+                    ? arquivos.length
+                      ? `${arquivos.length} ${arquivos.length === 1 ? 'arquivo' : 'arquivos'}${novos ? ' · sobe ao salvar' : ''}`
+                      : 'entregue em papel'
                     : d.opcional
                       ? 'opcional'
                       : 'pendente'

@@ -23,6 +23,7 @@ export const BUCKET = 'inscricoes'
 export const CAMPOS_DE_ARQUIVO = {
   foto: 'Foto da criança',
   rg_certidao: 'RG ou certidão de nascimento',
+  rg_verso: 'Verso do RG ou da certidão',
   comprovante_residencia: 'Comprovante de residência',
   atestado_medico: 'Atestado médico',
   matricula_escolar: 'Atestado de matrícula escolar',

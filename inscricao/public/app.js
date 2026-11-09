@@ -14,7 +14,8 @@ const PASSOS = ['inicio', 'crianca', 'familia', 'responsaveis', 'saude', 'termos
 const CHAVE = 'adam-inscricao-v1'
 const DOCUMENTOS = [
   ['foto', 'Foto da criança'],
-  ['rg_certidao', 'RG ou certidão de nascimento da criança'],
+  ['rg_certidao', 'RG ou certidão de nascimento da criança (frente)'],
+  ['rg_verso', 'Verso do RG ou da certidão (se tiver)'],
   ['comprovante_residencia', 'Comprovante de residência'],
   ['atestado_medico', 'Atestado médico (apto ao esporte)'],
   ['matricula_escolar', 'Atestado de matrícula escolar'],
@@ -140,6 +141,7 @@ function preencherCampos() {
   })
   $('#resp2').hidden = !estado.resp2
   $('#quero-resp2').hidden = estado.resp2
+  $('[data-urgencia="1"]').hidden = !estado.resp2
   condicionais()
   mostrarVia()
 }
@@ -371,6 +373,22 @@ $('#tirar-resp2').addEventListener('click', () => {
   guardar()
   preencherCampos()
 })
+
+// urgencia: o numero de um responsavel ja escrito, sem digitar de novo
+$$('[data-urgencia]').forEach((botao) =>
+  botao.addEventListener('click', () => {
+    const r = estado.dados.responsaveis[Number(botao.dataset.urgencia)] || {}
+    if (!r.nome || !r.telefone) {
+      mensagem('Preencha o nome e o celular desse responsável primeiro.')
+      return
+    }
+    gravar('familia.urgenciaNome', r.nome)
+    gravar('familia.urgenciaTelefone', r.telefone)
+    guardar()
+    preencherCampos()
+    mensagem('')
+  }),
+)
 
 // ─── assinatura ──────────────────────────────────────────────────────
 

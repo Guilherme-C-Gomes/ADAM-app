@@ -120,6 +120,8 @@ export type Campo = {
   tipo?: 'texto' | 'multilinha' | 'telefone' | 'cep' | 'cpf' | 'numero'
   /** escolha entre opcoes: [valor, rotulo] */
   opcoes?: [string, string][]
+  /** com opcoes: campo "Selecionar" que abre a lista (muitas opcoes) */
+  lista?: boolean
   /** com opcoes: marca mais de uma (gravado separado por virgula) */
   multipla?: boolean
   /** so aparece quando outro campo tem um destes valores */
@@ -128,6 +130,24 @@ export type Campo = {
   opcional?: boolean
   placeholder?: string
 }
+
+/** As series da escola, da educacao infantil ao ensino medio. */
+export const SERIES = [
+  'Educação infantil',
+  '1º ano',
+  '2º ano',
+  '3º ano',
+  '4º ano',
+  '5º ano',
+  '6º ano',
+  '7º ano',
+  '8º ano',
+  '9º ano',
+  '1º ano do médio',
+  '2º ano do médio',
+  '3º ano do médio',
+  'Não estuda',
+]
 
 const SIM_NAO: [string, string][] = [
   ['sim', 'Sim'],
@@ -162,7 +182,7 @@ export const PARTES = {
           ['integral_tarde_noite', 'Integral (tarde/noite)'],
         ],
       },
-      { chave: 'serie', rotulo: 'Série atual', placeholder: 'Ex.: 5º ano' },
+      { chave: 'serie', rotulo: 'Série atual', lista: true, opcoes: SERIES.map((s) => [s, s]) },
       {
         chave: 'aulasPorSemana',
         rotulo: 'Aulas por semana no projeto',
@@ -358,6 +378,38 @@ export function useMatricula(criancaId: string | undefined) {
     }
   }, [criancaId, vez])
   return { ...estado, recarregar }
+}
+
+/** "Mãe" e "mae" sao o mesmo parentesco. */
+const parentescoSimples = (t: string) =>
+  t
+    .trim()
+    .toLowerCase()
+    .replace(/[ãâáà]/g, 'a')
+
+/**
+ * Pega o que ja foi escrito nos responsaveis e preenche a ficha de
+ * matricula — so os campos em branco, nunca por cima do que ja esta la:
+ * nome da mae e do pai (pelo parentesco) e quem chamar na urgencia (o
+ * responsavel principal). Devolve null se nao ha nada a preencher.
+ */
+export function completarComResponsaveis(
+  m: FichaMatricula,
+  contatos: { nome: string; parentesco: string; telefone: string; principal: boolean }[],
+): FichaMatricula | null {
+  const validos = contatos.filter((c) => c.nome.trim() && c.telefone.trim())
+  if (!validos.length) return null
+  const novo = { ...m }
+  const mae = validos.find((c) => parentescoSimples(c.parentesco) === 'mae')
+  const pai = validos.find((c) => parentescoSimples(c.parentesco) === 'pai')
+  if (!novo.nomeMae.trim() && mae) novo.nomeMae = mae.nome.trim()
+  if (!novo.nomePai.trim() && pai) novo.nomePai = pai.nome.trim()
+  if (!novo.urgenciaNome.trim() && !novo.urgenciaTelefone.trim()) {
+    const quem = validos.find((c) => c.principal) ?? validos[0]
+    novo.urgenciaNome = quem.nome.trim()
+    novo.urgenciaTelefone = quem.telefone.trim()
+  }
+  return (Object.keys(novo) as Chave[]).some((k) => novo[k] !== m[k]) ? novo : null
 }
 
 /** Numero de matricula para mostrar: 7 -> "0007". */

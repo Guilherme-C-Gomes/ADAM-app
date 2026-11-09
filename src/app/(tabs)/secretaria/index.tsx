@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { BaseDeCriancas } from '@/components/base-criancas'
+import { BaseDeCriancas, type Falta } from '@/components/base-criancas'
 import { Barra, Card, Contador, Overline } from '@/components/ui'
 import { Aviso, Grupo, Linha, SeletorPeriodo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
@@ -28,6 +28,8 @@ const ABAS = ['Números', 'Base', 'Cadastro'] as const
 
 export default function Secretaria() {
   const [aba, setAba] = useState<(typeof ABAS)[number]>('Números')
+  // o cartao das fichas pendentes abre a Base ja filtrada no que falta
+  const [faltaNaBase, setFaltaNaBase] = useState<Falta | null>(null)
   const { filtro, todasAsUnidades, nomeUnidade, rotulo, anterior, proximo } = useFiltroSecretaria()
   const metricas = useMetricas(filtro)
   const fichas = useParticipantes()
@@ -51,6 +53,7 @@ export default function Secretaria() {
   const pendentes = daUnidade.filter(
     (p) => p.documentosEntregues < DOCUMENTOS_EXIGIDOS || !p.temResponsavel,
   ).length
+  const semResponsavel = daUnidade.filter((p) => !p.temResponsavel).length
   const completas = daUnidade.length - pendentes
   const quedas = daUnidade.filter(emQueda).length
 
@@ -63,7 +66,14 @@ export default function Secretaria() {
       <HeroSetor titulo="Secretaria" subtitulo={todasAsUnidades || 'Painel da Secretaria'} />
 
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
-        <Segmentado opcoes={ABAS} valor={aba} onChange={setAba} />
+        <Segmentado
+          opcoes={ABAS}
+          valor={aba}
+          onChange={(a) => {
+            setFaltaNaBase(null)
+            setAba(a)
+          }}
+        />
 
         {/* a Base tem a busca e as unidades dela: o periodo nao vale la */}
         {aba !== 'Base' ? (
@@ -76,7 +86,7 @@ export default function Secretaria() {
         ) : null}
 
         {aba === 'Base' ? (
-          <BaseDeCriancas />
+          <BaseDeCriancas key={faltaNaBase ?? 'todas'} falta={faltaNaBase} />
         ) : carregando ? (
           <Esqueleto>
             <SkeletonFaixa />
@@ -204,28 +214,46 @@ export default function Secretaria() {
 
             <Animated.View entering={entrada(2)} style={st.secao}>
               <Overline>Fichas</Overline>
-              <Card>
-                <View style={st.linhaTopo}>
-                  <Text style={st.cardTitulo}>Fichas completas</Text>
-                  <View style={st.contaLinha}>
-                    <NumeroAnimado valor={completas} style={st.legendaValor} />
-                    <Text style={st.legendaValor}> de {daUnidade.length}</Text>
+              <Pressionavel
+                onPress={() => {
+                  // abre a Base so com as que faltam: primeiro o responsavel
+                  setFaltaNaBase(semResponsavel ? 'responsavel' : 'documento')
+                  setAba('Base')
+                }}
+                escala={0.98}
+                disabled={!pendentes}
+                accessibilityRole="button"
+                accessibilityLabel="Ver as fichas que faltam">
+                <Card>
+                  <View style={st.linhaTopo}>
+                    <Text style={st.cardTitulo}>Fichas completas</Text>
+                    <View style={st.contaLinha}>
+                      <NumeroAnimado valor={completas} style={st.legendaValor} />
+                      <Text style={st.legendaValor}> de {daUnidade.length}</Text>
+                    </View>
                   </View>
-                </View>
-                <Barra
-                  pct={daUnidade.length ? (completas / daUnidade.length) * 100 : 0}
-                  cor={color.success}
-                />
-                <Text style={pendentes || fichas.erro ? st.legendaAviso : st.legenda}>
-                  {fichas.erro
-                    ? fichas.erro
-                    : pendentes
-                      ? `${pendentes} ${pendentes === 1 ? 'ficha esperando' : 'fichas esperando'} documento ou responsável`
-                      : daUnidade.length
-                        ? 'Todas as fichas completas'
-                        : 'Nenhuma ficha cadastrada ainda'}
-                </Text>
-              </Card>
+                  <Barra
+                    pct={daUnidade.length ? (completas / daUnidade.length) * 100 : 0}
+                    cor={color.success}
+                  />
+                  <Text style={pendentes || fichas.erro ? st.legendaAviso : st.legenda}>
+                    {fichas.erro
+                      ? fichas.erro
+                      : pendentes
+                        ? `${pendentes} ${pendentes === 1 ? 'ficha esperando' : 'fichas esperando'} documento ou responsável`
+                        : daUnidade.length
+                          ? 'Todas as fichas completas'
+                          : 'Nenhuma ficha cadastrada ainda'}
+                  </Text>
+                  {pendentes ? (
+                    <Text style={st.link}>
+                      {semResponsavel
+                        ? `ver as ${semResponsavel} sem responsável`
+                        : 'ver as que faltam documento'}
+                    </Text>
+                  ) : null}
+                </Card>
+              </Pressionavel>
             </Animated.View>
           </>
         )}
