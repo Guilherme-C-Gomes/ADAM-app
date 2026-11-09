@@ -7,7 +7,14 @@ import { Barra } from '@/components/ui'
 import { Aviso, Bloco, Botao, Entrada, Grupo, Linha, Rotulo, TelaForm } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
 import { mostrarRecado } from '@/components/ui/recado'
-import { disponiveis, rascunhoLivro, salvarLivro, useBiblioteca, type Livro } from '@/data/estudo'
+import {
+  disponiveis,
+  rascunhoLivro,
+  salvarLivro,
+  SEM_GENERO,
+  useBiblioteca,
+  type Livro,
+} from '@/data/estudo'
 import { voltar } from '@/lib/navegacao'
 import { color, radius, space, type } from '@/theme/tokens'
 
@@ -32,7 +39,8 @@ export function LivroForm({
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
 
-  const tipo = escolha.tipo || livro?.tipo || ''
+  // o genero e opcional: "Sem gênero" escolhido limpa o do livro
+  const tipo = escolha.tipo === SEM_GENERO ? '' : escolha.tipo || livro?.tipo || ''
   const capa = escolha.capaUri ?? livro?.capaUrl ?? undefined
   const emprestados = livro ? livro.exemplares - disponiveis(livro, emprestimos) : 0
   const naEstante = exemplares - emprestados
@@ -68,7 +76,7 @@ export function LivroForm({
       rodape={
         <Botao
           rotulo={salvando ? 'Salvando…' : livro ? 'Salvar alterações' : 'Salvar título'}
-          desabilitado={!titulo.trim() || !tipo || salvando}
+          desabilitado={!titulo.trim() || salvando}
           onPress={salvar}
         />
       }>
@@ -129,10 +137,9 @@ export function LivroForm({
       <Bloco ordem={3}>
         <Grupo>
           <Linha
-            titulo="Tipo do livro"
-            legenda="Como se procura"
-            legendaTom={tipo ? undefined : 'ambar'}
-            selo={{ rotulo: tipo || 'escolher', tom: tipo ? 'roxo' : 'ambar' }}
+            titulo="Gênero"
+            legenda="Opcional · como se procura"
+            selo={{ rotulo: tipo || 'sem gênero', tom: tipo ? 'roxo' : 'neutro' }}
             onPress={() => {
               if (!escolha.tipo && livro) rascunhoLivro.definir({ tipo: livro.tipo })
               router.push('/estudo/tipo-livro')

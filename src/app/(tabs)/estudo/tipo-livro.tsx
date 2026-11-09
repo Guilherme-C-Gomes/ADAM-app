@@ -10,6 +10,7 @@ import {
   carregarBiblioteca,
   excluirTipo,
   rascunhoLivro,
+  SEM_GENERO,
   useBiblioteca,
   useEscolhaDoRascunho,
 } from '@/data/estudo'
@@ -17,9 +18,12 @@ import { usePerfil } from '@/data/perfis'
 import { voltar } from '@/lib/navegacao'
 import { space } from '@/theme/tokens'
 
-const TEM_LIVROS = 'Esse tipo ainda tem livros. Mude o tipo deles antes.'
+const TEM_LIVROS = 'Esse gênero ainda tem livros. Mude o gênero deles antes.'
 
-/** Tela 13o. O tipo vale para todos os livros — e por ele que se procura. */
+/**
+ * Tela 13o. O genero (no banco, `tipo`) vale para todos os livros — e por
+ * ele que se procura. E opcional: "Sem gênero" e uma escolha.
+ */
 export default function TipoDoLivro() {
   const { livros, tipos } = useBiblioteca()
   // o novo tipo (13s) grava no rascunho e volta: a escolha acompanha
@@ -41,9 +45,9 @@ export default function TipoDoLivro() {
       return
     }
     const certeza = await pedirConfirmacao({
-      titulo: 'Excluir este tipo?',
-      texto: `“${nome}” sai da lista de tipos e dos filtros do acervo. Não dá para desfazer.`,
-      confirmar: 'Excluir tipo',
+      titulo: 'Excluir este gênero?',
+      texto: `“${nome}” sai da lista de gêneros e dos filtros do acervo. Não dá para desfazer.`,
+      confirmar: 'Excluir gênero',
       perigo: true,
     })
     if (!certeza) return
@@ -52,10 +56,10 @@ export default function TipoDoLivro() {
       await excluirTipo(nome)
       if (rascunhoLivro.ler().tipo === nome) rascunhoLivro.definir({ tipo: '' })
       setTipo('')
-      mostrarRecado('Tipo excluído')
+      mostrarRecado('Gênero excluído')
       await carregarBiblioteca()
     } catch (e) {
-      setErro(e instanceof Error ? e.message : 'Não foi possível excluir o tipo.')
+      setErro(e instanceof Error ? e.message : 'Não foi possível excluir o gênero.')
     } finally {
       setExcluindo(false)
     }
@@ -63,15 +67,15 @@ export default function TipoDoLivro() {
 
   return (
     <TelaForm
-      titulo="Tipo do livro"
-      subtitulo={`${tipos.length} ${tipos.length === 1 ? 'tipo cadastrado' : 'tipos cadastrados'}`}
+      titulo="Gênero do livro"
+      subtitulo={`Opcional · ${tipos.length} ${tipos.length === 1 ? 'gênero cadastrado' : 'gêneros cadastrados'}`}
       voltarPara="/estudo/acervo"
       rodape={
         <Botao
-          rotulo="Confirmar tipo"
-          desabilitado={!tipo}
+          rotulo="Confirmar gênero"
           onPress={() => {
-            rascunhoLivro.definir({ tipo })
+            // nenhum marcado = sem genero (o formulario entende a marca)
+            rascunhoLivro.definir({ tipo: tipo || SEM_GENERO })
             voltar()
           }}
         />
@@ -85,10 +89,17 @@ export default function TipoDoLivro() {
       <Bloco>
         <Grupo>
           {[
+            <Animated.View key="sem" entering={entrada(0, { base: 40 })}>
+              <Opcao
+                titulo="Sem gênero"
+                ativa={!tipo || tipo === SEM_GENERO}
+                onPress={() => setTipo(SEM_GENERO)}
+              />
+            </Animated.View>,
             ...tipos.map((t, i) => {
               const n = quantos(t)
               return (
-                <Animated.View key={t} entering={entrada(i, { base: 40 })}>
+                <Animated.View key={t} entering={entrada(i + 1, { base: 40 })}>
                   <Opcao
                     titulo={t}
                     valor={`${n} ${n === 1 ? 'livro' : 'livros'}`}
@@ -98,9 +109,9 @@ export default function TipoDoLivro() {
                 </Animated.View>
               )
             }),
-            <Animated.View key="novo" entering={entrada(tipos.length, { base: 40 })}>
+            <Animated.View key="novo" entering={entrada(tipos.length + 1, { base: 40 })}>
               <Opcao
-                titulo="Novo tipo de livro"
+                titulo="Novo gênero"
                 ativa={false}
                 onPress={() => router.push('/estudo/novo-tipo')}
                 tipo="check"
@@ -112,7 +123,7 @@ export default function TipoDoLivro() {
 
       <Bloco ordem={1}>
         <Aviso
-          titulo="O tipo vale para todos os livros"
+          titulo="O gênero vale para todos os livros"
           texto="Ele entra na lista de filtros do acervo, não só neste título."
         />
       </Bloco>
@@ -120,7 +131,7 @@ export default function TipoDoLivro() {
       {administraEstudo && tipo && tipos.includes(tipo) ? (
         <Bloco ordem={2} style={{ marginTop: space.lg }}>
           <Botao
-            rotulo={excluindo ? 'Excluindo…' : `Excluir o tipo “${tipo}”`}
+            rotulo={excluindo ? 'Excluindo…' : `Excluir o gênero “${tipo}”`}
             variante="perigo"
             desabilitado={excluindo}
             onPress={() => excluir(tipo)}

@@ -11,7 +11,7 @@ import { entrada, NumeroAnimado, Pressionavel } from '@/components/ui/movimento'
 import { disponiveis, rascunhoLivro, useBiblioteca } from '@/data/estudo'
 import { color, onDark, radius, space, target, type } from '@/theme/tokens'
 
-/** Tela 13r. O acervo inteiro, filtrado por tipo — R10: o filtro filtra. */
+/** Tela 13r. O acervo inteiro, filtrado por genero — R10: o filtro filtra. */
 export default function Acervo() {
   const { livros, emprestimos, tipos, carregando, erro } = useBiblioteca()
   const [busca, setBusca] = useState('')
@@ -91,7 +91,7 @@ export default function Acervo() {
                       <Text style={st.titulo} numberOfLines={1}>
                         {l.titulo}
                       </Text>
-                      <Text style={st.legenda}>{l.tipo}</Text>
+                      <Text style={st.legenda}>{l.tipo || 'Sem gênero'}</Text>
                     </View>
                     <Text style={st.contagem}>
                       {livres} de {l.exemplares}
@@ -107,7 +107,7 @@ export default function Acervo() {
             titulo={livros.length ? 'Nenhum título com esse filtro' : 'O acervo ainda está vazio'}
             texto={
               livros.length
-                ? 'Troque o tipo ou limpe a busca.'
+                ? 'Troque o gênero ou limpe a busca.'
                 : 'Cadastre os livros da ONG no botão abaixo, contando todos os exemplares.'
             }
           />

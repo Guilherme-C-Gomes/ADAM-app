@@ -83,7 +83,14 @@ export type CriancaEstudo = {
   turma: TurmaEstudo
 }
 
-/** Os tipos que o SQL do Estudo cria; valem ate ele rodar. */
+/**
+ * Genero do livro (no banco, `livros.tipo` e a tabela `livro_tipos`): e
+ * opcional. Na tela de escolha, "Sem gênero" volta ao formulario como esta
+ * marca no rascunho — o rascunho vazio quer dizer "ainda nao escolheu".
+ */
+export const SEM_GENERO = '(sem gênero)'
+
+/** Os generos que o SQL do Estudo cria; valem ate ele rodar. */
 const TIPOS_PADRAO = [
   'Bíblia infantil',
   'Devocional',
@@ -139,7 +146,7 @@ async function lerBiblioteca() {
       todasAsLinhas<{
         id: string
         titulo: string
-        tipo: string
+        tipo: string | null
         exemplares: number
         capa_path: string | null
       }>((de, ate) =>
@@ -182,13 +189,13 @@ async function lerBiblioteca() {
     const nomesTipos = new Set<string>(
       tipos.error ? TIPOS_PADRAO : (tipos.data ?? []).map((t: { nome: string }) => t.nome),
     )
-    for (const l of livros) nomesTipos.add(l.tipo)
+    for (const l of livros) if (l.tipo) nomesTipos.add(l.tipo)
 
     biblioteca.definir({
       livros: livros.map((l) => ({
         id: l.id,
         titulo: l.titulo,
-        tipo: l.tipo,
+        tipo: l.tipo ?? '',
         exemplares: l.exemplares,
         capaPath: l.capa_path,
         capaUrl: l.capa_path ? (capas.get(l.capa_path) ?? null) : null,
@@ -334,8 +341,8 @@ export async function criarTipo(nome: string) {
   if (error && error.code !== '23505') {
     throw new Error(
       error.code === '42P01' || error.code === 'PGRST205'
-        ? 'Falta rodar o SQL do Estudo no Supabase (tipos de livro).'
-        : 'Não foi possível criar o tipo.',
+        ? 'Falta rodar o SQL do Estudo no Supabase (gêneros de livro).'
+        : 'Não foi possível criar o gênero.',
     )
   }
   await carregarBiblioteca()
@@ -354,6 +361,12 @@ async function enviar(bucket: string, caminho: string, uri: string, tipo?: strin
   }
 }
 
+/** 23502: o banco ainda exige o genero (falta o SQL que o deixa opcional). */
+const erroDoLivro = (codigo: string | undefined, acao: string) =>
+  codigo === '23502'
+    ? 'Falta rodar o SQL do gênero opcional no Supabase. Até lá, escolha um gênero.'
+    : `Não foi possível ${acao} o livro.`
+
 /** Grava o titulo (novo ou existente). A capa nova sobe junto. */
 export async function salvarLivro(dados: {
   id?: string
@@ -363,16 +376,21 @@ export async function salvarLivro(dados: {
   capaUri?: string
   capaAntiga?: string | null
 }) {
-  const linha = { titulo: dados.titulo.trim(), tipo: dados.tipo, exemplares: dados.exemplares }
+  // sem genero vai vazio (null): o genero e opcional
+  const linha = {
+    titulo: dados.titulo.trim(),
+    tipo: dados.tipo || null,
+    exemplares: dados.exemplares,
+  }
   const rascunho = rascunhoLivro.ler()
   // titulo novo que ja entrou numa tentativa anterior vira edicao dele
   let id = dados.id ?? rascunho.criado
   if (id) {
     const { data, error } = await supabase.from('livros').update(linha).eq('id', id).select('id')
-    if (error || !data?.length) throw new Error('Não foi possível salvar o livro.')
+    if (error || !data?.length) throw new Error(erroDoLivro(error?.code, 'salvar'))
   } else {
     const { data, error } = await supabase.from('livros').insert(linha).select('id').single()
-    if (error || !data) throw new Error('Não foi possível cadastrar o livro.')
+    if (error || !data) throw new Error(erroDoLivro(error?.code, 'cadastrar'))
     id = data.id as string
     // ja no rascunho: se a capa falhar, tentar de novo nao cadastra outro
     rascunhoLivro.definir({ criado: id })
@@ -729,8 +747,8 @@ export async function excluirLivro(livro: { id: string; capaPath: string | null 
 /** Exclui um tipo de livro. Tipo que ainda tem livro o banco recusa. */
 export async function excluirTipo(nome: string) {
   await apagarLinha('livro_tipos', 'nome', nome, {
-    geral: 'Não foi possível excluir o tipo.',
-    emUso: 'Esse tipo ainda tem livros. Mude o tipo deles antes.',
+    geral: 'Não foi possível excluir o gênero.',
+    emUso: 'Esse gênero ainda tem livros. Mude o gênero deles antes.',
   })
 }
 

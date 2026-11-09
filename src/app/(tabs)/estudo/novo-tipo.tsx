@@ -5,7 +5,7 @@ import { mostrarRecado } from '@/components/ui/recado'
 import { criarTipo, rascunhoLivro, useBiblioteca } from '@/data/estudo'
 import { voltar } from '@/lib/navegacao'
 
-/** Tela 13s. Antes de criar, mostra o que ja existe: tipo repetido divide a lista. */
+/** Tela 13s. Antes de criar, mostra o que ja existe: genero repetido divide a lista. */
 export default function NovoTipo() {
   const { livros, tipos } = useBiblioteca()
   const [nome, setNome] = useState('')
@@ -20,10 +20,10 @@ export default function NovoTipo() {
     try {
       await criarTipo(limpo)
       rascunhoLivro.definir({ tipo: limpo })
-      mostrarRecado(`Tipo “${limpo}” criado`)
+      mostrarRecado(`Gênero “${limpo}” criado`)
       voltar('/estudo/acervo')
     } catch (e) {
-      setErro(e instanceof Error ? e.message : 'Não foi possível criar o tipo.')
+      setErro(e instanceof Error ? e.message : 'Não foi possível criar o gênero.')
     } finally {
       setSalvando(false)
     }
@@ -31,12 +31,12 @@ export default function NovoTipo() {
 
   return (
     <TelaForm
-      titulo="Novo tipo"
+      titulo="Novo gênero"
       subtitulo="Entra na lista de todos os livros"
       voltarPara="/estudo/acervo"
       rodape={
         <Botao
-          rotulo={salvando ? 'Salvando…' : 'Salvar tipo'}
+          rotulo={salvando ? 'Salvando…' : 'Salvar gênero'}
           desabilitado={!limpo || repetido || salvando}
           onPress={salvar}
         />
@@ -49,7 +49,7 @@ export default function NovoTipo() {
 
       <Bloco>
         <Entrada
-          rotulo="Nome do tipo"
+          rotulo="Nome do gênero"
           value={nome}
           onChangeText={setNome}
           placeholder="Como aparece na lista"
@@ -58,7 +58,7 @@ export default function NovoTipo() {
       </Bloco>
 
       <Bloco ordem={1}>
-        <Rotulo extra={`${tipos.length} ${tipos.length === 1 ? 'tipo' : 'tipos'}`}>
+        <Rotulo extra={`${tipos.length} ${tipos.length === 1 ? 'gênero' : 'gêneros'}`}>
           Já existem
         </Rotulo>
         <Grupo>
@@ -71,7 +71,7 @@ export default function NovoTipo() {
       <Bloco ordem={2}>
         <Aviso
           tom={repetido ? 'ambar' : 'neutro'}
-          titulo={repetido ? 'Esse tipo já existe' : 'Confira se já não existe'}
+          titulo={repetido ? 'Esse gênero já existe' : 'Confira se já não existe'}
           texto="Dois nomes para a mesma coisa quebram o filtro do acervo em duas listas."
         />
       </Bloco>
