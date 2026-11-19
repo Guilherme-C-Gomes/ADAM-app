@@ -4,7 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { BaseDeCriancas, type Falta } from '@/components/base-criancas'
+import { BaseDeCriancas } from '@/components/base-criancas'
+import { FichasIncompletas } from '@/components/fichas-incompletas'
 import { Barra, Card, Contador, Overline } from '@/components/ui'
 import { Aviso, Grupo, Linha, SeletorPeriodo } from '@/components/ui/form'
 import { Icone } from '@/components/ui/icone'
@@ -28,8 +29,8 @@ const ABAS = ['Números', 'Base', 'Cadastro'] as const
 
 export default function Secretaria() {
   const [aba, setAba] = useState<(typeof ABAS)[number]>('Números')
-  // o cartao das fichas pendentes abre a Base ja filtrada no que falta
-  const [faltaNaBase, setFaltaNaBase] = useState<Falta | null>(null)
+  // Cadastro: a lista das fichas incompletas, aberta ao tocar
+  const [verIncompletas, setVerIncompletas] = useState(false)
   const { filtro, todasAsUnidades, nomeUnidade, rotulo, anterior, proximo } = useFiltroSecretaria()
   const metricas = useMetricas(filtro)
   const fichas = useParticipantes()
@@ -50,10 +51,10 @@ export default function Secretaria() {
   const daUnidade = fichas.lista.filter(
     (p) => !filtro.unidadeId || p.unidadeId === filtro.unidadeId,
   )
-  const pendentes = daUnidade.filter(
+  const incompletas = daUnidade.filter(
     (p) => p.documentosEntregues < DOCUMENTOS_EXIGIDOS || !p.temResponsavel,
-  ).length
-  const semResponsavel = daUnidade.filter((p) => !p.temResponsavel).length
+  )
+  const pendentes = incompletas.length
   const completas = daUnidade.length - pendentes
   const quedas = daUnidade.filter(emQueda).length
 
@@ -66,14 +67,7 @@ export default function Secretaria() {
       <HeroSetor titulo="Secretaria" subtitulo={todasAsUnidades || 'Painel da Secretaria'} />
 
       <ScrollView contentContainerStyle={st.conteudo} showsVerticalScrollIndicator={false}>
-        <Segmentado
-          opcoes={ABAS}
-          valor={aba}
-          onChange={(a) => {
-            setFaltaNaBase(null)
-            setAba(a)
-          }}
-        />
+        <Segmentado opcoes={ABAS} valor={aba} onChange={setAba} />
 
         {/* a Base tem a busca e as unidades dela: o periodo nao vale la */}
         {aba !== 'Base' ? (
@@ -86,7 +80,7 @@ export default function Secretaria() {
         ) : null}
 
         {aba === 'Base' ? (
-          <BaseDeCriancas key={faltaNaBase ?? 'todas'} falta={faltaNaBase} />
+          <BaseDeCriancas />
         ) : carregando ? (
           <Esqueleto>
             <SkeletonFaixa />
@@ -209,17 +203,34 @@ export default function Secretaria() {
                   }
                   onPress={() => router.push('/secretaria/inscricoes')}
                 />
+                <Linha
+                  titulo="Fichas incompletas"
+                  legenda={
+                    verIncompletas
+                      ? 'Toque para fechar a lista'
+                      : 'Sem responsável ou com documento faltando'
+                  }
+                  selo={
+                    pendentes
+                      ? { rotulo: String(pendentes), tom: 'ambar' }
+                      : { rotulo: 'nenhuma', tom: 'verde' }
+                  }
+                  onPress={() => setVerIncompletas((v) => !v)}
+                />
               </Grupo>
             </Animated.View>
+
+            {verIncompletas ? (
+              <Animated.View entering={entrada(0)}>
+                <FichasIncompletas lista={incompletas} />
+              </Animated.View>
+            ) : null}
 
             <Animated.View entering={entrada(2)} style={st.secao}>
               <Overline>Fichas</Overline>
               <Pressionavel
-                onPress={() => {
-                  // abre a Base so com as que faltam: primeiro o responsavel
-                  setFaltaNaBase(semResponsavel ? 'responsavel' : 'documento')
-                  setAba('Base')
-                }}
+                // abre a lista das fichas incompletas, logo acima
+                onPress={() => setVerIncompletas(true)}
                 escala={0.98}
                 disabled={!pendentes}
                 accessibilityRole="button"
@@ -245,12 +256,8 @@ export default function Secretaria() {
                           ? 'Todas as fichas completas'
                           : 'Nenhuma ficha cadastrada ainda'}
                   </Text>
-                  {pendentes ? (
-                    <Text style={st.link}>
-                      {semResponsavel
-                        ? `ver as ${semResponsavel} sem responsável`
-                        : 'ver as que faltam documento'}
-                    </Text>
+                  {pendentes && !verIncompletas ? (
+                    <Text style={st.link}>ver as fichas incompletas</Text>
                   ) : null}
                 </Card>
               </Pressionavel>

@@ -21,6 +21,17 @@ import { supabase } from '@/lib/supabase'
 export type Turma = 'pequenos' | 'maiores'
 export const TURMAS: readonly Turma[] = ['pequenos', 'maiores']
 export const NOME_TURMA: Record<Turma, string> = { pequenos: 'Pequenos', maiores: 'Maiores' }
+
+/**
+ * De que idade ate que idade e a turma: a das criancas que estao nela
+ * ("de 6 a 11 anos"); sem crianca, a regra (12 ou mais vai para os Maiores).
+ */
+export function faixaDaTurma(turma: Turma, idades: number[]) {
+  if (!idades.length) return turma === 'pequenos' ? 'até 11 anos' : '12 anos ou mais'
+  const min = Math.min(...idades)
+  const max = Math.max(...idades)
+  return min === max ? `${min} anos` : `de ${min} a ${max} anos`
+}
 // Horario de cada turma quando a escala da unidade ainda nao foi montada (a
 // chamada do dia segue a escala: useEscalaDaChamada e treinosDoDia, abaixo).
 export const HORARIO: Record<Turma, string> = { pequenos: '08h', maiores: '10h' }

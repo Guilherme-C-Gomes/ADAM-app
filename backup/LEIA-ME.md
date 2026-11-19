@@ -1,21 +1,24 @@
 # Cópia de segurança do ADAM
 
-Três vezes por dia (7h, 13h e 21h, horário de Brasília, com até 1 hora de
-variação no plano grátis da Vercel), a função `api/backup.ts`:
+Todo dia às 12h, toda sexta às 8h e todo dia 1 às 8h (horário de Brasília,
+com até 1 hora de variação no plano grátis da Vercel), a função
+`api/backup.ts`:
 
 1. lê o banco inteiro — e isso mantém o Supabase gratuito acordado, mesmo
    num mês de férias (ele pausa depois de 7 dias sem uso);
-2. grava a cópia completa (`adam-banco-AAAA-MM-DD_HHhMM.json`) na pasta
+2. grava a cópia completa (`adam-banco-<tipo>-AAAA-MM-DD_HHhMM.json`, tipo
+   diaria, semanal, mensal ou manual) na pasta
    `banco/` do Google Drive da ADAM;
 3. grava na pasta `arquivos/` as fotos e os documentos novos e os que foram
    trocados (cada arquivo do Drive guarda na descrição a versão que tem; se a
    foto da ficha mudou no app, vai a nova e a antiga vai para a lixeira);
 4. anota o resultado no app (Configuração da ADAM › Cópia de segurança).
 
-No Drive ficam só as 3 cópias mais recentes do banco (manhã, tarde e noite); as
-mais antigas vão para a lixeira do Drive a cada cópia nova.
+No Drive ficam, do banco, as 7 diárias (uma semana), as 5 semanais (um mês),
+as 12 mensais (um ano) e as 3 manuais mais recentes; as mais antigas de cada
+tipo vão para a lixeira do Drive a cada cópia nova do mesmo tipo.
 
-Se a última cópia boa passar de 12 horas, o app avisa em âmbar ("confira a
+Se a última cópia boa passar de 30 horas, o app avisa em âmbar ("confira a
 Vercel"): é sinal de que a cópia nem começou (variável faltando, senha do
 agendamento errada, tempo esgotado). O motivo aparece em Vercel › projeto
 **adam** › **Logs** (filtre por `/api/backup`).

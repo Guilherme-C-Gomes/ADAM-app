@@ -82,6 +82,15 @@ export function paraBR(iso: string) {
   return `${dia}/${mes}/${ano}`
 }
 
+/**
+ * O sub da crianca, pelo ano de nascimento (como no futebol de base): quem
+ * nasceu em 2015 e Sub-11 em 2026 — a idade que faz no ano. Bate com a
+ * convocacao (Sub-11 = 10 e 11 anos).
+ */
+export function subDe(nascimentoISO: string, ano = new Date().getFullYear()) {
+  return `Sub-${ano - Number(nascimentoISO.slice(0, 4))}`
+}
+
 /** Idade hoje, a partir de "AAAA-MM-DD". */
 export function idadeDe(iso: string) {
   const [ano, mes, dia] = iso.slice(0, 10).split('-').map(Number)
@@ -118,6 +127,8 @@ export type Participante = {
   nome: string
   iniciais: string
   idade: number
+  /** "Sub-11": pelo ano de nascimento (subDe) */
+  sub: string
   turma: TurmaEstudo
   unidadeId: string
   unidade: string
@@ -264,6 +275,7 @@ async function lerParticipantes(id?: string, saidas = false): Promise<Participan
       nome: c.nome,
       iniciais: iniciaisDe(c.nome),
       idade,
+      sub: subDe(c.nascimento),
       turma,
       unidadeId: c.unidade_id,
       unidade: c.unidades?.nome ?? '',

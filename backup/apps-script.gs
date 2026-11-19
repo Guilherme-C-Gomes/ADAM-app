@@ -1,17 +1,20 @@
 /**
  * ADAM · recebe as copias de seguranca e guarda na pasta do Google Drive.
  *
- * Quem manda as copias e a funcao da Vercel (api/backup.ts), 3 vezes por
- * dia e quando o ADM pede no app. Este script so recebe e guarda:
+ * Quem manda as copias e a funcao da Vercel (api/backup.ts): todo dia as
+ * 12h, toda sexta de manha, todo dia 1 e quando o suporte pede no app. Este
+ * script so recebe e guarda:
  *
  *   PASTA DO DRIVE
- *   ├── banco/      adam-banco-AAAA-MM-DD_HHhMM.json  (o banco inteiro)
+ *   ├── banco/      adam-banco-<tipo>-AAAA-MM-DD_HHhMM.json  (o banco inteiro)
  *   └── arquivos/   fotos e documentos (fichas__criancas__..., capas__..., ...)
  *
- * Copias do banco: ficam so as 3 mais recentes (cerca de um dia: manha,
- * tarde e noite). A cada copia nova, as mais antigas vao para a lixeira do
- * Drive, que o Google esvazia sozinho em 30 dias. Para limpar na hora as que
- * sobraram, rode a funcao "limparAgora" pelo editor.
+ * Copias do banco: o tipo vem no nome, e de cada tipo ficam as mais
+ * recentes (GUARDAR, abaixo): 7 diarias (uma semana), 5 semanais (um mes),
+ * 12 mensais (um ano) e 3 manuais. Copia de nome antigo (sem tipo) conta
+ * como diaria. A cada copia nova, as mais antigas do mesmo tipo vao para a
+ * lixeira do Drive, que o Google esvazia sozinho em 30 dias. Para limpar na
+ * hora as que sobraram, rode a funcao "limparAgora" pelo editor.
  *
  * Fotos e documentos: o nome e o caminho no Storage (o restaurar-backup.mjs
  * usa o nome para devolver o arquivo ao lugar) e a descricao guarda a versao
@@ -40,7 +43,8 @@
 
 const PASTA_ID = '18PYxJuhCcgMH16D3ED_bqnjJTLvcF5Zm'
 const SENHA = 'COLE_AQUI_A_MESMA_SENHA_DO_CRON_SECRET'
-const COPIAS_GUARDADAS = 3
+/** Quantas copias do banco ficam, por tipo. */
+const GUARDAR = { diaria: 7, semanal: 5, mensal: 12, manual: 3 }
 
 function doPost(e) {
   try {
@@ -104,7 +108,7 @@ function doPost(e) {
   }
 }
 
-/** Rode pelo editor para deixar so as 3 copias mais recentes agora. */
+/** Rode pelo editor para deixar agora so as mais recentes de cada tipo. */
 function limparAgora() {
   const apagadas = limparAntigos_(subpasta_(DriveApp.getFolderById(PASTA_ID), 'banco'))
   Logger.log('Copias antigas enviadas para a lixeira: ' + apagadas)
@@ -126,24 +130,37 @@ function subpasta_(raiz, nome) {
   return achadas.hasNext() ? achadas.next() : raiz.createFolder(nome)
 }
 
-/** Deixa so as COPIAS_GUARDADAS mais recentes; devolve quantas apagou. */
+/** O tipo da copia pelo nome; nome antigo (sem tipo) e diaria. */
+function tipoDaCopia_(nome) {
+  const achado = /^adam-banco-(diaria|semanal|mensal|manual)-/.exec(nome)
+  return achado ? achado[1] : 'diaria'
+}
+
+/** De cada tipo, deixa so as GUARDAR mais recentes; devolve quantas apagou. */
 function limparAntigos_(pasta) {
-  const copias = []
+  const porTipo = {}
   const lista = pasta.getFiles()
   while (lista.hasNext()) {
     const arquivo = lista.next()
     if (arquivo.isTrashed()) continue
-    if (/^adam-banco-.*\.json$/.test(arquivo.getName())) copias.push(arquivo)
+    const nome = arquivo.getName()
+    if (!/^adam-banco-.*\.json$/.test(nome)) continue
+    const tipo = tipoDaCopia_(nome)
+    ;(porTipo[tipo] = porTipo[tipo] || []).push(arquivo)
   }
-  // mais nova primeiro
-  copias.sort(function (a, b) {
-    return b.getDateCreated().getTime() - a.getDateCreated().getTime()
+  let apagadas = 0
+  Object.keys(porTipo).forEach(function (tipo) {
+    const copias = porTipo[tipo]
+    // mais nova primeiro
+    copias.sort(function (a, b) {
+      return b.getDateCreated().getTime() - a.getDateCreated().getTime()
+    })
+    copias.slice(GUARDAR[tipo] || 3).forEach(function (arquivo) {
+      arquivo.setTrashed(true)
+      apagadas++
+    })
   })
-  const sobrando = copias.slice(COPIAS_GUARDADAS)
-  sobrando.forEach(function (arquivo) {
-    arquivo.setTrashed(true)
-  })
-  return sobrando.length
+  return apagadas
 }
 
 function saida_(objeto) {

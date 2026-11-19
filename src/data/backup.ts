@@ -9,7 +9,8 @@ import { URL_SITE } from '@/lib/site'
 import { supabase } from '@/lib/supabase'
 
 /**
- * Copias de seguranca (so a conta de suporte). A automatica roda 3 vezes por dia na
+ * Copias de seguranca (so a conta de suporte). A automatica roda todo dia (12h), toda
+ * sexta e todo dia 1 na
  * Vercel (api/backup.ts) e vai para a pasta do Google Drive da ADAM; cada
  * uma deixa uma linha na tabela `backups`, que esta tela mostra.
  *
@@ -96,8 +97,8 @@ export function useBackups() {
   return { ...estado, recarregar }
 }
 
-/** Sem copia boa ha mais que isso (3 por dia = no maximo 8h entre elas), avisa. */
-const HORAS_SEM_COPIA = 12
+/** Sem copia boa ha mais que isso (uma por dia, as 12h, com folga), avisa. */
+const HORAS_SEM_COPIA = 30
 
 /**
  * O aviso de copia atrasada, ou null se esta em dia. Pega o que nao deixa

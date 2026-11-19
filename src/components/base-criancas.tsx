@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 
+import { FiltroSub } from '@/components/filtro-sub'
 import { Avatar, Chip } from '@/components/ui'
 import { Aviso, Bloco, Busca, Grupo, Linha } from '@/components/ui/form'
 import { entrada } from '@/components/ui/movimento'
@@ -23,6 +24,7 @@ export type Falta = 'responsavel' | 'documento'
 export function BaseDeCriancas({ falta: faltaInicial = null }: { falta?: Falta | null }) {
   const [saidas, setSaidas] = useState(false)
   const [falta, setFalta] = useState<Falta | null>(faltaInicial)
+  const [sub, setSub] = useState<string | null>(null)
   const { lista: fichas, carregando, erro, recarregar } = useParticipantes(undefined, saidas)
   const unidades = useUnidades()
   const [busca, setBusca] = useState('')
@@ -38,6 +40,7 @@ export function BaseDeCriancas({ falta: faltaInicial = null }: { falta?: Falta |
   const termo = busca.trim().toLowerCase()
   const lista = fichas
     .filter((p) => (unidade === 'Todos' ? true : p.unidade === unidade))
+    .filter((p) => (sub ? p.sub === sub : true))
     .filter((p) =>
       falta === 'responsavel'
         ? !p.temResponsavel
@@ -67,6 +70,7 @@ export function BaseDeCriancas({ falta: faltaInicial = null }: { falta?: Falta |
           ))}
           <Chip rotulo="Saíram" ativo={saidas} onPress={() => setSaidas((v) => !v)} />
         </View>
+        <FiltroSub subs={fichas.map((p) => p.sub)} valor={sub} onChange={setSub} />
         <View style={st.chips}>
           <Chip
             rotulo="Falta responsável"
@@ -102,7 +106,7 @@ export function BaseDeCriancas({ falta: faltaInicial = null }: { falta?: Falta |
                     titulo={p.nome}
                     legenda={
                       p.ativa
-                        ? `${p.idade} anos · ${p.unidade}`
+                        ? `${p.sub} · ${p.idade} anos · ${p.unidade}`
                         : `saiu em ${p.saiuEm ? paraBR(p.saiuEm) : '—'} · ${p.unidade}`
                     }
                     esquerda={<Avatar iniciais={p.iniciais} size={34} foto={p.fotoUrl} />}

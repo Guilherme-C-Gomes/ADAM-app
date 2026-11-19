@@ -16,6 +16,7 @@ import {
   horaDe,
   juntos,
   NOME_TURMA,
+  faixaDaTurma,
   treinosDoDia,
   TURMAS,
   useChamadasAbertas,
@@ -272,6 +273,10 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
                 chamada={c}
                 unidade={unidade}
                 total={daTurma(c.turma).length}
+                faixa={faixaDaTurma(
+                  c.turma,
+                  daTurma(c.turma).map((k) => k.idade),
+                )}
                 marcadas={marcadasNaLista(c, daTurma(c.turma))}
                 eu={eu}
                 equipe={equipe}
@@ -322,6 +327,10 @@ function TurmasDaUnidade({ unidade, eu }: { unidade: Unidade; eu: string }) {
             unidade={unidade}
             chamada={deHoje(turma)}
             total={daTurma(turma).length}
+            faixa={faixaDaTurma(
+              turma,
+              daTurma(turma).map((k) => k.idade),
+            )}
             marcadas={marcadasNaLista(deHoje(turma), daTurma(turma))}
             eu={eu}
             equipe={equipe}
@@ -352,6 +361,7 @@ function CardTurma({
   unidade,
   chamada,
   total,
+  faixa,
   marcadas,
   eu,
   equipe,
@@ -362,6 +372,8 @@ function CardTurma({
   unidade: Unidade
   chamada: Chamada | null
   total: number
+  /** "de 6 a 11 anos" (faixaDaTurma) */
+  faixa: string
   marcadas: number
   eu: string
   equipe: Record<string, Pessoa>
@@ -421,7 +433,9 @@ function CardTurma({
         accessibilityLabel={`Chamada dos ${nome}, ${estado.rotulo}`}>
         <View style={st.cabecalho}>
           <View style={st.texto}>
-            <Text style={st.turma}>{nome}</Text>
+            <Text style={st.turma}>
+              {nome} <Text style={st.faixa}>· {faixa}</Text>
+            </Text>
             <Text style={st.legenda}>
               {hora} · {unidade.nome} · {total} {total === 1 ? 'criança' : 'crianças'}
             </Text>
@@ -499,6 +513,7 @@ function CardAberta({
   chamada,
   unidade,
   total,
+  faixa,
   marcadas,
   eu,
   equipe,
@@ -506,6 +521,7 @@ function CardAberta({
   chamada: Chamada
   unidade: Unidade
   total: number
+  faixa: string
   marcadas: number
   eu: string
   equipe: Record<string, Pessoa>
@@ -524,7 +540,9 @@ function CardAberta({
         accessibilityLabel={`Chamada dos ${nome} de ${diaPorExtenso(chamada.data)}, ainda aberta`}>
         <View style={st.cabecalho}>
           <View style={st.texto}>
-            <Text style={st.turma}>{nome}</Text>
+            <Text style={st.turma}>
+              {nome} <Text style={st.faixa}>· {faixa}</Text>
+            </Text>
             <Text style={st.legenda}>
               {diaPorExtenso(chamada.data)} · {unidade.nome}
             </Text>
@@ -588,6 +606,7 @@ const st = StyleSheet.create({
   cabecalho: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   texto: { flex: 1, gap: 2 },
   turma: { ...type.body, fontFamily: 'Inter_700Bold', color: color.text },
+  faixa: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
   legenda: { ...type.small, fontFamily: 'Inter_400Regular', color: color.muted },
   legendaPequena: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.faint },
   dica: { ...type.caption, fontFamily: 'Inter_400Regular', color: color.muted },

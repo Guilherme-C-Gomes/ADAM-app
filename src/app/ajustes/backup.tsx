@@ -16,7 +16,7 @@ import { color } from '@/theme/tokens'
 
 /**
  * Copia de seguranca (so a conta de suporte, suporte.ti). A automatica vai para a pasta do Google
- * Drive da ADAM tres vezes por dia — e e ela que mantem o Supabase gratuito
+ * Drive da ADAM todo dia as 12h, toda sexta e todo dia 1 — e e ela que mantem o Supabase gratuito
  * acordado nas ferias. Aqui o suporte ve se as ultimas deram certo, pede uma
  * agora, ou baixa uma para guardar fora (pendrive).
  */
@@ -94,7 +94,7 @@ export default function CopiaDeSeguranca() {
   return (
     <TelaForm
       titulo="Cópia de segurança"
-      subtitulo="Automática no Google Drive, 3 vezes por dia"
+      subtitulo="Automática no Google Drive: todo dia às 12h, sexta de manhã e dia 1"
       voltarPara="/ajustes"
       rodape={
         <>
@@ -130,7 +130,7 @@ export default function CopiaDeSeguranca() {
           <Aviso
             tom="ambar"
             titulo={atraso}
-            texto="As cópias rodam 3 vezes por dia. Quando a cópia nem começa (variável faltando, senha do agendamento, tempo esgotado), ela não aparece na lista: o motivo fica em Vercel › projeto adam › Logs."
+            texto="As cópias rodam todo dia às 12h, toda sexta de manhã e todo dia 1. Quando a cópia nem começa (variável faltando, senha do agendamento, tempo esgotado), ela não aparece na lista: o motivo fica em Vercel › projeto adam › Logs."
           />
         </Bloco>
       ) : null}
@@ -177,8 +177,8 @@ export default function CopiaDeSeguranca() {
 
       <Bloco ordem={2}>
         <Aviso
-          titulo="Por que três vezes por dia"
-          texto="Cada cópia também mantém o servidor gratuito acordado: ele pausa depois de 7 dias sem uso, e isso não acontece nem nas férias. No Drive ficam só as 3 cópias mais recentes; antes das férias, baixe uma cópia e guarde num pendrive."
+          titulo="Diária, semanal e mensal"
+          texto="No Drive ficam as 7 diárias (uma semana), as 5 semanais (um mês) e as 12 mensais (um ano). A cópia de todo dia também mantém o servidor gratuito acordado: ele pausa depois de 7 dias sem uso, e isso não acontece nem nas férias. Antes das férias, baixe uma cópia e guarde num pendrive."
         />
       </Bloco>
     </TelaForm>

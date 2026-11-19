@@ -4,6 +4,7 @@ import { memo, useCallback, useMemo, useState } from 'react'
 import { StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+import { FiltroSub } from '@/components/filtro-sub'
 import { Avatar, Chip, Hero } from '@/components/ui'
 import { EstadoVazio } from '@/components/ui/estados'
 import { Esqueleto, SkeletonLinha } from '@/components/ui/skeleton'
@@ -50,7 +51,7 @@ const ItemParticipante = memo(function ItemParticipante({
       <View style={st.itemTexto}>
         <Text style={st.itemNome}>{item.nome}</Text>
         <Text style={st.itemMeta}>
-          {item.idade} anos · {item.unidade}
+          {item.sub} · {item.idade} anos · {item.unidade}
         </Text>
       </View>
       {semChamada ? (
@@ -80,6 +81,7 @@ export default function Participantes() {
   // exatamente quem o card "em queda" de Atibaia contou
   const [unidade, setUnidade] = useState<string>(params.unidade ?? TODOS)
   const [soBaixa, setSoBaixa] = useState(params.filtro === 'baixa')
+  const [sub, setSub] = useState<string | null>(null)
 
   // voltar de uma ficha salva traz a lista atualizada
   useFocusEffect(
@@ -113,9 +115,10 @@ export default function Participantes() {
     return todos
       .filter((p) => (unidade === TODOS ? true : p.unidade === unidade))
       .filter((p) => (soBaixa ? emQueda(p) : true))
+      .filter((p) => (sub ? p.sub === sub : true))
       .filter((p) => (termo ? p.nome.toLowerCase().includes(termo) : true))
       .sort((a, b) => (a.frequencia ?? 101) - (b.frequencia ?? 101))
-  }, [todos, unidade, soBaixa, busca])
+  }, [todos, unidade, soBaixa, sub, busca])
 
   /**
    * Fora do filtro "Baixa freq." (onde todo mundo ja esta em queda), a
@@ -177,6 +180,7 @@ export default function Participantes() {
           onPress: () => {
             setUnidade(TODOS)
             setSoBaixa(false)
+            setSub(null)
             setBusca('')
             recarregar()
           },
@@ -200,6 +204,7 @@ export default function Participantes() {
           ))}
           <Chip rotulo={BAIXA} ativo={soBaixa} onPress={() => setSoBaixa((v) => !v)} />
         </View>
+        <FiltroSub subs={todos.map((p) => p.sub)} valor={sub} onChange={setSub} />
       </View>
 
       {carregando ? (

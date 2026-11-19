@@ -18,6 +18,7 @@ import {
   juntos,
   marcar,
   NOME_TURMA,
+  faixaDaTurma,
   salvarCorrecao,
   useAvulsos,
   useChamada,
@@ -293,7 +294,10 @@ export default function ListaDaChamada() {
 
   return (
     <TelaForm
-      titulo={`Chamada dos ${turma}`}
+      titulo={`Chamada dos ${turma} · ${faixaDaTurma(
+        c.turma,
+        daTurma.map((k) => k.idade),
+      )}`}
       subtitulo={
         encerradaSozinha(c)
           ? `Chamada de ${diaMes(c.data)} · Encerrada automaticamente`

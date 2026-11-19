@@ -2,8 +2,11 @@
 /**
  * ADAM · copia de seguranca (e o "despertador" do Supabase).
  *
- * Roda 3 vezes por dia, agendada na Vercel (vercel.json > crons), e quando a
- * conta de suporte (suporte.ti) toca em "Fazer copia agora" no app. Cada vez:
+ * Agendada na Vercel (vercel.json > crons, horario UTC): todo dia as 12h
+ * (diaria), toda sexta as 8h (semanal) e todo dia 1 as 8h (mensal), horario
+ * de Brasilia; e quando a conta de suporte (suporte.ti) toca em "Fazer copia
+ * agora" no app. O tipo vai no nome do arquivo, e o Apps Script guarda as
+ * mais recentes de cada tipo (7 diarias, 5 semanais, 12 mensais). Cada vez:
  *
  * 0. o despertador: uma consulta pequena com a chave publica, antes de tudo
  *    e sem depender das outras variaveis — mesmo com a copia por configurar
@@ -370,7 +373,11 @@ async function copiar(request: Request) {
     registro.linhas = Object.values(dados).reduce((soma, l) => soma + l.length, 0)
 
     // 2. a copia do banco no Drive
-    registro.arquivo = `adam-banco-${carimbo()}.json`
+    // o tipo no nome: o Apps Script guarda as mais recentes de cada um
+    const vez = new URL(request.url).searchParams.get('vez')
+    const tipo =
+      origem === 'manual' ? 'manual' : vez === 'semanal' || vez === 'mensal' ? vez : 'diaria'
+    registro.arquivo = `adam-banco-${tipo}-${carimbo()}.json`
     await drive('salvar-banco', {
       nome: registro.arquivo,
       conteudo: JSON.stringify({

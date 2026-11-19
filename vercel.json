@@ -16,9 +16,9 @@
     }
   },
   "crons": [
-    { "path": "/api/backup?vez=manha", "schedule": "0 10 * * *" },
-    { "path": "/api/backup?vez=tarde", "schedule": "0 16 * * *" },
-    { "path": "/api/backup?vez=noite", "schedule": "0 0 * * *" }
+    { "path": "/api/backup?vez=diaria", "schedule": "0 15 * * *" },
+    { "path": "/api/backup?vez=semanal", "schedule": "0 11 * * 5" },
+    { "path": "/api/backup?vez=mensal", "schedule": "0 11 1 * *" }
   ],
   "rewrites": [
     {
